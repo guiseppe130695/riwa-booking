@@ -668,9 +668,19 @@
     }
     
     .riwa-progress-bar {
-        flex-direction: column;
+        flex-direction: row;
         gap: 2rem;
         align-items: center;
+    }
+
+    .riwa-step-number {
+        width: 16px;
+        height: 16px;
+        font-size: 8px;
+    }
+
+    .riwa-step-label {
+        font-size: 8px;
     }
     
     .form-group-container {
@@ -694,7 +704,7 @@
     }
     
     .riwa-step-buttons {
-        flex-direction: column;
+        flex-direction: row;
     }
     
     .riwa-prev-btn,
@@ -704,7 +714,7 @@
     }
     
     .riwa-selected-dates {
-        flex-direction: column;
+        flex-direction: row;
         gap: 2rem;
         margin: 1.5rem 0 2rem 0;
     }
@@ -950,6 +960,10 @@
     gap: 2.5rem;
 }
 
+.riwa-traveler-type {
+    padding: 0.5rem 0;
+}
+
 .calendar-legend span {
     position: relative;
     padding: 0 1.25rem;
@@ -978,7 +992,7 @@
     margin: 0;
     padding: 0;
     color: #a7a7a7;
-    font-size: 13px;
+    font-size: 10px;
 }
 
 .date-group {
