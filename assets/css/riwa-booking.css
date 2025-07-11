@@ -1,0 +1,1115 @@
+/* Variables - Design ultra-minimaliste */
+:root {
+    --riwa-black: #000000;
+    --riwa-white: #ffffff;
+    --riwa-gray-50: #fafafa;
+    --riwa-gray-100: #f5f5f5;
+    --riwa-gray-200: #e5e5e5;
+    --riwa-gray-300: #d4d4d4;
+    --riwa-gray-400: #a3a3a3;
+    --riwa-gray-500: #737373;
+    --riwa-gray-600: #525252;
+    --riwa-gray-700: #404040;
+    --riwa-gray-800: #262626;
+    --riwa-gray-900: #171717;
+    --riwa-border: #e5e5e5;
+    --riwa-shadow: rgba(0, 0, 0, 0.02);
+    --riwa-shadow-hover: rgba(0, 0, 0, 0.04);
+}
+
+/* Reset et base */
+.riwa-booking-container * {
+    box-sizing: border-box;
+}
+
+/* Import de la police Roboto */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
+
+/* Container principal */
+.riwa-booking-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--riwa-gray-900);
+    background: var(--riwa-white);
+}
+
+/* Titre principal */
+.riwa-booking-container h2 {
+    font-size: 24px;
+    font-weight: 200;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--riwa-black);
+    letter-spacing: -1px;
+}
+
+.riwa-booking-container h3 {
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    color: var(--riwa-black);
+    letter-spacing: -0.5px;
+}
+
+/* Barre de progression simplifiée */
+.riwa-progress-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+    gap: 2rem;
+}
+
+.riwa-progress-step {
+    position: relative;
+    text-align: center;
+    color: var(--riwa-gray-400);
+    transition: color 0.3s ease;
+}
+
+.riwa-step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--riwa-white);
+    border: 1px solid var(--riwa-gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-size: 12px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+}
+
+.riwa-progress-step.active .riwa-step-number {
+    background: var(--riwa-black);
+    border-color: var(--riwa-black);
+    color: var(--riwa-white);
+}
+
+.riwa-progress-step.completed .riwa-step-number {
+    background: var(--riwa-gray-800);
+    border-color: var(--riwa-gray-800);
+    color: var(--riwa-white);
+}
+
+.riwa-progress-step.active,
+.riwa-progress-step.completed {
+    color: var(--riwa-black);
+}
+
+.riwa-step-label {
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+}
+
+/* Étapes */
+.riwa-step {
+    display: none;
+    margin-top: 1rem;
+}
+
+.riwa-step.active {
+    display: block;
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Calendrier épuré */
+#riwa-calendar {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 0;
+    height: auto;
+}
+
+/* Dates sélectionnées - Refactorisation complète */
+.riwa-selected-dates {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 1.5rem 0 2rem 0;
+    gap: 4rem;
+    padding: 0;
+}
+
+.riwa-footer-dates {
+    display: flex;
+    align-content: flex-start;
+    justify-content: space-between;
+}
+
+.date-group {
+    text-align: center;
+    flex: 0 0 auto;   
+    display: flex
+;
+}
+
+.date-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--riwa-gray-500);
+    line-height: 1;
+}
+
+.date-group span {
+    display: block;
+    border-radius: 0;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--riwa-black);
+    letter-spacing: -0.5px;
+    min-width: 140px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Section voyageurs épurée */
+.riwa-travelers-section {
+    background: var(--riwa-white);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 1.5rem;
+}
+
+.riwa-traveler-type {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--riwa-gray-100);
+    transition: background-color 0.2s ease;
+}
+
+.riwa-traveler-type:last-child {
+    border-bottom: none;
+}
+
+.riwa-traveler-type:hover {
+    background: var(--riwa-gray-50);
+}
+
+.riwa-traveler-info {
+    flex: 1;
+}
+
+.riwa-traveler-title {
+    font-weight: 400;
+    margin-bottom: 0.25rem;
+    color: var(--riwa-black);
+    font-size: 16px;
+}
+
+.riwa-traveler-subtitle {
+    font-size: 13px;
+    color: var(--riwa-gray-500);
+    font-weight: 300;
+}
+
+/* Compteurs minimalistes */
+.riwa-counter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.riwa-counter-btn {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 0 !important;
+    border: 1px solid var(--riwa-gray-300) !important;
+    background: var(--riwa-white) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18px !important;
+    font-weight: 300 !important;
+    color: var(--riwa-gray-700) !important;
+    transition: all 0.2s ease !important;
+}
+
+.riwa-counter-btn:hover:not(:disabled) {
+    background: var(--riwa-black) !important;
+    border-color: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+.riwa-counter-btn:disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+}
+
+.riwa-counter-value {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--riwa-black);
+}
+
+/* Formulaire épuré */
+.form-group-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.riwa-form-group {
+    margin-bottom: 0;
+}
+
+.riwa-form-group input,
+.riwa-form-group textarea {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-bottom: 1px solid var(--riwa-gray-200);
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--riwa-black);
+    background: var(--riwa-white);
+    transition: all 0.2s ease;
+}
+
+.riwa-form-group input:focus,
+.riwa-form-group textarea:focus {
+    border-bottom-color: var(--riwa-black);
+    outline: none;
+    box-shadow: none;
+}
+
+.riwa-form-group input::placeholder,
+.riwa-form-group textarea::placeholder {
+    color: var(--riwa-gray-400);
+    font-weight: 300;
+}
+
+/* Récapitulatif de réservation en un seul bloc */
+.booking-summary {
+    margin-bottom: 2rem;
+}
+
+/* Section unique du récapitulatif */
+.summary-single-section {
+    background: var(--riwa-white);
+    border: 1px solid var(--riwa-gray-100);
+    border-radius: 0;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.summary-single-section:hover {
+    border-color: var(--riwa-gray-200);
+}
+
+/* En-tête du récapitulatif */
+.summary-header {
+    padding: 1rem 1.5rem;
+    background: var(--riwa-black);
+    color: var(--riwa-white);
+}
+
+.summary-header h4 {
+    font-size: 14px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--riwa-white);
+    margin: 0;
+    text-align: center;
+}
+
+/* Contenu du récapitulatif */
+.summary-content {
+    padding: 1.5rem;
+}
+
+/* Lignes du récapitulatif */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--riwa-gray-50);
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.summary-label {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--riwa-gray-700);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.summary-value {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--riwa-black);
+    text-align: right;
+}
+
+/* Ligne du total mise en évidence */
+.summary-total-row {
+    border-top: 2px solid var(--riwa-gray-200);
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+}
+
+.summary-total-row .summary-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--riwa-black);
+}
+
+.summary-total-row .summary-value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--riwa-black);
+}
+
+/* Boutons épurés */
+.riwa-step-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1.5rem;
+}
+
+.riwa-prev-btn,
+.riwa-next-btn,
+.riwa-submit-btn {
+    padding: 1rem 2rem !important;
+    border: 1px solid var(--riwa-gray-300) !important;
+    border-radius: 0 !important;
+    background: var(--riwa-white) !important;
+    color: var(--riwa-gray-700) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 120px !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+.riwa-prev-btn:hover {
+    background: var(--riwa-gray-100) !important;
+    border-color: var(--riwa-gray-400) !important;
+    color: var(--riwa-black) !important;
+}
+
+.riwa-next-btn:hover,
+.riwa-submit-btn:hover {
+    background: var(--riwa-black) !important;
+    border-color: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+.riwa-submit-btn {
+    background: var(--riwa-black) !important;
+    border-color: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+/* Messages d'erreur minimalistes */
+.riwa-error-message {
+    display: none;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    background: var(--riwa-gray-50);
+    border: none;
+    border-radius: 0;
+    color: var(--riwa-gray-700);
+    font-size: 14px;
+    font-weight: 300;
+    text-align: center;
+}
+
+.riwa-error-message.show {
+    display: block;
+}
+
+/* Messages de succès */
+.riwa-success-message {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    background: var(--riwa-gray-50);
+    border: none;
+    border-radius: 0;
+    color: var(--riwa-black);
+    font-size: 14px;
+    font-weight: 300;
+    text-align: center;
+}
+
+/* Calendrier Flatpickr ultra-minimaliste */
+.flatpickr-calendar {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--riwa-white) !important;
+    padding: 1.5rem !important;
+}
+
+/* Espacement entre les mois */
+.flatpickr-months {
+    margin-bottom: 1.5rem !important;
+}
+
+.flatpickr-month {
+    margin-bottom: 1rem !important;
+}
+
+.flatpickr-month:not(:last-child) {
+    margin-right: 2rem !important;
+}
+
+.flatpickr-day {
+    border-radius: 0 !important;
+    border: none !important;
+    color: var(--riwa-gray-700) !important;
+    position: relative !important;
+    min-height: 39px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 300 !important;
+    margin: 2px !important;
+    padding: 8px 4px !important;
+    line-height: 14px !important;
+}
+
+.flatpickr-day:hover {
+    background: var(--riwa-gray-50) !important;
+    color: var(--riwa-black) !important;
+}
+
+.flatpickr-day.selected {
+    background: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+.flatpickr-day.selected.startRange,
+.flatpickr-day.selected.endRange {
+    background: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+.flatpickr-day.inRange {
+    background: var(--riwa-gray-50) !important;
+    color: var(--riwa-black) !important;
+}
+
+.flatpickr-day.today {
+    border: 1px solid var(--riwa-black) !important;
+    color: var(--riwa-black) !important;
+}
+
+.flatpickr-day.today:hover {
+    background: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+/* Prix affiché minimaliste */
+.day-price {
+    font-size: 8px !important;
+    font-weight: 300 !important;
+    color: var(--riwa-gray-500) !important;
+    margin-top: 2px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.5px !important;
+}
+
+.flatpickr-day.selected .day-price,
+.flatpickr-day.selected.startRange .day-price,
+.flatpickr-day.selected.endRange .day-price {
+    color: var(--riwa-white) !important;
+}
+
+.flatpickr-day:hover .day-price {
+    color: var(--riwa-black) !important;
+}
+
+/* Dates réservées minimalistes */
+.flatpickr-day.booked {
+    background: var(--riwa-gray-100) !important;
+    color: var(--riwa-gray-400) !important;
+    cursor: not-allowed !important;
+    position: relative !important;
+}
+
+.flatpickr-day.booked::after {
+    content: '—' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 12px !important;
+    color: var(--riwa-gray-400) !important;
+    font-weight: 300 !important;
+}
+
+.flatpickr-day.booked .day-price {
+    color: var(--riwa-gray-400) !important;
+}
+
+.flatpickr-day.booked:hover {
+    background: var(--riwa-gray-100) !important;
+    color: var(--riwa-gray-400) !important;
+}
+
+/* Légende du calendrier - Ultra-minimaliste alignée */
+
+.calendar-legend span {
+    position: relative;
+    padding: 0 1.25rem;
+    text-transform: none;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.calendar-legend span:first-child {
+    padding-left: 0;
+}
+
+.calendar-legend span:last-child {
+    padding-right: 0;
+}
+
+.calendar-legend span:not(:last-child)::after {
+    content: '•';
+    margin-left: 1.25rem;
+    color: var(--riwa-gray-300);
+    font-size: 16px;
+    font-weight: 400;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Réduire l'espacement vertical autour de la légende et des dates sélectionnées */
+.riwa-selected-dates {
+    margin: 0;
+    gap: 4rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .calendar-legend {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        margin: 0 0 0.5rem 0;
+        height: 32px;
+        font-size: 12px;
+    }
+    .calendar-legend span {
+        font-size: 12px;
+        padding: 0 0.75rem;
+    }
+    .calendar-legend span:not(:last-child)::after {
+        margin-left: 0.75rem;
+        font-size: 13px;
+    }
+    .riwa-selected-dates {
+        gap: 2rem;
+    }
+}
+
+
+/* Responsive ultra-minimaliste */
+@media (max-width: 768px) {
+    .riwa-booking-container {
+        padding: 2rem 1rem;
+    }
+    
+    .riwa-progress-bar {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: center;
+    }
+    
+    .form-group-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-single-section {
+        margin-bottom: 1rem;
+    }
+    
+    .summary-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .summary-content {
+        padding: 1rem;
+    }
+    
+    .summary-row {
+        padding: 0.5rem 0;
+    }
+    
+    .riwa-step-buttons {
+        flex-direction: column;
+    }
+    
+    .riwa-prev-btn,
+    .riwa-next-btn,
+    .riwa-submit-btn {
+        width: 100%;
+    }
+    
+    .riwa-selected-dates {
+        flex-direction: column;
+        gap: 2rem;
+        margin: 1.5rem 0 2rem 0;
+    }
+    
+    .date-group {
+        padding: 0 0.5rem;
+    }
+    
+    .date-group span {
+        padding: 1.25rem 1.5rem;
+        min-width: 120px;
+    }
+    
+    #riwa-calendar {
+        margin: 1.5rem 0 2rem 0;
+        padding: 1rem;
+    }
+    
+    .calendar-legend {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0 1rem 0;
+    }
+    
+    .calendar-legend span {
+        padding: 0;
+        font-size: 10px;
+    }
+    
+    .calendar-legend span:not(:last-child)::after {
+        display: none;
+    }
+    
+
+}
+
+/* Animations subtiles */
+.riwa-step {
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* États de chargement */
+.riwa-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Focus visible pour l'accessibilité */
+.riwa-counter-btn:focus-visible,
+.riwa-form-group input:focus-visible,
+.riwa-form-group textarea:focus-visible,
+.riwa-prev-btn:focus-visible,
+.riwa-next-btn:focus-visible,
+.riwa-submit-btn:focus-visible {
+    outline: 2px solid var(--riwa-black);
+    outline-offset: 2px;
+}
+
+/* Page de remerciement */
+.riwa-thank-you {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+/* Animation de chargement */
+.riwa-loading-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+}
+
+.riwa-spinner {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--riwa-gray-200);
+    border-top: 2px solid var(--riwa-black);
+    border-radius: 50%;
+    animation: riwa-spin 1s linear infinite;
+    margin-bottom: 2rem;
+}
+
+@keyframes riwa-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.riwa-loading-animation p {
+    font-size: 14px;
+    color: var(--riwa-gray-600);
+    font-weight: 300;
+    margin: 0;
+}
+
+/* Contenu de remerciement */
+.riwa-thank-you-content {
+    padding: 2rem 0;
+}
+
+.riwa-success-icon {
+    color: var(--riwa-black);
+    margin-bottom: 2rem;
+}
+
+.riwa-thank-you h2 {
+    font-size: 24px;
+    font-weight: 200;
+    color: var(--riwa-black);
+    margin-bottom: 1.5rem;
+    letter-spacing: -1px;
+}
+
+.riwa-thank-you-message {
+    font-size: 16px;
+    color: var(--riwa-gray-700);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Détails de la réservation */
+.riwa-booking-details {
+    background: var(--riwa-gray-50);
+    border: 1px solid var(--riwa-gray-100);
+    border-radius: 0;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    text-align: left;
+}
+
+.riwa-booking-details h3 {
+    font-size: 16px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--riwa-gray-700);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.riwa-booking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.riwa-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--riwa-gray-100);
+}
+
+.riwa-info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.riwa-info-label {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--riwa-gray-600);
+}
+
+.riwa-info-value {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--riwa-black);
+}
+
+/* Bouton nouvelle réservation */
+.riwa-thank-you-actions {
+    margin-top: 2rem;
+}
+
+.riwa-new-booking-btn {
+    padding: 1rem 2rem !important;
+    border: 1px solid var(--riwa-black) !important;
+    border-radius: 0 !important;
+    background: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    min-width: 200px !important;
+}
+
+.riwa-new-booking-btn:hover {
+    background: var(--riwa-white) !important;
+    color: var(--riwa-black) !important;
+}
+
+/* Responsive pour la page de remerciement */
+@media (max-width: 768px) {
+    .riwa-thank-you {
+        padding: 1rem;
+    }
+    
+    .riwa-loading-animation {
+        padding: 3rem 1rem;
+    }
+    
+    .riwa-booking-details {
+        padding: 1.5rem;
+    }
+    
+    .riwa-thank-you-message {
+        font-size: 14px;
+        margin-bottom: 2rem;
+    }
+} 
+
+/* Footer dates - alignement parfait */
+.riwa-footer-dates {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 0 1.5rem 0;
+    gap: 2.5rem;
+}
+
+.calendar-legend span {
+    position: relative;
+    padding: 0 1.25rem;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+.calendar-legend span:first-child { padding-left: 0; }
+.calendar-legend span:last-child { padding-right: 0; }
+.calendar-legend span:not(:last-child)::after {
+    content: '•';
+    margin-left: 1.25rem;
+    color: var(--riwa-gray-300);
+    font-size: 16px;
+    font-weight: 400;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.riwa-selected-dates, .calendar-legend {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    color: #a7a7a7;
+    font-size: 13px;
+}
+
+.date-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 120px;
+}
+.date-group label {
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--riwa-gray-500);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+.date-group span {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--riwa-black);
+    background: none;
+    border: none;
+    padding: 0;
+    min-width: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+button.riwa-next-btn, button.riwa-prev-btn, button.riwa-submit-btn, button.riwa-new-booking-btn {
+    background-color: #fff !important;
+    color: #000 !important;
+    border-color: #000 !important;
+    padding: 1rem 2rem !important;
+    border-radius: 0 !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 120px !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+button.riwa-next-btn:hover, button.riwa-submit-btn:hover,button.riwa-new-booking-btn:hover, button.riwa-new-booking-btn:focus, button.riwa-submit-btn:focus,  button.riwa-prev-btn:hover, button.riwa-counter-btn:focus, button.riwa-counter-btn:hover {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #000 !important;
+}
+
+button.riwa-counter-btn {
+    border-color: #000 !important;
+    color: #000 !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18px !important;
+    font-weight: 300 !important;
+    transition: all 0.2s ease !important;
+}
+
+.flatpickr-current-month {
+    text-transform: capitalize!important;
+}
+
+.flatpickr-calendar.rangeMode.animate.multiMonth.inline {
+    width: 700px !important;
+}
+
+@media (max-width: 768px) {
+    /* Forcer l'affichage d'un seul mois sur mobile */
+    .flatpickr-calendar.rangeMode.animate.multiMonth.inline {
+        width: 100% !important;
+        max-width: 350px !important;
+    }
+    
+    /* Forcer l'affichage d'un seul mois */
+    .flatpickr-calendar .flatpickr-month:not(:first-child) {
+        display: none !important;
+    }
+    
+    /* S'assurer que le premier mois est visible */
+    .flatpickr-calendar .flatpickr-month:first-child {
+        display: block !important;
+    }
+    
+    /* Ajuster l'espacement des mois */
+    .flatpickr-months {
+        margin-bottom: 1rem !important;
+    }
+    
+    .flatpickr-month {
+        margin-bottom: 0.5rem !important;
+        margin-right: 0 !important;
+    }
+    
+    .riwa-footer-dates {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.25rem;
+    }
+    .calendar-legend {
+        justify-content: flex-start;
+        font-size: 12px;
+        gap: 0.5rem;
+    }
+    .calendar-legend span {
+        font-size: 12px;
+        padding: 0 0.75rem;
+    }
+    .calendar-legend span:not(:last-child)::after {
+        margin-left: 0.75rem;
+        font-size: 13px;
+    }
+    .riwa-selected-dates {
+        gap: 1.25rem;
+    }
+    .date-group {
+        min-width: 0;
+    }
+    .date-group span {
+        font-size: 14px;
+    }
+} 

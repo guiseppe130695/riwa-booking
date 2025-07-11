@@ -1,0 +1,337 @@
+/* Import de la police Roboto */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
+
+/* Variables - Design ultra-minimaliste pour l'admin */
+:root {
+    --riwa-black: #000000;
+    --riwa-white: #ffffff;
+    --riwa-gray-50: #fafafa;
+    --riwa-gray-100: #f5f5f5;
+    --riwa-gray-200: #e5e5e5;
+    --riwa-gray-300: #d4d4d4;
+    --riwa-gray-400: #a3a3a3;
+    --riwa-gray-500: #737373;
+    --riwa-gray-600: #525252;
+    --riwa-gray-700: #404040;
+    --riwa-gray-800: #262626;
+    --riwa-gray-900: #171717;
+    --riwa-border: #e5e5e5;
+    --riwa-shadow: rgba(0, 0, 0, 0.02);
+}
+
+/* Styles généraux pour l'admin */
+.riwa-admin-container {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--riwa-gray-900);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.riwa-admin-container h1 {
+    font-size: 32px;
+    font-weight: 200;
+    margin-bottom: 3rem;
+    color: var(--riwa-black);
+    letter-spacing: -1px;
+}
+
+/* Section de statistiques épurée */
+.riwa-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.stat-box {
+    background: var(--riwa-white);
+    border: none;
+    border-radius: 0;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.stat-box:hover {
+    background: var(--riwa-gray-50);
+}
+
+.stat-box h3 {
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 1rem 0;
+    color: var(--riwa-gray-500);
+}
+
+.stat-number {
+    font-size: 36px;
+    font-weight: 200;
+    color: var(--riwa-black);
+    display: block;
+    letter-spacing: -1px;
+}
+
+.stat-number.pending {
+    color: var(--riwa-gray-600);
+}
+
+.stat-number.confirmed {
+    color: var(--riwa-black);
+}
+
+.stat-number.cancelled {
+    color: var(--riwa-gray-500);
+}
+
+/* Section de débogage minimaliste */
+.riwa-debug-section {
+    background: var(--riwa-gray-50);
+    border: none;
+    border-radius: 0;
+    padding: 2rem;
+    margin-bottom: 3rem;
+}
+
+.riwa-debug-section h3 {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0 0 1.5rem 0;
+    color: var(--riwa-black);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.riwa-debug-section p {
+    margin: 0.75rem 0;
+    font-size: 14px;
+    color: var(--riwa-gray-700);
+    font-weight: 300;
+}
+
+.riwa-debug-section ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.riwa-debug-section li {
+    margin: 0.5rem 0;
+    font-size: 14px;
+    color: var(--riwa-gray-700);
+    font-weight: 300;
+}
+
+/* Tableau des réservations épuré */
+.wp-list-table {
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    background: var(--riwa-white);
+}
+
+.wp-list-table th {
+    background: var(--riwa-gray-50);
+    border-bottom: 1px solid var(--riwa-gray-200);
+    font-weight: 400;
+    color: var(--riwa-gray-700);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 1.5rem 1rem;
+}
+
+.wp-list-table td {
+    border-bottom: 1px solid var(--riwa-gray-100);
+    padding: 1.5rem 1rem;
+    vertical-align: middle;
+    font-weight: 300;
+}
+
+.wp-list-table tr:hover {
+    background: var(--riwa-gray-50);
+}
+
+/* Badges de statut minimalistes */
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0;
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-pending {
+    background: var(--riwa-gray-100);
+    color: var(--riwa-gray-700);
+}
+
+.status-confirmed {
+    background: var(--riwa-black);
+    color: var(--riwa-white);
+}
+
+.status-cancelled {
+    background: var(--riwa-gray-200);
+    color: var(--riwa-gray-600);
+}
+
+/* Affichage des prix épuré */
+.price-display {
+    font-weight: 400;
+    color: var(--riwa-black);
+    font-size: 16px;
+}
+
+/* Boutons et contrôles minimalistes */
+.riwa-admin-container select {
+    border: 1px solid var(--riwa-gray-300);
+    border-radius: 0;
+    padding: 0.75rem;
+    font-size: 13px;
+    background: var(--riwa-white);
+    color: var(--riwa-gray-700);
+    font-weight: 300;
+}
+
+.riwa-admin-container select:focus {
+    border-color: var(--riwa-black);
+    outline: none;
+    box-shadow: none;
+}
+
+.button {
+    border: 1px solid var(--riwa-gray-300);
+    border-radius: 0;
+    background: var(--riwa-white);
+    color: var(--riwa-gray-700);
+    padding: 0.75rem 1.5rem;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.button:hover {
+    background: var(--riwa-gray-100);
+    border-color: var(--riwa-gray-400);
+    color: var(--riwa-black);
+}
+
+.button.button-small {
+    padding: 0.5rem 1rem;
+    font-size: 11px;
+}
+
+/* Détails des réservations minimalistes */
+.booking-details-content {
+    background: var(--riwa-gray-50);
+    border: none;
+    border-radius: 0;
+    padding: 1.5rem;
+    margin: 0.75rem 0;
+}
+
+.booking-details-content h4 {
+    font-size: 13px;
+    font-weight: 400;
+    margin: 0 0 0.75rem 0;
+    color: var(--riwa-black);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.booking-details-content p {
+    margin: 0.75rem 0;
+    font-size: 13px;
+    color: var(--riwa-gray-700);
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+.booking-duration {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--riwa-gray-200);
+    font-size: 13px;
+    color: var(--riwa-gray-700);
+    font-weight: 300;
+}
+
+/* Liens épurés */
+.riwa-admin-container a {
+    color: var(--riwa-black);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-weight: 300;
+}
+
+.riwa-admin-container a:hover {
+    color: var(--riwa-gray-600);
+}
+
+/* Messages de notification minimalistes */
+.notice {
+    border: none;
+    border-radius: 0;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.notice-success {
+    background: var(--riwa-gray-50);
+    color: var(--riwa-black);
+}
+
+.notice-error {
+    background: var(--riwa-gray-50);
+    color: var(--riwa-gray-700);
+}
+
+/* Responsive minimaliste */
+@media (max-width: 768px) {
+    .riwa-admin-container {
+        padding: 1rem;
+    }
+    
+    .riwa-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .wp-list-table {
+        font-size: 12px;
+    }
+    
+    .wp-list-table th,
+    .wp-list-table td {
+        padding: 1rem 0.5rem;
+    }
+    
+    .stat-box {
+        padding: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 28px;
+    }
+}
+
+/* Animations subtiles */
+.booking-details {
+    transition: all 0.3s ease;
+}
+
+/* Focus visible pour l'accessibilité */
+.riwa-admin-container select:focus-visible,
+.button:focus-visible {
+    outline: 2px solid var(--riwa-black);
+    outline-offset: 2px;
+} 
+} 

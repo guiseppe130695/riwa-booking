@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Calendrier Riwa Booking</title>
+    
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 2rem;
+            background: #fafafa;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 0;
+        }
+        #test-calendar {
+            margin: 2rem 0;
+        }
+        .selected-dates {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Calendrier Riwa Booking</h1>
+        
+        <div id="test-calendar"></div>
+        
+        <div class="selected-dates">
+            <h3>Dates sélectionnées :</h3>
+            <p>Arrivée : <span id="test-checkin">Non sélectionnée</span></p>
+            <p>Départ : <span id="test-checkout">Non sélectionnée</span></p>
+        </div>
+    </div>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test du calendrier Flatpickr');
+            
+            if (typeof flatpickr === 'undefined') {
+                console.error('Flatpickr non disponible');
+                return;
+            }
+            
+            console.log('Flatpickr version:', flatpickr.version);
+            
+            const calendar = flatpickr("#test-calendar", {
+                locale: 'fr',
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                minDate: 'today',
+                inline: true,
+                showMonths: 2,
+                disableMobile: true,
+                onChange: function(selectedDates) {
+                    console.log('Dates sélectionnées:', selectedDates);
+                    if (selectedDates.length === 2) {
+                        const [checkIn, checkOut] = selectedDates;
+                        document.getElementById('test-checkin').textContent = checkIn.toLocaleDateString('fr-FR');
+                        document.getElementById('test-checkout').textContent = checkOut.toLocaleDateString('fr-FR');
+                    }
+                }
+            });
+            
+            console.log('Calendrier initialisé:', calendar);
+        });
+    </script>
+</body>
+</html> 
