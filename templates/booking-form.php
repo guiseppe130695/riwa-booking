@@ -261,6 +261,7 @@ if (!defined('ABSPATH')) {
                 </div>
             </div>
             <div class="riwa-thank-you-actions">
+                <button type="button" class="riwa-download-pdf-btn" id="riwa-download-pdf" style="margin-right: 1rem;">Télécharger la confirmation</button>
                 <button type="button" class="riwa-new-booking-btn" onclick="location.reload()">Nouvelle réservation</button>
             </div>
         </div>

@@ -8,173 +8,2070 @@ if (!defined('ABSPATH')) {
 global $wpdb;
 $table_name = $wpdb->prefix . 'riwa_bookings';
 
-// Gestion des actions (changer le statut)
-if (isset($_POST['action']) && isset($_POST['booking_id'])) {
-    $booking_id = intval($_POST['booking_id']);
-    $new_status = sanitize_text_field($_POST['new_status']);
+// Gestion des actions (changer le statut et supprimer)
+if (isset($_POST['action'])) {
+    $action = sanitize_text_field($_POST['action']);
     
-    if (in_array($new_status, array('pending', 'confirmed', 'cancelled'))) {
-        $wpdb->update(
+    if ($action === 'update_status' && isset($_POST['booking_id'])) {
+        $booking_id = intval($_POST['booking_id']);
+        $new_status = sanitize_text_field($_POST['new_status']);
+        
+        if (in_array($new_status, array('pending', 'confirmed', 'cancelled'))) {
+            $wpdb->update(
+                $table_name,
+                array('status' => $new_status),
+                array('id' => $booking_id),
+                array('%s'),
+                array('%d')
+            );
+            echo '<div class="notice notice-success"><p>Statut mis à jour avec succès!</p></div>';
+        }
+    }
+    
+    if ($action === 'delete_booking' && isset($_POST['booking_id']) && wp_verify_nonce($_POST['delete_nonce'], 'delete_booking_nonce')) {
+        $booking_id = intval($_POST['booking_id']);
+        
+        $result = $wpdb->delete(
             $table_name,
-            array('status' => $new_status),
             array('id' => $booking_id),
-            array('%s'),
             array('%d')
         );
-        echo '<div class="notice notice-success"><p>Statut mis à jour avec succès!</p></div>';
+        
+        if ($result) {
+            echo '<div class="notice notice-success"><p>Réservation supprimée avec succès!</p></div>';
+        } else {
+            echo '<div class="notice notice-error"><p>Erreur lors de la suppression de la réservation.</p></div>';
+        }
     }
 }
 
 // Récupération de toutes les réservations
 $bookings = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
+
+// Debug temporaire pour vérifier les données
+if (empty($bookings)) {
+    echo '<div class="notice notice-warning"><p>Aucune réservation trouvée dans la base de données.</p></div>';
+} else {
+    // Vérifier la structure de la première réservation
+    $first_booking = $bookings[0];
+    if (!isset($first_booking->guests_count)) {
+        echo '<div class="notice notice-error"><p>Attention : La colonne "guests_count" n\'existe pas dans la table des réservations.</p></div>';
+    }
+}
 ?>
 
-<div class="wrap riwa-admin-container">
-    <h1>Réservations Riwa</h1>
+<div class="wrap riwa-pdf-admin">
+    <div class="riwa-admin-header">
+        <div class="riwa-header-content">
+            <h1>Gestion des Réservations</h1>
+            <p class="riwa-subtitle">Consultez et gérez toutes vos réservations</p>
+        </div>
+        <div class="riwa-header-actions">
+            <button type="button" class="riwa-btn riwa-btn-secondary" id="export-bookings">
+                <span class="dashicons dashicons-download"></span>
+                Exporter
+            </button>
+            <button type="button" class="riwa-btn riwa-btn-primary" id="refresh-bookings">
+                <span class="dashicons dashicons-update"></span>
+                Actualiser
+            </button>
+        </div>
+    </div>
     
-    <div class="riwa-stats">
-        <div class="stat-box">
-            <h3>Total des réservations</h3>
-            <span class="stat-number"><?php echo count($bookings); ?></span>
+    <div class="riwa-pdf-admin-container">
+        <!-- Panneau de navigation -->
+        <div class="riwa-nav-panel">
+            <div class="riwa-nav-header">
+                <h3>Navigation</h3>
+            </div>
+            <nav class="riwa-nav-menu">
+                <a href="#overview" class="riwa-nav-item active" data-section="overview">
+                    <span class="dashicons dashicons-chart-bar"></span>
+                    Vue d'ensemble
+                </a>
+                <a href="#bookings" class="riwa-nav-item" data-section="bookings">
+                    <span class="dashicons dashicons-calendar-alt"></span>
+                    Réservations
+                </a>
+                <a href="#pricing" class="riwa-nav-item" data-section="pricing">
+                    <span class="dashicons dashicons-money-alt"></span>
+                    Tarification
+                </a>
+                <a href="#pdf" class="riwa-nav-item" data-section="pdf">
+                    <span class="dashicons dashicons-pdf"></span>
+                    Personnaliser PDF
+                </a>
+                <a href="#debug" class="riwa-nav-item" data-section="debug">
+                    <span class="dashicons dashicons-admin-tools"></span>
+                    Diagnostic
+                </a>
+            </nav>
         </div>
-        <div class="stat-box">
-            <h3>En attente</h3>
-            <span class="stat-number pending"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'pending'; })); ?></span>
-        </div>
-        <div class="stat-box">
-            <h3>Confirmées</h3>
-            <span class="stat-number confirmed"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'confirmed'; })); ?></span>
-        </div>
-        <div class="stat-box">
-            <h3>Annulées</h3>
-            <span class="stat-number cancelled"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'cancelled'; })); ?></span>
-        </div>
-    </div>
-
-    <!-- Section de débogage -->
-    <div class="riwa-debug-section" style="margin: 20px 0; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
-        <h3>Informations de débogage</h3>
-        <?php
-        // Récupérer les données de tarification
-        $pricing_table = $wpdb->prefix . 'riwa_pricing';
-        $pricing_data = $wpdb->get_results("SELECT * FROM $pricing_table WHERE is_active = 1 ORDER BY start_date ASC");
-        ?>
-        <p><strong>Données de tarification disponibles :</strong></p>
-        <?php if (empty($pricing_data)): ?>
-            <p style="color: #d63638;">Aucune donnée de tarification trouvée !</p>
-        <?php else: ?>
-            <ul>
-                <?php foreach ($pricing_data as $price): ?>
-                    <li>
-                        <strong><?php echo esc_html($price->season_name); ?></strong> : 
-                        <?php echo esc_html($price->price_per_night); ?> €/nuit 
-                        (du <?php echo esc_html(date('d/m/Y', strtotime($price->start_date))); ?> 
-                        au <?php echo esc_html(date('d/m/Y', strtotime($price->end_date))); ?>)
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
         
-        <p><strong>Mode debug WordPress :</strong> <?php echo WP_DEBUG ? 'Activé' : 'Désactivé'; ?></p>
-        <p><strong>Version du plugin :</strong> <?php echo RIWA_BOOKING_VERSION; ?></p>
-    </div>
+        <!-- Panneau de contenu -->
+        <div class="riwa-content-panel">
+            <!-- Section Vue d'ensemble -->
+            <div class="riwa-section active" id="overview-section">
+                <div class="riwa-section-header">
+                    <h2>Statistiques des réservations</h2>
+                    <p>Vue d'ensemble de vos réservations</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-form-grid">
+                        <div class="riwa-form-group">
+                            <h3>Total des réservations</h3>
+                            <span class="stat-number"><?php echo count($bookings); ?></span>
+                        </div>
+                        <div class="riwa-form-group">
+                            <h3>En attente</h3>
+                            <span class="stat-number pending"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'pending'; })); ?></span>
+                        </div>
+                        <div class="riwa-form-group">
+                            <h3>Confirmées</h3>
+                            <span class="stat-number confirmed"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'confirmed'; })); ?></span>
+                        </div>
+                        <div class="riwa-form-group">
+                            <h3>Annulées</h3>
+                            <span class="stat-number cancelled"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'cancelled'; })); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <table class="wp-list-table widefat fixed striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Client</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Arrivée</th>
-                <th>Départ</th>
-                <th>Invités</th>
-                <th>Prix</th>
-                <th>Statut</th>
-                <th>Date de réservation</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($bookings)): ?>
-                <tr>
-                    <td colspan="10">Aucune réservation trouvée.</td>
-                </tr>
-            <?php else: ?>
-                <?php foreach ($bookings as $booking): ?>
-                    <tr>
-                        <td><?php echo esc_html($booking->id); ?></td>
-                        <td><strong><?php echo esc_html($booking->guest_name); ?></strong></td>
-                        <td><a href="mailto:<?php echo esc_attr($booking->guest_email); ?>"><?php echo esc_html($booking->guest_email); ?></a></td>
-                        <td><a href="tel:<?php echo esc_attr($booking->guest_phone); ?>"><?php echo esc_html($booking->guest_phone); ?></a></td>
-                        <td><?php echo esc_html(date('d/m/Y', strtotime($booking->check_in_date))); ?></td>
-                        <td><?php echo esc_html(date('d/m/Y', strtotime($booking->check_out_date))); ?></td>
-                        <td><?php echo esc_html($booking->guests_count); ?></td>
-                        <td>
-                            <?php if ($booking->total_price > 0): ?>
-                                <span class="price-display">
-                                    <?php echo number_format($booking->total_price, 2, ',', ' '); ?> €
-                                </span>
-                                <br>
-                                <small style="color: #666;">
-                                    (<?php echo number_format($booking->price_per_night, 2, ',', ' '); ?> €/nuit)
-                                </small>
-                            <?php else: ?>
-                                <span style="color: #999;">Non calculé</span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <span class="status-badge status-<?php echo esc_attr($booking->status); ?>">
-                                <?php 
-                                switch($booking->status) {
-                                    case 'pending': echo 'En attente'; break;
-                                    case 'confirmed': echo 'Confirmée'; break;
-                                    case 'cancelled': echo 'Annulée'; break;
-                                    default: echo ucfirst($booking->status);
-                                }
-                                ?>
-                            </span>
-                        </td>
-                        <td><?php echo esc_html(date('d/m/Y H:i', strtotime($booking->created_at))); ?></td>
-                        <td>
-                            <form method="post" style="display: inline;">
-                                <input type="hidden" name="action" value="update_status">
-                                <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
-                                <select name="new_status" onchange="this.form.submit()">
-                                    <option value="">Changer statut</option>
-                                    <option value="pending" <?php selected($booking->status, 'pending'); ?>>En attente</option>
-                                    <option value="confirmed" <?php selected($booking->status, 'confirmed'); ?>>Confirmée</option>
-                                    <option value="cancelled" <?php selected($booking->status, 'cancelled'); ?>>Annulée</option>
-                                </select>
-                            </form>
-                            
-                            <button type="button" class="button button-small view-details" data-booking-id="<?php echo esc_attr($booking->id); ?>">
-                                Détails
-                            </button>
-                        </td>
-                    </tr>
-                    
-                    <!-- Ligne des détails (cachée par défaut) -->
-                    <tr class="booking-details" id="details-<?php echo esc_attr($booking->id); ?>" style="display: none;">
-                        <td colspan="10">
-                            <div class="booking-details-content">
-                                <h4>Demandes spéciales :</h4>
-                                <p><?php echo empty($booking->special_requests) ? 'Aucune demande spéciale' : esc_html($booking->special_requests); ?></p>
+            <!-- Section Réservations -->
+            <div class="riwa-section" id="bookings-section">
+                <div class="riwa-section-header">
+                    <h2>Liste des réservations</h2>
+                    <p>Gérez toutes vos réservations</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-preview-container">
+                        <?php if (empty($bookings)): ?>
+                            <div class="riwa-empty-state">
+                                <span class="dashicons dashicons-calendar-alt"></span>
+                                <h3>Aucune réservation</h3>
+                                <p>Aucune réservation n'a été trouvée dans le système.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="riwa-bookings-table">
+                                <div class="riwa-table-header">
+                                    <div class="riwa-table-info">
+                                        <span class="riwa-table-count"><?php echo count($bookings); ?> réservation<?php echo count($bookings) > 1 ? 's' : ''; ?></span>
+                                    </div>
+                                    <div class="riwa-table-actions">
+                                        <button type="button" class="riwa-btn riwa-btn-secondary button-small" id="filter-bookings">
+                                            <span class="dashicons dashicons-filter"></span>
+                                            Filtrer
+                                        </button>
+                                    </div>
+                                </div>
                                 
-                                <div class="booking-duration">
-                                    <strong>Durée du séjour :</strong> 
-                                    <?php 
-                                    $checkin = new DateTime($booking->check_in_date);
-                                    $checkout = new DateTime($booking->check_out_date);
-                                    $interval = $checkin->diff($checkout);
-                                    echo $interval->days . ' nuit' . ($interval->days > 1 ? 's' : '');
-                                    ?>
+                                <div class="riwa-table-wrapper">
+                                    <table class="riwa-modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="riwa-th-id">ID</th>
+                                                <th class="riwa-th-reference">Référence</th>
+                                                <th class="riwa-th-client">Client & Contact</th>
+                                                <th class="riwa-th-price">Prix</th>
+                                                <th class="riwa-th-status">Statut</th>
+                                                <th class="riwa-th-date">Créée le</th>
+                                                <th class="riwa-th-actions">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($bookings as $booking): ?>
+                                                <tr class="riwa-booking-row">
+                                                    <td class="riwa-td-id">
+                                                        <span class="riwa-booking-id">#<?php echo esc_html($booking->id); ?></span>
+                                                    </td>
+                                                    <td class="riwa-td-reference">
+                                                        <span class="riwa-booking-reference">RIWA-<?php echo str_pad($booking->id, 6, '0', STR_PAD_LEFT); ?></span>
+                                                    </td>
+                                                    <td class="riwa-td-client">
+                                                        <div class="riwa-client-info">
+                                                            <div class="riwa-client-name"><?php echo esc_html($booking->guest_name); ?></div>
+                                                            <div class="riwa-client-contact">
+                                                                <a href="mailto:<?php echo esc_attr($booking->guest_email); ?>"><?php echo esc_html($booking->guest_email); ?></a>
+                                                                <span class="riwa-contact-separator">•</span>
+                                                                <a href="tel:<?php echo esc_attr($booking->guest_phone); ?>"><?php echo esc_html($booking->guest_phone); ?></a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="riwa-td-price">
+                                                        <?php if ($booking->total_price > 0): ?>
+                                                            <span class="riwa-price-total"><?php echo number_format($booking->total_price, 0, ',', ' '); ?> €</span>
+                                                        <?php else: ?>
+                                                            <span class="riwa-price-unknown">
+                                                                <span class="dashicons dashicons-minus"></span>
+                                                                Non calculé
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="riwa-td-status">
+                                                        <span class="riwa-status-badge riwa-status-<?php echo esc_attr($booking->status); ?>">
+                                                            <?php 
+                                                            switch($booking->status) {
+                                                                case 'pending': echo 'En attente'; break;
+                                                                case 'confirmed': echo 'Confirmée'; break;
+                                                                case 'cancelled': echo 'Annulée'; break;
+                                                                default: echo ucfirst($booking->status);
+                                                            }
+                                                            ?>
+                                                        </span>
+                                                    </td>
+                                                    <td class="riwa-td-date">
+                                                        <span class="riwa-date-created"><?php echo date('d/m/Y', strtotime($booking->created_at)); ?></span>
+                                                    </td>
+                                                    <td class="riwa-td-actions">
+                                                        <div class="riwa-actions-compact">
+                                                            <select name="new_status" onchange="updateBookingStatus(<?php echo esc_attr($booking->id); ?>, this.value)" class="riwa-status-select-compact">
+                                                                <option value="">Statut</option>
+                                                                <option value="pending" <?php selected($booking->status, 'pending'); ?>>En attente</option>
+                                                                <option value="confirmed" <?php selected($booking->status, 'confirmed'); ?>>Confirmée</option>
+                                                                <option value="cancelled" <?php selected($booking->status, 'cancelled'); ?>>Annulée</option>
+                                                            </select>
+                                                            
+                                                            <button type="button" class="riwa-btn riwa-btn-secondary button-small view-details-popup" 
+                                                                    data-booking-id="<?php echo esc_attr($booking->id); ?>"
+                                                                    data-booking-name="<?php echo esc_attr($booking->guest_name); ?>"
+                                                                    data-booking-email="<?php echo esc_attr($booking->guest_email); ?>"
+                                                                    data-booking-phone="<?php echo esc_attr($booking->guest_phone); ?>"
+                                                                    data-booking-checkin="<?php echo esc_attr($booking->check_in_date); ?>"
+                                                                    data-booking-checkout="<?php echo esc_attr($booking->check_out_date); ?>"
+                                                                    data-booking-guests="<?php echo esc_attr($booking->guests_count); ?>"
+                                                                    data-booking-adults="<?php echo esc_attr($booking->adults_count ?? 0); ?>"
+                                                                    data-booking-children="<?php echo esc_attr($booking->children_count ?? 0); ?>"
+                                                                    data-booking-babies="<?php echo esc_attr($booking->babies_count ?? 0); ?>"
+                                                                    data-booking-pets="<?php echo esc_attr($booking->pets_count ?? 0); ?>"
+                                                                    data-booking-price="<?php echo esc_attr($booking->total_price); ?>"
+                                                                    data-booking-price-per-night="<?php echo esc_attr($booking->price_per_night); ?>"
+                                                                    data-booking-status="<?php echo esc_attr($booking->status); ?>"
+                                                                    data-booking-created="<?php echo esc_attr($booking->created_at); ?>"
+                                                                    data-booking-requests="<?php echo esc_attr($booking->special_requests); ?>">
+                                                                Détails
+                                                            </button>
+                                                            
+                                                            <button type="button" class="riwa-btn riwa-btn-danger button-small delete-booking-btn" 
+                                                                    data-booking-id="<?php echo esc_attr($booking->id); ?>"
+                                                                    data-booking-name="<?php echo esc_attr($booking->guest_name); ?>">
+                                                                <span class="dashicons dashicons-trash"></span>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                
+
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div> 
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Tarification -->
+            <div class="riwa-section" id="pricing-section">
+                <div class="riwa-section-header">
+                    <h2>Gestion de la tarification</h2>
+                    <p>Configurez vos tarifs par saison</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-preview-container">
+                        <div class="riwa-pricing-header">
+                            <h3>Tarifs actuels</h3>
+                            <button type="button" class="riwa-btn riwa-btn-primary" id="add-pricing-btn">
+                                <span class="dashicons dashicons-plus-alt"></span>
+                                Ajouter un tarif
+                            </button>
+                        </div>
+                        
+                        <?php
+                        // Récupérer les données de tarification
+                        $pricing_table = $wpdb->prefix . 'riwa_pricing';
+                        $pricing_data = $wpdb->get_results("SELECT * FROM $pricing_table ORDER BY start_date ASC");
+                        ?>
+                        
+                        <?php if (empty($pricing_data)): ?>
+                            <div class="riwa-empty-state">
+                                <span class="dashicons dashicons-money-alt"></span>
+                                <h3>Aucun tarif configuré</h3>
+                                <p>Commencez par ajouter vos premiers tarifs saisonniers.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="riwa-pricing-grid">
+                                <?php foreach ($pricing_data as $price): ?>
+                                    <div class="riwa-pricing-card">
+                                        <div class="riwa-pricing-header">
+                                            <h4><?php echo esc_html($price->season_name); ?></h4>
+                                            <span class="riwa-pricing-status <?php echo $price->is_active ? 'active' : 'inactive'; ?>">
+                                                <?php echo $price->is_active ? 'Actif' : 'Inactif'; ?>
+                                            </span>
+                                        </div>
+                                        <div class="riwa-pricing-details">
+                                            <div class="riwa-pricing-price">
+                                                <span class="price-amount"><?php echo esc_html($price->price_per_night); ?> €</span>
+                                                <span class="price-unit">/nuit</span>
+                                            </div>
+                                            <div class="riwa-pricing-dates">
+                                                <span class="date-start"><?php echo date('d/m/Y', strtotime($price->start_date)); ?></span>
+                                                <span class="date-separator">→</span>
+                                                <span class="date-end"><?php echo date('d/m/Y', strtotime($price->end_date)); ?></span>
+                                            </div>
+                                        </div>
+                                        <div class="riwa-pricing-actions">
+                                            <button type="button" class="riwa-btn riwa-btn-secondary button-small edit-pricing-btn" 
+                                                    data-price-id="<?php echo esc_attr($price->id); ?>">
+                                                Modifier
+                                            </button>
+                                            <button type="button" class="riwa-btn riwa-btn-danger button-small delete-pricing-btn"
+                                                    data-price-id="<?php echo esc_attr($price->id); ?>"
+                                                    data-price-name="<?php echo esc_attr($price->season_name); ?>">
+                                                <span class="dashicons dashicons-trash"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Personnaliser PDF -->
+            <div class="riwa-section" id="pdf-section">
+                <div class="riwa-section-header">
+                    <h2>Personnalisation du PDF</h2>
+                    <p>Configurez l'apparence de vos documents PDF</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-preview-container">
+                        <div class="riwa-pdf-settings">
+                            <div class="riwa-setting-group">
+                                <h3>En-tête du document</h3>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="pdf-title">Titre du document</label>
+                                        <input type="text" id="pdf-title" name="pdf_title" value="Confirmation de réservation" class="riwa-input">
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="pdf-subtitle">Sous-titre</label>
+                                        <input type="text" id="pdf-subtitle" name="pdf_subtitle" value="Merci pour votre réservation" class="riwa-input">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-group">
+                                <h3>Informations de contact</h3>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="pdf-company">Nom de l'établissement</label>
+                                        <input type="text" id="pdf-company" name="pdf_company" value="Votre établissement" class="riwa-input">
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="pdf-address">Adresse</label>
+                                        <textarea id="pdf-address" name="pdf_address" class="riwa-textarea" rows="3">123 Rue de la Paix&#10;75001 Paris, France</textarea>
+                                    </div>
+                                </div>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="pdf-phone">Téléphone</label>
+                                        <input type="text" id="pdf-phone" name="pdf_phone" value="+33 1 23 45 67 89" class="riwa-input">
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="pdf-email">Email</label>
+                                        <input type="email" id="pdf-email" name="pdf_email" value="contact@votre-etablissement.fr" class="riwa-input">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-group">
+                                <h3>Pied de page</h3>
+                                <div class="riwa-form-group">
+                                    <label for="pdf-footer">Texte du pied de page</label>
+                                    <textarea id="pdf-footer" name="pdf_footer" class="riwa-textarea" rows="2">Merci de votre confiance. Pour toute question, n'hésitez pas à nous contacter.</textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-actions">
+                                <button type="button" class="riwa-btn riwa-btn-primary" id="save-pdf-settings">
+                                    <span class="dashicons dashicons-saved"></span>
+                                    Enregistrer les paramètres
+                                </button>
+                                <button type="button" class="riwa-btn riwa-btn-secondary" id="preview-pdf">
+                                    <span class="dashicons dashicons-visibility"></span>
+                                    Aperçu PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Diagnostic -->
+            <div class="riwa-section" id="debug-section">
+                <div class="riwa-section-header">
+                    <h2>Informations de diagnostic</h2>
+                    <p>Informations techniques et de débogage</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-preview-container">
+                        <h3>Données de tarification</h3>
+                        <?php
+                        // Récupérer les données de tarification
+                        $pricing_table = $wpdb->prefix . 'riwa_pricing';
+                        $pricing_data = $wpdb->get_results("SELECT * FROM $pricing_table WHERE is_active = 1 ORDER BY start_date ASC");
+                        ?>
+                        <p><strong>Données de tarification disponibles :</strong></p>
+                        <?php if (empty($pricing_data)): ?>
+                            <p style="color: #d63638;">Aucune donnée de tarification trouvée !</p>
+                        <?php else: ?>
+                            <ul>
+                                <?php foreach ($pricing_data as $price): ?>
+                                    <li>
+                                        <strong><?php echo esc_html($price->season_name); ?></strong> : 
+                                        <?php echo esc_html($price->price_per_night); ?> €/nuit 
+                                        (du <?php echo esc_html(date('d/m/Y', strtotime($price->start_date))); ?> 
+                                        au <?php echo esc_html(date('d/m/Y', strtotime($price->end_date))); ?>)
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                        
+                        <h3>Informations système</h3>
+                        <p><strong>Mode debug WordPress :</strong> <?php echo WP_DEBUG ? 'Activé' : 'Désactivé'; ?></p>
+                        <p><strong>Version du plugin :</strong> <?php echo RIWA_BOOKING_VERSION; ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Popup des détails de réservation -->
+<div id="riwa-details-popup" class="riwa-popup-overlay">
+    <div class="riwa-popup-container">
+        <div class="riwa-popup-header">
+            <h3>Détails de la réservation</h3>
+            <button type="button" class="riwa-popup-close" id="riwa-popup-close">
+                <span class="dashicons dashicons-no-alt"></span>
+            </button>
+        </div>
+        <div class="riwa-popup-content">
+            <div class="riwa-popup-section">
+                <h4>Informations de réservation</h4>
+                <div class="riwa-popup-grid">
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Référence</span>
+                        <span class="riwa-popup-value" id="popup-reference"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">ID</span>
+                        <span class="riwa-popup-value" id="popup-booking-id"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="riwa-popup-section">
+                <h4>Informations client</h4>
+                <div class="riwa-popup-grid">
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Nom</span>
+                        <span class="riwa-popup-value" id="popup-client-name"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Email</span>
+                        <span class="riwa-popup-value" id="popup-client-email"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Téléphone</span>
+                        <span class="riwa-popup-value" id="popup-client-phone"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="riwa-popup-section">
+                <h4>Détails du séjour</h4>
+                <div class="riwa-popup-grid">
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Date d'arrivée</span>
+                        <span class="riwa-popup-value" id="popup-checkin"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Date de départ</span>
+                        <span class="riwa-popup-value" id="popup-checkout"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Durée</span>
+                        <span class="riwa-popup-value" id="popup-duration"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="riwa-popup-section">
+                <h4>Composition des voyageurs</h4>
+                <div class="riwa-popup-travelers" id="popup-travelers">
+                    <!-- Le contenu sera rempli par JavaScript -->
+                </div>
+            </div>
+            
+            <div class="riwa-popup-section">
+                <h4>Informations tarifaires</h4>
+                <div class="riwa-popup-grid">
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Prix total</span>
+                        <span class="riwa-popup-value" id="popup-total-price"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Prix par nuit</span>
+                        <span class="riwa-popup-value" id="popup-price-per-night"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Statut</span>
+                        <span class="riwa-popup-value" id="popup-status"></span>
+                    </div>
+                    <div class="riwa-popup-item">
+                        <span class="riwa-popup-label">Date de création</span>
+                        <span class="riwa-popup-value" id="popup-created"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="riwa-popup-section">
+                <h4>Demandes spéciales</h4>
+                <div class="riwa-popup-requests" id="popup-requests">
+                    <!-- Le contenu sera rempli par JavaScript -->
+                </div>
+            </div>
+        </div>
+        <div class="riwa-popup-footer">
+            <button type="button" class="riwa-btn riwa-btn-secondary" id="riwa-popup-close-btn">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Design moderne et minimaliste - Copié exactement du panel PDF */
+.riwa-pdf-admin {
+    background: #f8f9fa;
+    min-height: 100vh;
+    margin: -20px -20px 0 -20px;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* En-tête principal */
+.riwa-admin-header {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e1e5e9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.riwa-header-content h1 {
+    margin: 0 0 0.25rem 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-subtitle {
+    margin: 0;
+    color: #646970;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.riwa-header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Container principal */
+.riwa-pdf-admin-container {
+    display: flex;
+    height: calc(100vh - 100px);
+}
+
+/* Panneau de navigation */
+.riwa-nav-panel {
+    width: 225px;
+    background: white;
+    border-right: 1px solid #e1e5e9;
+    display: flex;
+    flex-direction: column;
+}
+
+.riwa-nav-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.riwa-nav-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-nav-menu {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.riwa-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    color: #646970;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.riwa-nav-item:hover {
+    background: #f6f7f7;
+    color: #1d2327;
+    border-left-color: #2271b1;
+}
+
+.riwa-nav-item.active {
+    background: #f0f6fc;
+    color: #2271b1;
+    border-left-color: #2271b1;
+}
+
+.riwa-nav-item .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Panneau de contenu */
+.riwa-content-panel {
+    flex: 1;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.riwa-section {
+    display: none;
+    padding: 2rem;
+}
+
+.riwa-section.active {
+    display: block !important;
+}
+
+.riwa-section-header {
+    margin-bottom: 2rem;
+}
+
+.riwa-section-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-section-header p {
+    margin: 0;
+    color: #646970;
+    font-size: 14px;
+}
+
+.riwa-section-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Grille de formulaire - Utilisé pour les statistiques */
+.riwa-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.riwa-form-group {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.riwa-form-group:hover {
+    background: #f0f0f1;
+}
+
+.riwa-form-group h3 {
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 1rem 0;
+    color: #646970;
+}
+
+.stat-number {
+    font-size: 36px;
+    font-weight: 200;
+    color: #1d2327;
+    display: block;
+    letter-spacing: -1px;
+}
+
+.stat-number.pending {
+    color: #996800;
+}
+
+.stat-number.confirmed {
+    color: #008a20;
+}
+
+.stat-number.cancelled {
+    color: #d63638;
+}
+
+/* Aperçu - Utilisé pour le contenu des sections */
+.riwa-preview-container {
+    padding: 2rem;
+}
+
+.riwa-preview-container h3 {
+    margin: 0 0 1rem 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-preview-container p {
+    margin: 0 0 0.5rem 0;
+    color: #646970;
+}
+
+.riwa-preview-container ul {
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.riwa-preview-container li {
+    margin-bottom: 0.25rem;
+    color: #646970;
+}
+
+/* Tableau moderne et minimaliste */
+.riwa-bookings-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.riwa-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f0f1;
+    background: #f8f9fa;
+}
+
+.riwa-table-count {
+    font-size: 14px;
+    font-weight: 500;
+    color: #646970;
+}
+
+.riwa-table-wrapper {
+    overflow-x: auto;
+}
+
+.riwa-modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.riwa-modern-table th {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e1e5e9;
+    white-space: nowrap;
+}
+
+.riwa-modern-table td {
+    padding: 1rem 1rem;
+    border-bottom: 1px solid #f0f0f1;
+    vertical-align: middle;
+    line-height: 1.4;
+}
+
+.riwa-booking-row:hover {
+    background: #f8f9fa;
+}
+
+/* Container de prévisualisation */
+.riwa-preview-container {
+    padding: 0rem !important;
+}
+
+/* Colonnes spécifiques */
+.riwa-th-id, .riwa-td-id {
+    width: 60px;
+    display: none; /* Masquer la colonne ID */
+}
+
+.riwa-th-reference, .riwa-td-reference {
+    width: 120px;
+}
+
+.riwa-th-client, .riwa-td-client {
+    width: 280px;
+}
+
+.riwa-th-price, .riwa-td-price {
+    width: 120px;
+}
+
+.riwa-th-status, .riwa-td-status {
+    width: 80px;
+}
+
+.riwa-th-date, .riwa-td-date {
+    width: 120px;
+}
+
+.riwa-th-actions, .riwa-td-actions {
+    width: 180px;
+}
+
+/* Contenu des cellules */
+.riwa-booking-id {
+    font-size: 12px;
+    font-weight: 600;
+    color: #646970;
+    background: #f0f0f1;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.riwa-booking-reference {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2271b1;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+.riwa-client-name {
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 14px;
+    margin-bottom: 0.25rem;
+}
+
+.riwa-client-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 12px;
+}
+
+.riwa-client-contact a {
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.riwa-client-contact a:hover {
+    text-decoration: underline;
+}
+
+.riwa-contact-separator {
+    color: #646970;
+    font-size: 10px;
+}
+
+.riwa-contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.riwa-contact-email a,
+.riwa-contact-phone a {
+    color: #2271b1;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.riwa-contact-email a:hover,
+.riwa-contact-phone a:hover {
+    text-decoration: underline;
+}
+
+.riwa-dates-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.riwa-dates-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.riwa-date-checkin,
+.riwa-date-checkout {
+    font-weight: 500;
+}
+
+.riwa-date-arrow {
+    color: #646970;
+    font-size: 12px;
+}
+
+.riwa-date-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.riwa-date-label {
+    font-size: 11px;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.riwa-date-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1d2327;
+}
+
+.riwa-guests-count {
+    font-size: 13px;
+    color: #1d2327;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.riwa-guests-count .dashicons {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    color: #8c8f94;
+}
+
+.riwa-price-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.riwa-price-total {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-price-per-night {
+    font-size: 11px;
+    color: #646970;
+}
+
+.riwa-price-unknown {
+    font-size: 12px;
+    color: #646970;
+    font-style: normal;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.riwa-price-unknown .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #8c8f94;
+}
+
+.riwa-date-created {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.riwa-date-day {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1d2327;
+}
+
+.riwa-date-time {
+    font-size: 11px;
+    color: #646970;
+}
+
+.riwa-actions-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.riwa-actions-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.riwa-status-select-compact {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 11px;
+    background: white;
+    color: #1d2327;
+    min-width: 80px;
+}
+
+.riwa-status-form {
+    margin: 0;
+}
+
+.riwa-status-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+    color: #1d2327;
+    min-width: 100px;
+}
+
+.riwa-delete-form {
+    margin: 0;
+}
+
+.riwa-status-form {
+    margin: 0;
+}
+
+.riwa-status-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+    color: #1d2327;
+}
+
+.riwa-status-select:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Badges de statut modernisés */
+.riwa-status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    text-align: center;
+    min-width: 70px;
+}
+
+.riwa-status-pending {
+    background: #fcf9e8;
+    color: #996800;
+}
+
+.riwa-status-confirmed {
+    background: #edfaef;
+    color: #008a20;
+}
+
+.riwa-status-cancelled {
+    background: #fcf0f1;
+    color: #d63638;
+}
+
+/* Badges de statut pour le popup */
+.riwa-status-badge.riwa-status-pending {
+    background: #fcf9e8;
+    color: #996800;
+}
+
+.riwa-status-badge.riwa-status-confirmed {
+    background: #edfaef;
+    color: #008a20;
+}
+
+.riwa-status-badge.riwa-status-cancelled {
+    background: #fcf0f1;
+    color: #d63638;
+}
+
+/* Détails des réservations */
+.riwa-booking-details {
+    background: #f8f9fa;
+}
+
+.riwa-booking-details td {
+    padding: 0;
+    border: none;
+}
+
+.riwa-details-content {
+    padding: 1.5rem 2rem;
+}
+
+.riwa-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.riwa-details-section h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.riwa-details-section p {
+    margin: 0;
+    font-size: 14px;
+    color: #646970;
+    line-height: 1.5;
+}
+
+.riwa-stay-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.riwa-stay-duration,
+.riwa-stay-nights {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.riwa-stay-duration:last-child,
+.riwa-stay-nights:last-child {
+    border-bottom: none;
+}
+
+.riwa-stay-label {
+    font-size: 13px;
+    color: #646970;
+}
+
+.riwa-stay-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* État vide */
+.riwa-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #646970;
+}
+
+.riwa-empty-state .dashicons {
+    font-size: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.riwa-empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.riwa-empty-state p {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 14px;
+}
+
+
+
+/* Boutons */
+.riwa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    background: white;
+    color: #1d2327;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.riwa-btn:hover {
+    background: #f6f7f7;
+    border-color: #8c8f94;
+}
+
+.riwa-btn-primary {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: white;
+}
+
+.riwa-btn-primary:hover {
+    background: #135e96;
+    border-color: #135e96;
+}
+
+.riwa-btn-secondary {
+    background: #f6f7f7;
+    border-color: #dcdcde;
+}
+
+.riwa-btn-secondary:hover {
+    background: #f0f0f1;
+    border-color: #8c8f94;
+}
+
+.riwa-btn-danger {
+    background: #fcf0f1;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.riwa-btn-danger:hover {
+    background: #d63638;
+    color: white;
+}
+
+.riwa-btn.button-small {
+    padding: 0.5rem 1rem;
+    font-size: 12px;
+}
+
+/* Popup des détails */
+.riwa-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    backdrop-filter: blur(4px);
+}
+
+.riwa-popup-overlay.show {
+    display: flex;
+    animation: riwa-fadeIn 0.3s ease;
+}
+
+.riwa-popup-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: riwa-slideIn 0.3s ease;
+}
+
+.riwa-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f0f1;
+    background: #f8f9fa;
+}
+
+.riwa-popup-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-popup-close {
+    background: none;
+    border: none;
+    color: #646970;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.riwa-popup-close:hover {
+    background: #f0f0f1;
+    color: #1d2327;
+}
+
+.riwa-popup-close .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.riwa-popup-content {
+    padding: 2rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.riwa-popup-section {
+    margin-bottom: 2rem;
+}
+
+.riwa-popup-section:last-child {
+    margin-bottom: 0;
+}
+
+.riwa-popup-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f0f0f1;
+    padding-bottom: 0.5rem;
+}
+
+.riwa-popup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.riwa-popup-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.riwa-popup-label {
+    font-size: 12px;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.riwa-popup-value {
+    font-size: 14px;
+    color: #1d2327;
+    font-weight: 500;
+}
+
+.riwa-popup-requests {
+    background: #f8f9fa;
+    border: 1px solid #f0f0f1;
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 14px;
+    color: #646970;
+    line-height: 1.5;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.riwa-popup-travelers {
+    background: #f8f9fa;
+    border: 1px solid #f0f0f1;
+    border-radius: 6px;
+    padding: 1rem;
+    min-height: 60px;
+}
+
+.riwa-traveler-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.riwa-traveler-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.riwa-traveler-type {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #1d2327;
+}
+
+.riwa-traveler-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #2271b1;
+}
+
+.riwa-traveler-count {
+    font-weight: 600;
+    color: #2271b1;
+    background: #f0f6fc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.riwa-popup-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #f0f0f1;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Animations */
+@keyframes riwa-fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes riwa-slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Empêcher le défilement quand le popup est ouvert */
+body.riwa-popup-open {
+    overflow: hidden;
+}
+
+/* Responsive pour le popup */
+@media (max-width: 768px) {
+    .riwa-popup-container {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .riwa-popup-header,
+    .riwa-popup-content,
+    .riwa-popup-footer {
+        padding: 1rem;
+    }
+    
+    .riwa-popup-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
+/* Styles pour la section Tarification */
+.riwa-pricing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.riwa-pricing-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.riwa-pricing-card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.riwa-pricing-card:hover {
+    border-color: #2271b1;
+    box-shadow: 0 2px 8px rgba(34, 113, 177, 0.1);
+}
+
+.riwa-pricing-card .riwa-pricing-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.riwa-pricing-card .riwa-pricing-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-pricing-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.riwa-pricing-status.active {
+    background: #edfaef;
+    color: #008a20;
+}
+
+.riwa-pricing-status.inactive {
+    background: #fcf0f1;
+    color: #d63638;
+}
+
+.riwa-pricing-details {
+    margin-bottom: 1.5rem;
+}
+
+.riwa-pricing-price {
+    margin-bottom: 1rem;
+}
+
+.price-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1d2327;
+}
+
+.price-unit {
+    font-size: 14px;
+    color: #646970;
+    font-weight: 400;
+}
+
+.riwa-pricing-dates {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    color: #646970;
+}
+
+.date-separator {
+    color: #8c8f94;
+}
+
+.riwa-pricing-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Styles pour la section PDF */
+.riwa-pdf-settings {
+    max-width: 800px;
+}
+
+.riwa-setting-group {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.riwa-setting-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.riwa-setting-group h3 {
+    margin: 0 0 1rem 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.riwa-form-row:last-child {
+    margin-bottom: 0;
+}
+
+.riwa-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.riwa-form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d2327;
+}
+
+.riwa-input,
+.riwa-textarea {
+    padding: 0.75rem;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #1d2327;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.riwa-input:focus,
+.riwa-textarea:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.riwa-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.riwa-setting-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #f0f0f1;
+}
+
+/* Responsive pour les nouvelles sections */
+@media (max-width: 768px) {
+    .riwa-pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .riwa-form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .riwa-setting-actions {
+        flex-direction: column;
+    }
+}
+
+/* Sélecteur */
+.riwa-select {
+    padding: 0.5rem;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+}
+
+/* Affichage des prix */
+.price-display {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .riwa-pdf-admin-container {
+        flex-direction: column;
+    }
+    
+    .riwa-nav-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e1e5e9;
+    }
+    
+    .riwa-nav-menu {
+        display: flex;
+        overflow-x: auto;
+        padding: 1rem;
+    }
+    
+    .riwa-nav-item {
+        flex-shrink: 0;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: 0.75rem 1rem;
+    }
+    
+    .riwa-nav-item.active {
+        border-bottom-color: #2271b1;
+    }
+}
+
+@media (max-width: 768px) {
+    .riwa-admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .riwa-header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .riwa-form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .riwa-section {
+        padding: 1rem;
+    }
+    
+    .riwa-preview-container {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+}
+</style>
+
+<script>
+jQuery(document).ready(function($) {
+    // Navigation entre les panneaux
+    $('.riwa-nav-item').on('click', function(e) {
+        e.preventDefault();
+        
+        var targetSection = $(this).data('section');
+                    // Navigation vers la section
+        
+        // Mettre à jour la navigation active
+        $('.riwa-nav-item').removeClass('active');
+        $(this).addClass('active');
+        
+        // Masquer toutes les sections
+        $('.riwa-section').removeClass('active').hide();
+        
+        // Afficher la section correspondante
+        var targetElement = $('#' + targetSection + '-section');
+                    // Élément cible trouvé
+        
+        if (targetElement.length > 0) {
+            targetElement.addClass('active').show();
+        } else {
+            console.error('Section non trouvée:', targetSection + '-section');
+        }
+        
+        // Mettre à jour l'URL sans recharger la page
+        if (history.pushState) {
+            history.pushState(null, null, '#' + targetSection);
+        }
+    });
+    
+    // Gestion de l'historique du navigateur
+    $(window).on('popstate', function() {
+        var hash = window.location.hash.substring(1) || 'overview';
+        $('.riwa-nav-item[data-section="' + hash + '"]').click();
+    });
+    
+    // Initialiser la section active depuis l'URL
+    var initialSection = window.location.hash.substring(1) || 'overview';
+                // Section initiale chargée
+    
+    // S'assurer que toutes les sections sont masquées au départ
+    $('.riwa-section').removeClass('active').hide();
+    
+    // Afficher la section initiale
+    var initialElement = $('#' + initialSection + '-section');
+    if (initialElement.length > 0) {
+        initialElement.addClass('active').show();
+        $('.riwa-nav-item[data-section="' + initialSection + '"]').addClass('active');
+    } else {
+        // Fallback vers overview si la section n'existe pas
+        $('#overview-section').addClass('active').show();
+        $('.riwa-nav-item[data-section="overview"]').addClass('active');
+    }
+    
+    // Gestion du popup des détails
+    $('.view-details-popup').on('click', function() {
+        var $btn = $(this);
+        var bookingId = $btn.data('booking-id');
+        var bookingName = $btn.data('booking-name');
+        var bookingEmail = $btn.data('booking-email');
+        var bookingPhone = $btn.data('booking-phone');
+        var bookingCheckin = $btn.data('booking-checkin');
+        var bookingCheckout = $btn.data('booking-checkout');
+        var bookingGuests = $btn.data('booking-guests');
+        var bookingAdults = $btn.data('booking-adults');
+        var bookingChildren = $btn.data('booking-children');
+        var bookingBabies = $btn.data('booking-babies');
+        var bookingPets = $btn.data('booking-pets');
+        var bookingPrice = $btn.data('booking-price');
+        var bookingPricePerNight = $btn.data('booking-price-per-night');
+        var bookingStatus = $btn.data('booking-status');
+        var bookingCreated = $btn.data('booking-created');
+        var bookingRequests = $btn.data('booking-requests');
+        
+        // Calculer la durée du séjour
+        var checkin = new Date(bookingCheckin);
+        var checkout = new Date(bookingCheckout);
+        var duration = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+        
+        // Formater les dates
+        var formatDate = function(dateString) {
+            var date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        };
+        
+        var formatDateTime = function(dateString) {
+            var date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+        };
+        
+        // Remplir le popup avec les données
+        $('#popup-reference').text('RIWA-' + String(bookingId).padStart(6, '0'));
+        $('#popup-booking-id').text('#' + bookingId);
+        $('#popup-client-name').text(bookingName);
+        $('#popup-client-email').html('<a href="mailto:' + bookingEmail + '">' + bookingEmail + '</a>');
+        $('#popup-client-phone').html('<a href="tel:' + bookingPhone + '">' + bookingPhone + '</a>');
+        $('#popup-checkin').text(formatDate(bookingCheckin));
+        $('#popup-checkout').text(formatDate(bookingCheckout));
+        $('#popup-duration').text(duration + ' nuit' + (duration > 1 ? 's' : ''));
+        
+        // Afficher les détails des voyageurs
+        var travelersHtml = '';
+        
+        if (bookingAdults > 0) {
+            travelersHtml += '<div class="riwa-traveler-item">' +
+                '<div class="riwa-traveler-type">' +
+                '<span class="dashicons dashicons-admin-users riwa-traveler-icon"></span>' +
+                'Adulte(s)' +
+                '</div>' +
+                '<span class="riwa-traveler-count">' + bookingAdults + '</span>' +
+                '</div>';
+        }
+        
+        if (bookingChildren > 0) {
+            travelersHtml += '<div class="riwa-traveler-item">' +
+                '<div class="riwa-traveler-type">' +
+                '<span class="dashicons dashicons-admin-users riwa-traveler-icon"></span>' +
+                'Enfant(s)' +
+                '</div>' +
+                '<span class="riwa-traveler-count">' + bookingChildren + '</span>' +
+                '</div>';
+        }
+        
+        if (bookingBabies > 0) {
+            travelersHtml += '<div class="riwa-traveler-item">' +
+                '<div class="riwa-traveler-type">' +
+                '<span class="dashicons dashicons-admin-users riwa-traveler-icon"></span>' +
+                'Bébé(s)' +
+                '</div>' +
+                '<span class="riwa-traveler-count">' + bookingBabies + '</span>' +
+                '</div>';
+        }
+        
+        if (bookingPets > 0) {
+            travelersHtml += '<div class="riwa-traveler-item">' +
+                '<div class="riwa-traveler-type">' +
+                '<span class="dashicons dashicons-pets riwa-traveler-icon"></span>' +
+                'Animal/aux' +
+                '</div>' +
+                '<span class="riwa-traveler-count">' + bookingPets + '</span>' +
+                '</div>';
+        }
+        
+        if (travelersHtml === '') {
+            travelersHtml = '<div class="riwa-traveler-item">' +
+                '<div class="riwa-traveler-type">' +
+                '<span class="dashicons dashicons-minus riwa-traveler-icon"></span>' +
+                'Aucun détail disponible' +
+                '</div>' +
+                '</div>';
+        }
+        
+        $('#popup-travelers').html(travelersHtml);
+        
+        if (bookingPrice > 0) {
+            $('#popup-total-price').text(parseFloat(bookingPrice).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €');
+            $('#popup-price-per-night').text(parseFloat(bookingPricePerNight).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €');
+        } else {
+            $('#popup-total-price').text('Non calculé');
+            $('#popup-price-per-night').text('Non calculé');
+        }
+        
+        // Statut avec badge
+        var statusText = '';
+        switch(bookingStatus) {
+            case 'pending': statusText = '<span class="riwa-status-badge riwa-status-pending">En attente</span>'; break;
+            case 'confirmed': statusText = '<span class="riwa-status-badge riwa-status-confirmed">Confirmée</span>'; break;
+            case 'cancelled': statusText = '<span class="riwa-status-badge riwa-status-cancelled">Annulée</span>'; break;
+            default: statusText = bookingStatus;
+        }
+        $('#popup-status').html(statusText);
+        
+        $('#popup-created').text(formatDateTime(bookingCreated));
+        
+        // Demandes spéciales
+        if (bookingRequests && bookingRequests.trim() !== '') {
+            $('#popup-requests').text(bookingRequests);
+        } else {
+            $('#popup-requests').text('Aucune demande spéciale');
+        }
+        
+        // Afficher le popup
+        $('#riwa-details-popup').addClass('show');
+        $('body').addClass('riwa-popup-open');
+    });
+    
+    // Fermer le popup
+    $('#riwa-popup-close, #riwa-popup-close-btn').on('click', function() {
+        $('#riwa-details-popup').removeClass('show');
+        $('body').removeClass('riwa-popup-open');
+    });
+    
+    // Fermer le popup en cliquant sur l'overlay
+    $('#riwa-details-popup').on('click', function(e) {
+        if (e.target === this) {
+            $(this).removeClass('show');
+            $('body').removeClass('riwa-popup-open');
+        }
+    });
+    
+    // Fermer le popup avec la touche Escape
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && $('#riwa-details-popup').hasClass('show')) {
+            $('#riwa-details-popup').removeClass('show');
+            $('body').removeClass('riwa-popup-open');
+        }
+    });
+    
+    // Gestion de la suppression des réservations
+    $('.delete-booking-btn').on('click', function() {
+        var bookingId = $(this).data('booking-id');
+        var bookingName = $(this).data('booking-name');
+        
+        if (confirm('Êtes-vous sûr de vouloir supprimer la réservation de "' + bookingName + '" ? Cette action est irréversible.')) {
+            // Créer un formulaire temporaire pour la suppression
+            var form = $('<form method="post"></form>');
+            form.append('<input type="hidden" name="action" value="delete_booking">');
+            form.append('<input type="hidden" name="booking_id" value="' + bookingId + '">');
+            form.append('<?php echo wp_nonce_field("delete_booking_nonce", "delete_nonce", true, false); ?>');
+            $('body').append(form);
+            form.submit();
+        }
+    });
+    
+    // Actualiser les réservations
+    $('#refresh-bookings').on('click', function() {
+        location.reload();
+    });
+    
+    // Exporter les réservations
+    $('#export-bookings').on('click', function() {
+        alert('Fonctionnalité d\'export à implémenter');
+    });
+    
+    // Gestion de la tarification
+    $('#add-pricing-btn').on('click', function() {
+        alert('Fonctionnalité d\'ajout de tarif à implémenter');
+    });
+    
+    $('.edit-pricing-btn').on('click', function() {
+        var priceId = $(this).data('price-id');
+        alert('Modifier le tarif #' + priceId + ' - Fonctionnalité à implémenter');
+    });
+    
+    $('.delete-pricing-btn').on('click', function() {
+        var priceId = $(this).data('price-id');
+        var priceName = $(this).data('price-name');
+        
+        if (confirm('Êtes-vous sûr de vouloir supprimer le tarif "' + priceName + '" ?')) {
+            alert('Supprimer le tarif #' + priceId + ' - Fonctionnalité à implémenter');
+        }
+    });
+    
+    // Gestion des paramètres PDF
+    $('#save-pdf-settings').on('click', function() {
+        alert('Paramètres PDF enregistrés ! (Fonctionnalité à implémenter)');
+    });
+    
+    $('#preview-pdf').on('click', function() {
+        alert('Aperçu PDF - Fonctionnalité à implémenter');
+    });
+});
+
+// Fonction pour mettre à jour le statut d'une réservation
+function updateBookingStatus(bookingId, newStatus) {
+    if (newStatus === '') return;
+    
+    // Créer un formulaire temporaire pour la mise à jour
+    var form = jQuery('<form method="post"></form>');
+    form.append('<input type="hidden" name="action" value="update_status">');
+    form.append('<input type="hidden" name="booking_id" value="' + bookingId + '">');
+    form.append('<input type="hidden" name="new_status" value="' + newStatus + '">');
+    jQuery('body').append(form);
+    form.submit();
+}
+</script> 

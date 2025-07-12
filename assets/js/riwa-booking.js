@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
         return;
     }
     
-    console.log('Riwa Booking: Flatpickr disponible, version:', flatpickr.version);
+    // Flatpickr disponible
     
     // Configuration des compteurs de voyageurs
     const travelersConfig = {
@@ -26,7 +26,6 @@ jQuery(document).ready(function($) {
 
     // Récupérer les dates réservées
     function loadBookedDates() {
-        console.log('Chargement des dates réservées...');
         $.ajax({
             url: riwa_ajax.ajax_url,
             type: 'POST',
@@ -35,26 +34,19 @@ jQuery(document).ready(function($) {
                 nonce: riwa_ajax.nonce
             },
             success: function(response) {
-                console.log('Réponse AJAX pour les dates réservées:', response);
                 if (response.success) {
                     bookedDates = response.data;
-                    console.log('Dates réservées chargées:', bookedDates);
                     updateCalendar();
-                } else {
-                    console.error('Erreur dans la réponse:', response.data);
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Erreur lors du chargement des dates réservées:', error);
-                console.error('Status:', status);
-                console.error('XHR:', xhr);
+                // Erreur lors du chargement des dates réservées
             }
         });
     }
 
     // Initialisation du calendrier avec prix et dates réservées
     function initCalendar() {
-        console.log('Initialisation du calendrier avec dates réservées:', bookedDates);
         
         const calendar = flatpickr("#riwa-calendar", {
             locale: 'fr',
@@ -66,7 +58,6 @@ jQuery(document).ready(function($) {
             disableMobile: true,
             disable: bookedDates, // Désactiver les dates réservées
             onChange: function(selectedDates) {
-                console.log('Dates sélectionnées:', selectedDates);
                 if (selectedDates.length === 2) {
                     const [checkIn, checkOut] = selectedDates;
                     $('#riwa-check-in').val(formatDateYMD(checkIn));
@@ -148,13 +139,9 @@ jQuery(document).ready(function($) {
 
     // Navigation entre les étapes
     function showStep(stepNumber) {
-        console.log('Changement vers l\'étape:', stepNumber);
-        
         $('.riwa-step').removeClass('active');
         const targetStep = $(`.riwa-step[data-step="${stepNumber}"]`);
         targetStep.addClass('active');
-        
-        console.log('Étape cible trouvée:', targetStep.length > 0);
         
         // Mise à jour de la barre de progression
         $('.riwa-progress-step').removeClass('active completed');
@@ -376,7 +363,6 @@ jQuery(document).ready(function($) {
             for (const season of pricingData) {
                 if (dateStr >= season.start_date && dateStr <= season.end_date) {
                     nightPrice = season.price_per_night;
-                    console.log(`Prix trouvé pour ${dateStr}: ${nightPrice}€ (saison: ${season.name})`);
                     break;
                 }
             }
@@ -395,13 +381,6 @@ jQuery(document).ready(function($) {
 
         totalPrice += totalSurcharge;
         pricePerNight += (totalSurcharge / nights);
-
-        console.log('Prix calculés:', {
-            pricePerNight: pricePerNight.toFixed(2),
-            totalPrice: totalPrice.toFixed(2),
-            extraGuests,
-            totalSurcharge
-        });
 
         $('#summary-price-per-night').text(`${pricePerNight.toFixed(2)} €`);
         $('#summary-total-price').text(`${totalPrice.toFixed(2)} €`);
@@ -477,12 +456,17 @@ jQuery(document).ready(function($) {
     }
 
     // Afficher le contenu de remerciement
-    function showThankYouContent(message) {
+    function showThankYouContent(response) {
         $('.riwa-loading-animation').hide();
         $('.riwa-thank-you-content').show();
         
         // Mettre à jour les détails de la réservation
         updateThankYouDetails();
+        
+        // Stocker l'ID de la réservation pour le PDF
+        if (response.booking_id) {
+            window.riwaBookingId = response.booking_id;
+        }
     }
 
     // Mettre à jour les détails dans la page de remerciement
@@ -515,19 +499,62 @@ jQuery(document).ready(function($) {
         updateGuestName();
     });
 
+    // Gestionnaire pour le téléchargement du PDF
+    $('#riwa-download-pdf').on('click', function() {
+        if (!window.riwaBookingId) {
+            alert('Erreur: ID de réservation non trouvé');
+            return;
+        }
+
+        // Désactiver le bouton pendant le téléchargement
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('Génération de la confirmation...');
+
+        // Créer un formulaire temporaire pour le téléchargement
+        const form = $('<form>', {
+            method: 'POST',
+            action: riwa_ajax.ajax_url,
+            target: '_blank'
+        });
+
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'action',
+            value: 'riwa_download_pdf'
+        }));
+
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'booking_id',
+            value: window.riwaBookingId
+        }));
+
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'nonce',
+            value: riwa_ajax.nonce
+        }));
+
+        // Ajouter le formulaire au DOM, le soumettre, puis le supprimer
+        $('body').append(form);
+        form.submit();
+        form.remove();
+
+        // Réactiver le bouton après un délai
+        setTimeout(function() {
+            $btn.prop('disabled', false).text('Télécharger la confirmation PDF');
+        }, 3000);
+    });
+
 
 
     // Initialisation
-    console.log('Début de l\'initialisation Riwa Booking');
-    console.log('Données de tarification disponibles:', pricingData);
-    
     // Charger d'abord les dates réservées, puis initialiser le calendrier
     loadBookedDates();
     initTravelersCounters();
     
     // Initialiser le calendrier après un court délai pour s'assurer que les dates sont chargées
     setTimeout(function() {
-        console.log('Initialisation du calendrier avec délai');
         window.riwaCalendar = initCalendar();
         updateSummary();
     }, 500);
@@ -535,15 +562,8 @@ jQuery(document).ready(function($) {
     // Fallback : initialiser le calendrier même si les dates réservées ne se chargent pas
     setTimeout(function() {
         if (!window.riwaCalendar) {
-            console.log('Fallback: Initialisation du calendrier sans dates réservées');
             window.riwaCalendar = initCalendar();
             updateSummary();
         }
     }, 2000);
-
-    // Log pour le débogage
-    console.log('Riwa Booking: Initialisation terminée', {
-        debug: riwa_ajax.debug,
-        pricing: riwa_ajax.pricing
-    });
 }); 

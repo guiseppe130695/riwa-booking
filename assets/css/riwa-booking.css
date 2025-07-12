@@ -344,7 +344,7 @@
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--riwa-white);
+    color: var(--riwa-white) !important;
     margin: 0;
     text-align: center;
 }
@@ -502,7 +502,7 @@
 }
 
 .flatpickr-month:not(:last-child) {
-    margin-right: 2rem !important;
+    margin-right: 8rem !important;
 }
 
 .flatpickr-day {
@@ -598,6 +598,14 @@
 .flatpickr-day.booked:hover {
     background: var(--riwa-gray-100) !important;
     color: var(--riwa-gray-400) !important;
+}
+
+.flatpickr-current-month {
+    width: 100% !important;
+}
+
+.booking-summary h4 {
+    color: #fff !important;
 }
 
 /* Légende du calendrier - Ultra-minimaliste alignée */
@@ -928,6 +936,37 @@
 .riwa-new-booking-btn:hover {
     background: var(--riwa-white) !important;
     color: var(--riwa-black) !important;
+}
+
+/* Bouton de téléchargement PDF */
+.riwa-download-pdf-btn {
+    padding: 1rem 2rem !important;
+    border: 1px solid var(--riwa-gray-300) !important;
+    border-radius: 0 !important;
+    background: var(--riwa-white) !important;
+    color: var(--riwa-gray-700) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 200px !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+.riwa-download-pdf-btn:hover {
+    background: var(--riwa-black) !important;
+    border-color: var(--riwa-black) !important;
+    color: var(--riwa-white) !important;
+}
+
+.riwa-download-pdf-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
 }
 
 /* Responsive pour la page de remerciement */

@@ -335,8 +335,6 @@
         `)
         .appendTo('head');
 
-    // Message de bienvenue dans la console pour les développeurs
-    console.log('%c🏠 Riwa Booking Admin chargé avec succès !', 
-                'color: #667eea; font-size: 14px; font-weight: bold;');
+    // Riwa Booking Admin initialisé avec succès
 
 })(jQuery); 
