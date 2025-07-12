@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Riwa Booking
- * Plugin URI: https://votresite.com
+ * Plugin URI: https://www.brioguiseppe.fr/
  * Description: Plugin de réservation de villas, développé sur-mesure pour Riwa.
  * Version: 1.1.2
- * Author: Ton Nom ou Riwa Team
- * Author URI: https://votresite.com
+ * Author: Brio Guiseppe
+ * Author URI: https://www.brioguiseppe.fr/
  * Text Domain: riwavilla-booking
  * Domain Path: /languages
  */
