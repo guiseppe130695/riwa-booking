@@ -115,7 +115,6 @@ class Riwa_PDF_Generator {
         $adults_count = $booking->adults_count;
         $children_count = $booking->children_count;
         $babies_count = $booking->babies_count;
-        $pets_count = $booking->pets_count;
         $special_requests = $booking->special_requests;
         $total_price = $booking->total_price;
         $price_per_night = $booking->price_per_night;
@@ -208,7 +207,7 @@ class Riwa_PDF_Generator {
         if ($adults_count > 0) $travelers[] = $adults_count . ' adulte' . ($adults_count > 1 ? 's' : '');
         if ($children_count > 0) $travelers[] = $children_count . ' enfant' . ($children_count > 1 ? 's' : '');
         if ($babies_count > 0) $travelers[] = $babies_count . ' bébé' . ($babies_count > 1 ? 's' : '');
-        if ($pets_count > 0) $travelers[] = $pets_count . ' animal' . ($pets_count > 1 ? 'aux' : '');
+
         $html .= '<div class="info-row"><span class="value">' . implode(', ', $travelers) . '</span></div>';
         $html .= '</div>';
         

@@ -304,10 +304,7 @@
                 <div class="guest-count"><?php echo $babies_count; ?></div>
                 <div class="guest-label">Bébés</div>
             </div>
-            <div class="guest-item">
-                <div class="guest-count"><?php echo $pets_count; ?></div>
-                <div class="guest-label">Animaux</div>
-            </div>
+
         </div>
     </div>
     

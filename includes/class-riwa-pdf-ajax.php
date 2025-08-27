@@ -55,7 +55,6 @@ class Riwa_PDF_Ajax {
                 'adults_count' => 2,
                 'children_count' => 1,
                 'babies_count' => 0,
-                'pets_count' => 0,
                 'special_requests' => 'Demande spéciale de test',
                 'total_price' => '1500',
                 'price_per_night' => '300',
@@ -101,7 +100,6 @@ class Riwa_PDF_Ajax {
                 'adults_count' => 2,
                 'children_count' => 1,
                 'babies_count' => 0,
-                'pets_count' => 0,
                 'special_requests' => 'Demande spéciale de test',
                 'total_price' => '1500',
                 'price_per_night' => '300',
@@ -158,7 +156,6 @@ class Riwa_PDF_Ajax {
                 'adults_count' => 3,
                 'children_count' => 2,
                 'babies_count' => 1,
-                'pets_count' => 2,
                 'special_requests' => 'Demande spéciale : lit bébé, chaise haute, et nourriture pour animaux. Arrivée prévue vers 15h.',
                 'total_price' => '2100',
                 'price_per_night' => '350',
@@ -218,7 +215,6 @@ class Riwa_PDF_Ajax {
                 'adults_count' => 2,
                 'children_count' => 1,
                 'babies_count' => 0,
-                'pets_count' => 1,
                 'special_requests' => 'Test des demandes spéciales',
                 'total_price' => '1500',
                 'price_per_night' => '300',
@@ -485,7 +481,6 @@ class Riwa_PDF_Ajax {
         if ($booking->adults_count > 0) $travelers[] = $booking->adults_count . ' adulte' . ($booking->adults_count > 1 ? 's' : '');
         if ($booking->children_count > 0) $travelers[] = $booking->children_count . ' enfant' . ($booking->children_count > 1 ? 's' : '');
         if ($booking->babies_count > 0) $travelers[] = $booking->babies_count . ' bébé' . ($booking->babies_count > 1 ? 's' : '');
-        if ($booking->pets_count > 0) $travelers[] = $booking->pets_count . ' animal' . ($booking->pets_count > 1 ? 'aux' : '');
         
         $html .= '<p><strong style="color: rgb(' . $primary_color . ');">Voyageurs :</strong> <span style="color: rgb(' . $secondary_color . ');">' . implode(', ', $travelers) . '</span></p>';
         $html .= '</div>';

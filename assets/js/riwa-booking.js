@@ -6,7 +6,6 @@
 jQuery(document).ready(function($) {
     // Vérifier que Flatpickr est disponible
     if (typeof flatpickr === 'undefined') {
-        console.error('Riwa Booking: Flatpickr n\'est pas chargé !');
         return;
     }
     
@@ -14,10 +13,9 @@ jQuery(document).ready(function($) {
     
     // Configuration des compteurs de voyageurs
     const travelersConfig = {
-        adults: { min: 1, max: 10, default: 1 },
+        adults: { min: 1, max: 6, default: 1 },
         children: { min: 0, max: 6, default: 0 },
-        babies: { min: 0, max: 4, default: 0 },
-        pets: { min: 0, max: 2, default: 0 }
+        babies: { min: 0, max: 6, default: 0 }
     };
 
     // Données de tarification et réservations
@@ -182,8 +180,8 @@ jQuery(document).ready(function($) {
                     errorElement.text('Il doit y avoir au moins un adulte').addClass('show');
                     return false;
                 }
-                if (total > 12) {
-                    errorElement.text('Le nombre total de voyageurs ne peut pas dépasser 12 personnes').addClass('show');
+                if (total > 7) {
+                    errorElement.text('Le nombre total de voyageurs ne peut pas dépasser 7 personnes').addClass('show');
                     return false;
                 }
                 return true;
@@ -240,23 +238,52 @@ jQuery(document).ready(function($) {
             const type = $(this).find('.riwa-counter-value').data('type');
             const value = travelersConfig[type].default;
             updateCounter(type, value);
-            updateButtonStates(type);
         });
+        
+        // Mettre à jour tous les boutons après l'initialisation
+        updateAllButtonStates();
 
         $('.riwa-counter-btn').on('click', function() {
             const type = $(this).data('type');
             const action = $(this).data('action');
             const currentValue = getCurrentValue(type);
             
-            if (action === 'increase' && currentValue < travelersConfig[type].max) {
-                updateCounter(type, currentValue + 1);
+            if (action === 'increase') {
+                // Vérifier la règle de capacité avant d'augmenter
+                if (canIncreaseTraveler(type, currentValue)) {
+                    updateCounter(type, currentValue + 1);
+                }
             } else if (action === 'decrease' && currentValue > travelersConfig[type].min) {
                 updateCounter(type, currentValue - 1);
             }
             
-            updateButtonStates(type);
+            // Mettre à jour tous les boutons après chaque changement
+            updateAllButtonStates();
             updateSummary();
         });
+    }
+
+    // Vérifier si on peut augmenter le nombre de voyageurs selon la règle de capacité
+    function canIncreaseTraveler(type, currentValue) {
+        const adults = getCurrentValue('adults');
+        const children = getCurrentValue('children');
+        const babies = getCurrentValue('babies');
+        
+        // Règle dynamique : Maximum 7 personnes au total, avec flexibilité sur la répartition
+        const totalTravelers = adults + children + babies;
+        
+        if (type === 'adults') {
+            // Vérifier la limite des adultes (max 6) et que le total ne dépasse pas 7
+            return currentValue < travelersConfig.adults.max && totalTravelers < 7;
+        } else if (type === 'children') {
+            // Vérifier que le total ne dépasse pas 7
+            return totalTravelers < 7;
+        } else if (type === 'babies') {
+            // Vérifier que le total ne dépasse pas 7
+            return totalTravelers < 7;
+        }
+        
+        return false;
     }
 
     function updateCounter(type, value) {
@@ -270,7 +297,14 @@ jQuery(document).ready(function($) {
         const increaseBtn = $(`.riwa-counter-btn[data-type="${type}"][data-action="increase"]`);
         
         decreaseBtn.prop('disabled', currentValue <= travelersConfig[type].min);
-        increaseBtn.prop('disabled', currentValue >= travelersConfig[type].max);
+        increaseBtn.prop('disabled', !canIncreaseTraveler(type, currentValue));
+    }
+
+    function updateAllButtonStates() {
+        // Mettre à jour tous les types de voyageurs
+        updateButtonStates('adults');
+        updateButtonStates('children');
+        updateButtonStates('babies');
     }
 
     function getCurrentValue(type) {
@@ -295,7 +329,6 @@ jQuery(document).ready(function($) {
         const adults = getCurrentValue('adults');
         const children = getCurrentValue('children');
         const babies = getCurrentValue('babies');
-        const pets = getCurrentValue('pets');
 
         // Mise à jour des dates
         $('.summary-checkin').text(checkIn ? formatDateFR(new Date(checkIn)) : 'Non sélectionnée');
@@ -306,7 +339,6 @@ jQuery(document).ready(function($) {
         $('#summary-adults').text(adults);
         $('#summary-children').text(children);
         $('#summary-babies').text(babies);
-        $('#summary-pets').text(pets);
 
         // Mise à jour des prix
         updatePricing(checkIn, checkOut, adults + children);
@@ -341,14 +373,6 @@ jQuery(document).ready(function($) {
         // Utiliser les données de tarification saisonnière depuis PHP
         const pricingData = riwa_ajax.pricing || [];
         const nights = Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
-        
-        console.log('Calcul des prix:', {
-            checkIn,
-            checkOut,
-            nights,
-            totalGuests,
-            pricingData
-        });
         
         let totalPrice = 0;
         let pricePerNight = 0;
@@ -476,7 +500,7 @@ jQuery(document).ready(function($) {
         const adults = getCurrentValue('adults');
         const children = getCurrentValue('children');
         const babies = getCurrentValue('babies');
-        const pets = getCurrentValue('pets');
+
         const totalPrice = $('#summary-total-price').text();
 
         // Générer une référence de réservation
@@ -489,7 +513,7 @@ jQuery(document).ready(function($) {
             '-'
         );
         $('#riwa-booking-guests').text(
-            `${adults} adulte(s), ${children} enfant(s), ${babies} bébé(s), ${pets} animal/aux`
+            `${adults} adulte(s), ${children} enfant(s), ${babies} bébé(s)`
         );
         $('#riwa-booking-total').text(totalPrice);
     }

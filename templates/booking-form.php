@@ -59,62 +59,50 @@ if (!defined('ABSPATH')) {
             </div>
         </div>
 
-        <!-- Étape 2: Voyageurs -->
-        <div class="riwa-step" data-step="2" id="riwa-travelers-step">
-            <h2>Voyageurs</h2>
-            <div class="riwa-travelers-section">
-                <!-- Adultes -->
-                <div class="riwa-traveler-type">
-                    <div class="riwa-traveler-info">
-                        <div class="riwa-traveler-title">Adultes</div>
-                        <div class="riwa-traveler-subtitle">13 ans et plus</div>
-                    </div>
-                    <div class="riwa-counter">
-                        <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="adults">-</button>
-                        <span class="riwa-counter-value" data-type="adults">1</span>
-                        <button type="button" class="riwa-counter-btn" data-action="increase" data-type="adults">+</button>
-                    </div>
-                </div>
+                 <!-- Étape 2: Voyageurs -->
+         <div class="riwa-step" data-step="2" id="riwa-travelers-step">
+             <h2>Voyageurs</h2>
+             <div class="riwa-travelers-section">
+                 <!-- Adultes -->
+                 <div class="riwa-traveler-type">
+                     <div class="riwa-traveler-info">
+                         <div class="riwa-traveler-title">Adultes</div>
+                         <div class="riwa-traveler-subtitle">13 ans et plus (max 6)</div>
+                     </div>
+                     <div class="riwa-counter">
+                         <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="adults">-</button>
+                         <span class="riwa-counter-value" data-type="adults">1</span>
+                         <button type="button" class="riwa-counter-btn" data-action="increase" data-type="adults">+</button>
+                     </div>
+                 </div>
 
-                <!-- Enfants -->
-                <div class="riwa-traveler-type">
-                    <div class="riwa-traveler-info">
-                        <div class="riwa-traveler-title">Enfants</div>
-                        <div class="riwa-traveler-subtitle">De 2 à 12 ans</div>
-                    </div>
-                    <div class="riwa-counter">
-                        <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="children">-</button>
-                        <span class="riwa-counter-value" data-type="children">0</span>
-                        <button type="button" class="riwa-counter-btn" data-action="increase" data-type="children">+</button>
-                    </div>
-                </div>
+                                   <!-- Enfants -->
+                  <div class="riwa-traveler-type">
+                      <div class="riwa-traveler-info">
+                          <div class="riwa-traveler-title">Enfants</div>
+                          <div class="riwa-traveler-subtitle">De 2 à 12 ans</div>
+                      </div>
+                      <div class="riwa-counter">
+                          <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="children">-</button>
+                          <span class="riwa-counter-value" data-type="children">0</span>
+                          <button type="button" class="riwa-counter-btn" data-action="increase" data-type="children">+</button>
+                      </div>
+                  </div>
 
-                <!-- Bébés -->
-                <div class="riwa-traveler-type">
-                    <div class="riwa-traveler-info">
-                        <div class="riwa-traveler-title">Bébés</div>
-                        <div class="riwa-traveler-subtitle">Moins de 2 ans</div>
-                    </div>
-                    <div class="riwa-counter">
-                        <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="babies">-</button>
-                        <span class="riwa-counter-value" data-type="babies">0</span>
-                        <button type="button" class="riwa-counter-btn" data-action="increase" data-type="babies">+</button>
-                    </div>
-                </div>
+                  <!-- Bébés -->
+                  <div class="riwa-traveler-type">
+                      <div class="riwa-traveler-info">
+                          <div class="riwa-traveler-title">Bébés</div>
+                          <div class="riwa-traveler-subtitle">Moins de 2 ans</div>
+                      </div>
+                      <div class="riwa-counter">
+                          <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="babies">-</button>
+                          <span class="riwa-counter-value" data-type="babies">0</span>
+                          <button type="button" class="riwa-counter-btn" data-action="increase" data-type="babies">+</button>
+                      </div>
+                  </div>
 
-                <!-- Animaux -->
-                <div class="riwa-traveler-type">
-                    <div class="riwa-traveler-info">
-                        <div class="riwa-traveler-title">Animaux de compagnie</div>
-                        <div class="riwa-traveler-subtitle">Chiens et chats uniquement</div>
-                    </div>
-                    <div class="riwa-counter">
-                        <button type="button" class="riwa-counter-btn" data-action="decrease" data-type="pets">-</button>
-                        <span class="riwa-counter-value" data-type="pets">0</span>
-                        <button type="button" class="riwa-counter-btn" data-action="increase" data-type="pets">+</button>
-                    </div>
-                </div>
-            </div>
+             </div>
             <div class="riwa-error-message" id="riwa-travelers-error"></div>
             <div class="riwa-step-buttons">
                 <button type="button" class="riwa-prev-btn" data-prev="1">Précédent</button>
@@ -184,14 +172,10 @@ if (!defined('ABSPATH')) {
                             <div class="summary-label">Enfants</div>
                             <div class="summary-value"><span id="summary-children">0</span></div>
                         </div>
-                        <div class="summary-row">
-                            <div class="summary-label">Bébés</div>
-                            <div class="summary-value"><span id="summary-babies">0</span></div>
-                        </div>
-                        <div class="summary-row">
-                            <div class="summary-label">Animaux</div>
-                            <div class="summary-value"><span id="summary-pets">0</span></div>
-                        </div>
+                                                 <div class="summary-row">
+                             <div class="summary-label">Bébés</div>
+                             <div class="summary-value"><span id="summary-babies">0</span></div>
+                         </div>
                         
                         <!-- Tarification -->
                         <div class="summary-row">

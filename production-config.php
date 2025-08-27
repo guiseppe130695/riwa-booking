@@ -13,26 +13,7 @@ if (!defined('ABSPATH')) {
 // Configuration de production
 define('RIWA_BOOKING_PRODUCTION', true);
 
-// Désactiver les fonctionnalités de debug en production
-if (RIWA_BOOKING_PRODUCTION) {
-    // Supprimer les logs de debug
-    if (!function_exists('riwa_production_error_log')) {
-        function riwa_production_error_log($message) {
-            // Ne rien faire en production
-            return;
-        }
-    }
-    
-    // Remplacer error_log par notre fonction silencieuse
-    if (!function_exists('riwa_override_error_log')) {
-        function riwa_override_error_log($message) {
-            // Seulement logger les erreurs critiques
-            if (strpos($message, 'CRITICAL') !== false) {
-                error_log($message);
-            }
-        }
-    }
-}
+// Optimisations de performance
 
 // Optimisations de performance
 define('RIWA_BOOKING_CACHE_ENABLED', true);
@@ -56,8 +37,7 @@ define('RIWA_BOOKING_DB_CHARSET', 'utf8mb4');
 define('RIWA_BOOKING_DB_COLLATE', 'utf8mb4_unicode_ci');
 
 // Configuration des limites
-define('RIWA_BOOKING_MAX_GUESTS', 12);
-define('RIWA_BOOKING_MAX_PETS', 2);
+define('RIWA_BOOKING_MAX_GUESTS', 7);
 define('RIWA_BOOKING_MIN_STAY', 1);
 define('RIWA_BOOKING_MAX_STAY', 30);
 
@@ -143,7 +123,7 @@ define('RIWA_BOOKING_ERROR_MESSAGES', array(
     'invalid_dates' => 'Dates de séjour invalides',
     'dates_unavailable' => 'Les dates sélectionnées ne sont pas disponibles',
     'too_many_guests' => 'Le nombre maximum de voyageurs est de ' . RIWA_BOOKING_MAX_GUESTS,
-    'too_many_pets' => 'Le nombre maximum d\'animaux est de ' . RIWA_BOOKING_MAX_PETS,
+
     'min_stay_required' => 'Séjour minimum de ' . RIWA_BOOKING_MIN_STAY . ' nuit(s) requis',
     'max_stay_exceeded' => 'Séjour maximum de ' . RIWA_BOOKING_MAX_STAY . ' nuits',
     'booking_failed' => 'Erreur lors de la création de la réservation',
@@ -203,7 +183,7 @@ define('RIWA_BOOKING_DEFAULT_COLORS', array(
 define('RIWA_BOOKING_ICONS', array(
     'calendar' => 'dashicons-calendar-alt',
     'users' => 'dashicons-groups',
-    'pets' => 'dashicons-heart',
+
     'email' => 'dashicons-email',
     'phone' => 'dashicons-phone',
     'pdf' => 'dashicons-pdf',

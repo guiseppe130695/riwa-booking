@@ -37,6 +37,8 @@ class RiwaBooking {
         add_action('wp_ajax_riwa_download_pdf', array($this, 'download_pdf'));
         add_action('wp_ajax_nopriv_riwa_download_pdf', array($this, 'download_pdf'));
         add_action('wp_ajax_riwa_reinstall_tcpdf', array($this, 'reinstall_tcpdf'));
+        add_action('wp_ajax_riwa_test_client_email', array($this, 'test_client_email'));
+        add_action('wp_ajax_riwa_test_admin_email', array($this, 'test_admin_email'));
         add_action('admin_menu', array($this, 'admin_menu'));
         add_shortcode('riwa_booking', array($this, 'booking_shortcode'));
         
@@ -125,7 +127,6 @@ class RiwaBooking {
             adults_count int(3) NOT NULL DEFAULT 1,
             children_count int(3) NOT NULL DEFAULT 0,
             babies_count int(3) NOT NULL DEFAULT 0,
-            pets_count int(3) NOT NULL DEFAULT 0,
             special_requests text,
             total_price decimal(10,2) DEFAULT 0.00,
             price_per_night decimal(10,2) DEFAULT 0.00,
@@ -270,6 +271,8 @@ class RiwaBooking {
             'riwa-pdf-settings',
             array($this, 'pdf_settings_page')
         );
+        
+
     }
     
     /**
@@ -303,6 +306,8 @@ class RiwaBooking {
         Riwa_PDF_Admin::admin_page();
     }
     
+
+    
     public function booking_shortcode($atts) {
         $atts = shortcode_atts(array(
             'title' => 'Réserver votre villa',
@@ -315,11 +320,6 @@ class RiwaBooking {
     }
     
     public function submit_booking() {
-        // Log de débogage pour voir les données reçues
-        if (WP_DEBUG) {
-            error_log('Riwa Booking: Données POST reçues: ' . print_r($_POST, true));
-        }
-        
         // Vérification des données POST
         if (!isset($_POST['nonce'])) {
             wp_send_json_error('Données manquantes');
@@ -345,7 +345,6 @@ class RiwaBooking {
         $adults_count = isset($_POST['adults_count']) ? intval($_POST['adults_count']) : 1;
         $children_count = isset($_POST['children_count']) ? intval($_POST['children_count']) : 0;
         $babies_count = isset($_POST['babies_count']) ? intval($_POST['babies_count']) : 0;
-        $pets_count = isset($_POST['pets_count']) ? intval($_POST['pets_count']) : 0;
         
         $special_requests = isset($_POST['special_requests']) ? sanitize_textarea_field($_POST['special_requests']) : '';
         
@@ -366,10 +365,7 @@ class RiwaBooking {
             wp_send_json_error('Le nombre total de voyageurs ne peut pas dépasser 12 personnes.');
             return;
         }
-        if ($pets_count > 2) {
-            wp_send_json_error('Le nombre maximum d\'animaux de compagnie est de 2.');
-            return;
-        }
+
         
         // Vérification des dates
         try {
@@ -408,11 +404,10 @@ class RiwaBooking {
                 'adults_count' => $adults_count,
                 'children_count' => $children_count,
                 'babies_count' => $babies_count,
-                'pets_count' => $pets_count,
                 'special_requests' => $special_requests,
                 'status' => 'pending'
             ),
-            array('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s')
+            array('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s')
         );
         
         if ($result === false) {
@@ -424,11 +419,18 @@ class RiwaBooking {
             return;
         }
         
-        // Envoi d'email de confirmation
+        // Envoi d'email de confirmation au client
         try {
             $this->send_confirmation_email($guest_email, $guest_name, $check_in_date, $check_out_date);
         } catch (Exception $e) {
             // Erreur lors de l'envoi d'email
+        }
+        
+        // Envoi d'email de notification à l'administrateur
+        try {
+            $this->send_admin_notification_email($guest_name, $guest_email, $guest_phone, $check_in_date, $check_out_date, $adults_count, $children_count, $babies_count, $special_requests);
+        } catch (Exception $e) {
+            // Erreur lors de l'envoi d'email admin
         }
         
         // Calculer le prix total
@@ -505,15 +507,61 @@ class RiwaBooking {
     }
     
     private function send_confirmation_email($email, $name, $check_in, $check_out) {
-        $subject = 'Confirmation de votre réservation - Riwa';
-        $message = "Bonjour $name,\n\n";
-        $message .= "Nous avons bien reçu votre réservation pour les dates suivantes :\n";
-        $message .= "Arrivée : $check_in\n";
-        $message .= "Départ : $check_out\n\n";
-        $message .= "Nous vous contacterons bientôt pour confirmer votre réservation.\n\n";
-        $message .= "Cordialement,\nL'équipe Riwa";
+        // Récupérer les paramètres configurables
+        $from_name = get_option('riwa_email_from_name', 'Riwa Villa');
+        $from_address = get_option('riwa_email_from_address', 'noreply@riwa-villa.com');
+        $subject = get_option('riwa_email_client_subject', 'Confirmation de votre réservation - Riwa');
+        $message_template = get_option('riwa_email_client_message', "Bonjour {guest_name},\n\nNous avons bien reçu votre réservation pour les dates suivantes :\nArrivée : {check_in}\nDépart : {check_out}\n\nNous vous contacterons bientôt pour confirmer votre réservation.\n\nCordialement,\nL'équipe Riwa");
         
-        wp_mail($email, $subject, $message);
+        // Remplacer les variables dans le message
+        $message = str_replace(
+            array('{guest_name}', '{check_in}', '{check_out}'),
+            array($name, $check_in, $check_out),
+            $message_template
+        );
+        
+        // Configuration des headers pour l'email
+        $headers = array(
+            'From: ' . $from_name . ' <' . $from_address . '>',
+            'Content-Type: text/plain; charset=UTF-8'
+        );
+        
+        wp_mail($email, $subject, $message, $headers);
+    }
+    
+    private function send_admin_notification_email($guest_name, $guest_email, $guest_phone, $check_in, $check_out, $adults_count, $children_count, $babies_count, $special_requests) {
+        // Vérifier si les notifications sont activées
+        if (!get_option('riwa_email_notification_enabled', 1)) {
+            return;
+        }
+        
+        // Récupérer les paramètres configurables
+        $admin_email = get_option('riwa_email_admin_address', get_option('admin_email'));
+        $from_name = get_option('riwa_email_from_name', 'Riwa Villa');
+        $from_address = get_option('riwa_email_from_address', 'noreply@riwa-villa.com');
+        $subject = get_option('riwa_email_admin_subject', 'Nouvelle réservation - Riwa Villa');
+        $message_template = get_option('riwa_email_admin_message', "Une nouvelle réservation a été effectuée sur le site.\n\nDétails de la réservation :\nNom : {guest_name}\nEmail : {guest_email}\nTéléphone : {guest_phone}\nDate d'arrivée : {check_in}\nDate de départ : {check_out}\nNombre d'adultes : {adults_count}\nNombre d'enfants : {children_count}\nNombre de bébés : {babies_count}\n\nDemandes spéciales : {special_requests}\n\nConnectez-vous à l'administration pour gérer cette réservation.\nLien d'administration : {admin_url}\n\nCordialement,\nSystème de réservation Riwa");
+        
+        // Remplacer les variables dans le message
+        $message = str_replace(
+            array(
+                '{guest_name}', '{guest_email}', '{guest_phone}', '{check_in}', '{check_out}',
+                '{adults_count}', '{children_count}', '{babies_count}', '{special_requests}', '{admin_url}'
+            ),
+            array(
+                $guest_name, $guest_email, $guest_phone, $check_in, $check_out,
+                $adults_count, $children_count, $babies_count, $special_requests, admin_url('admin.php?page=riwa-booking')
+            ),
+            $message_template
+        );
+        
+        // Configuration des headers pour l'email
+        $headers = array(
+            'From: ' . $from_name . ' <' . $from_address . '>',
+            'Content-Type: text/plain; charset=UTF-8'
+        );
+        
+        wp_mail($admin_email, $subject, $message, $headers);
     }
     
     /**
@@ -837,6 +885,78 @@ require_once(K_PATH_MAIN . 'tcpdf.php');
             wp_send_json_success('TCPDF réinstallé avec succès');
         } else {
             wp_send_json_error('Échec de la réinstallation de TCPDF');
+        }
+    }
+    
+    /**
+     * Test d'envoi d'email client
+     */
+    public function test_client_email() {
+        // Vérifier les permissions admin
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permissions insuffisantes');
+            return;
+        }
+        
+        // Vérification du nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'riwa_test_email')) {
+            wp_send_json_error('Erreur de sécurité');
+            return;
+        }
+        
+        $test_email = sanitize_email($_POST['email']);
+        if (empty($test_email)) {
+            wp_send_json_error('Email de test invalide');
+            return;
+        }
+        
+        try {
+            // Envoyer un email de test
+            $this->send_confirmation_email($test_email, 'Test Client', '2024-01-15', '2024-01-20');
+            wp_send_json_success('Email de test client envoyé avec succès');
+        } catch (Exception $e) {
+            wp_send_json_error('Erreur lors de l\'envoi : ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Test d'envoi d'email administrateur
+     */
+    public function test_admin_email() {
+        // Vérifier les permissions admin
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permissions insuffisantes');
+            return;
+        }
+        
+        // Vérification du nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'riwa_test_email')) {
+            wp_send_json_error('Erreur de sécurité');
+            return;
+        }
+        
+        $test_email = sanitize_email($_POST['email']);
+        if (empty($test_email)) {
+            wp_send_json_error('Email de test invalide');
+            return;
+        }
+        
+        try {
+            // Envoyer un email de test admin
+            $this->send_admin_notification_email(
+                'Test Client',
+                $test_email,
+                '0123456789',
+                '2024-01-15',
+                '2024-01-20',
+                2,
+                1,
+                0,
+                'Demande de test'
+            );
+            wp_send_json_success('Email de test administrateur envoyé avec succès');
+        } catch (Exception $e) {
+            wp_send_json_error('Erreur lors de l\'envoi : ' . $e->getMessage());
         }
     }
 }

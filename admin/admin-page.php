@@ -45,6 +45,21 @@ if (isset($_POST['action'])) {
     }
 }
 
+// Traitement de la sauvegarde des paramètres email
+if (isset($_POST['save_email_settings']) && wp_verify_nonce($_POST['riwa_email_nonce'], 'riwa_email_settings')) {
+    // Sauvegarder les paramètres
+    update_option('riwa_email_notification_enabled', isset($_POST['notification_enabled']) ? 1 : 0);
+    update_option('riwa_email_admin_address', sanitize_email($_POST['admin_email']));
+    update_option('riwa_email_from_name', sanitize_text_field($_POST['from_name']));
+    update_option('riwa_email_from_address', sanitize_email($_POST['from_address']));
+    update_option('riwa_email_client_subject', sanitize_text_field($_POST['client_subject']));
+    update_option('riwa_email_admin_subject', sanitize_text_field($_POST['admin_subject']));
+    update_option('riwa_email_client_message', wp_kses_post($_POST['client_message']));
+    update_option('riwa_email_admin_message', wp_kses_post($_POST['admin_message']));
+    
+    echo '<div class="notice notice-success is-dismissible"><p>Configuration des emails sauvegardée avec succès !</p></div>';
+}
+
 // Récupération de toutes les réservations
 $bookings = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
 
@@ -100,6 +115,10 @@ if (empty($bookings)) {
                 <a href="#pdf" class="riwa-nav-item" data-section="pdf">
                     <span class="dashicons dashicons-pdf"></span>
                     Personnaliser PDF
+                </a>
+                <a href="#email" class="riwa-nav-item" data-section="email">
+                    <span class="dashicons dashicons-email-alt"></span>
+                    Configuration Email
                 </a>
                 <a href="#debug" class="riwa-nav-item" data-section="debug">
                     <span class="dashicons dashicons-admin-tools"></span>
@@ -243,7 +262,7 @@ if (empty($bookings)) {
                                                                     data-booking-adults="<?php echo esc_attr($booking->adults_count ?? 0); ?>"
                                                                     data-booking-children="<?php echo esc_attr($booking->children_count ?? 0); ?>"
                                                                     data-booking-babies="<?php echo esc_attr($booking->babies_count ?? 0); ?>"
-                                                                    data-booking-pets="<?php echo esc_attr($booking->pets_count ?? 0); ?>"
+
                                                                     data-booking-price="<?php echo esc_attr($booking->total_price); ?>"
                                                                     data-booking-price-per-night="<?php echo esc_attr($booking->price_per_night); ?>"
                                                                     data-booking-status="<?php echo esc_attr($booking->status); ?>"
@@ -406,6 +425,126 @@ if (empty($bookings)) {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Configuration Email -->
+            <div class="riwa-section" id="email-section">
+                <div class="riwa-section-header">
+                    <h2>Configuration des Emails</h2>
+                    <p>Configurez les notifications par email</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-preview-container">
+                        <?php
+                        // Récupérer les valeurs actuelles
+                        $notification_enabled = get_option('riwa_email_notification_enabled', 1);
+                        $admin_email = get_option('riwa_email_admin_address', get_option('admin_email'));
+                        $from_name = get_option('riwa_email_from_name', 'Riwa Villa');
+                        $from_address = get_option('riwa_email_from_address', 'noreply@riwa-villa.com');
+                        $client_subject = get_option('riwa_email_client_subject', 'Confirmation de votre réservation - Riwa');
+                        $admin_subject = get_option('riwa_email_admin_subject', 'Nouvelle réservation - Riwa Villa');
+                        $client_message = get_option('riwa_email_client_message', "Bonjour {guest_name},\n\nNous avons bien reçu votre réservation pour les dates suivantes :\nArrivée : {check_in}\nDépart : {check_out}\n\nNous vous contacterons bientôt pour confirmer votre réservation.\n\nCordialement,\nL'équipe Riwa");
+                        $admin_message = get_option('riwa_email_admin_message', "Une nouvelle réservation a été effectuée sur le site.\n\nDétails de la réservation :\nNom : {guest_name}\nEmail : {guest_email}\nTéléphone : {guest_phone}\nDate d'arrivée : {check_in}\nDate de départ : {check_out}\nNombre d'adultes : {adults_count}\nNombre d'enfants : {children_count}\nNombre de bébés : {babies_count}\n\nDemandes spéciales : {special_requests}\n\nConnectez-vous à l'administration pour gérer cette réservation.\nLien d'administration : {admin_url}\n\nCordialement,\nSystème de réservation Riwa");
+                        ?>
+                        
+                        <form method="post" action="">
+                            <?php wp_nonce_field('riwa_email_settings', 'riwa_email_nonce'); ?>
+                            
+                            <div class="riwa-setting-group">
+                                <h3>Paramètres généraux</h3>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="notification_enabled">
+                                            <input type="checkbox" id="notification_enabled" name="notification_enabled" value="1" <?php checked($notification_enabled, 1); ?>>
+                                            Activer les notifications par email
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="admin_email">Email administrateur</label>
+                                        <input type="email" id="admin_email" name="admin_email" value="<?php echo esc_attr($admin_email); ?>" class="riwa-input">
+                                        <p class="riwa-help-text">Email qui recevra les notifications de nouvelles réservations</p>
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="from_name">Nom de l'expéditeur</label>
+                                        <input type="text" id="from_name" name="from_name" value="<?php echo esc_attr($from_name); ?>" class="riwa-input">
+                                    </div>
+                                </div>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="from_address">Email de l'expéditeur</label>
+                                        <input type="email" id="from_address" name="from_address" value="<?php echo esc_attr($from_address); ?>" class="riwa-input">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-group">
+                                <h3>Email de confirmation client</h3>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="client_subject">Objet de l'email</label>
+                                        <input type="text" id="client_subject" name="client_subject" value="<?php echo esc_attr($client_subject); ?>" class="riwa-input">
+                                    </div>
+                                </div>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="client_message">Message</label>
+                                        <textarea id="client_message" name="client_message" rows="8" class="riwa-textarea"><?php echo esc_textarea($client_message); ?></textarea>
+                                        <p class="riwa-help-text">Variables disponibles : {guest_name}, {check_in}, {check_out}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-group">
+                                <h3>Email de notification administrateur</h3>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="admin_subject">Objet de l'email</label>
+                                        <input type="text" id="admin_subject" name="admin_subject" value="<?php echo esc_attr($admin_subject); ?>" class="riwa-input">
+                                    </div>
+                                </div>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="admin_message">Message</label>
+                                        <textarea id="admin_message" name="admin_message" rows="12" class="riwa-textarea"><?php echo esc_textarea($admin_message); ?></textarea>
+                                        <p class="riwa-help-text">Variables disponibles : {guest_name}, {guest_email}, {guest_phone}, {check_in}, {check_out}, {adults_count}, {children_count}, {babies_count}, {special_requests}, {admin_url}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-group">
+                                <h3>Test d'envoi</h3>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="test_email">Email de test</label>
+                                        <input type="email" id="test_email" name="test_email" class="riwa-input" placeholder="votre-email@exemple.com">
+                                    </div>
+                                </div>
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <button type="button" id="test_client_email" class="riwa-btn riwa-btn-secondary">
+                                            <span class="dashicons dashicons-email-alt"></span>
+                                            Tester email client
+                                        </button>
+                                        <button type="button" id="test_admin_email" class="riwa-btn riwa-btn-secondary">
+                                            <span class="dashicons dashicons-email-alt"></span>
+                                            Tester email admin
+                                        </button>
+                                        <span id="test_result" style="margin-left: 10px; font-weight: bold;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="riwa-setting-actions">
+                                <button type="submit" name="save_email_settings" class="riwa-btn riwa-btn-primary">
+                                    <span class="dashicons dashicons-saved"></span>
+                                    Sauvegarder la configuration
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -1243,42 +1382,51 @@ if (empty($bookings)) {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    border: 1px solid #dcdcde;
-    border-radius: 6px;
+    padding: 0.875rem 1.75rem;
+    border: 2px solid transparent;
+    border-radius: 12px;
     background: white;
     color: #1d2327;
     text-decoration: none;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .riwa-btn:hover {
     background: #f6f7f7;
     border-color: #8c8f94;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwa-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .riwa-btn-primary {
-    background: #2271b1;
+    background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
     border-color: #2271b1;
     color: white;
 }
 
 .riwa-btn-primary:hover {
-    background: #135e96;
+    background: linear-gradient(135deg, #135e96 0%, #0d4b7a 100%);
     border-color: #135e96;
 }
 
 .riwa-btn-secondary {
-    background: #f6f7f7;
-    border-color: #dcdcde;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-color: #dee2e6;
+    color: #495057;
 }
 
 .riwa-btn-secondary:hover {
-    background: #f0f0f1;
-    border-color: #8c8f94;
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #adb5bd;
 }
 
 .riwa-btn-danger {
@@ -1635,21 +1783,43 @@ body.riwa-popup-open {
 }
 
 .riwa-setting-group {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #f0f0f1;
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.riwa-setting-group:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
 }
 
 .riwa-setting-group:last-child {
-    border-bottom: none;
     margin-bottom: 0;
 }
 
 .riwa-setting-group h3 {
-    margin: 0 0 1rem 0;
-    font-size: 16px;
-    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    font-size: 18px;
+    font-weight: 700;
     color: #1d2327;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e1e5e9;
+    position: relative;
+}
+
+.riwa-setting-group h3::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
+    border-radius: 1px;
 }
 
 .riwa-form-row {
@@ -1667,43 +1837,109 @@ body.riwa-popup-open {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .riwa-form-group label {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     color: #1d2327;
+    margin-bottom: 0.375rem;
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .riwa-input,
 .riwa-textarea {
-    padding: 0.75rem;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    font-size: 14px;
-    color: #1d2327;
-    background: white;
-    transition: all 0.2s ease;
+    position: relative !important;
+    padding: 0.625rem 0.875rem !important;
+    border: 1px solid #dcdcde !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    color: #1d2327 !important;
+    background: white !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    margin: 0 !important;
+    outline: none !important;
+    min-height: 36px !important;
+}
+
+.riwa-input:hover,
+.riwa-textarea:hover {
+    border-color: #2271b1 !important;
+    background-color: #f8f9fa !important;
 }
 
 .riwa-input:focus,
 .riwa-textarea:focus {
-    border-color: #2271b1;
-    outline: none;
-    box-shadow: 0 0 0 1px #2271b1;
+    border-color: #2271b1 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1) !important;
+    transform: translateY(-1px) !important;
+    background-color: #f8f9fa !important;
+}
+
+.riwa-input::placeholder,
+.riwa-textarea::placeholder {
+    color: #8c8f94 !important;
+    font-style: italic !important;
+    opacity: 0.7 !important;
 }
 
 .riwa-textarea {
     resize: vertical;
     min-height: 80px;
+    padding: 0.625rem 0.875rem;
+    background-image: none;
+}
+
+/* Style pour les checkboxes */
+.riwa-form-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.75rem;
+    accent-color: #2271b1;
+    border-radius: 4px;
+    border: 2px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.riwa-form-group input[type="checkbox"]:checked {
+    background-color: #2271b1;
+    border-color: #2271b1;
+}
+
+.riwa-form-group input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1);
+}
+
+.riwa-form-group label[for*="notification"] {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.riwa-form-group label[for*="notification"]:hover {
+    background-color: #f8f9fa;
 }
 
 .riwa-setting-actions {
     display: flex;
     gap: 1rem;
     margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid #f0f0f1;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Responsive pour les nouvelles sections */
@@ -1759,6 +1995,58 @@ body.riwa-popup-open {
     .riwa-nav-item {
         flex-shrink: 0;
         border-left: none;
+    }
+}
+
+/* Styles pour les tests d'email */
+#test_result {
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    margin-left: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#test_result.success {
+    color: #155724;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 1px solid #46b450;
+}
+
+#test_result.success::before {
+    content: '✓';
+    font-weight: bold;
+    color: #46b450;
+}
+
+#test_result.error {
+    color: #721c24;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 1px solid #dc3232;
+}
+
+#test_result.error::before {
+    content: '✗';
+    font-weight: bold;
+    color: #dc3232;
+}
+
+.riwa-help-text {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    font-style: italic;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 6px;
+    border-left: 3px solid #2271b1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
         border-bottom: 3px solid transparent;
         padding: 0.75rem 1rem;
     }
@@ -1819,8 +2107,6 @@ jQuery(document).ready(function($) {
         
         if (targetElement.length > 0) {
             targetElement.addClass('active').show();
-        } else {
-            console.error('Section non trouvée:', targetSection + '-section');
         }
         
         // Mettre à jour l'URL sans recharger la page
@@ -1866,7 +2152,7 @@ jQuery(document).ready(function($) {
         var bookingAdults = $btn.data('booking-adults');
         var bookingChildren = $btn.data('booking-children');
         var bookingBabies = $btn.data('booking-babies');
-        var bookingPets = $btn.data('booking-pets');
+
         var bookingPrice = $btn.data('booking-price');
         var bookingPricePerNight = $btn.data('booking-price-per-night');
         var bookingStatus = $btn.data('booking-status');
@@ -1932,15 +2218,7 @@ jQuery(document).ready(function($) {
                 '</div>';
         }
         
-        if (bookingPets > 0) {
-            travelersHtml += '<div class="riwa-traveler-item">' +
-                '<div class="riwa-traveler-type">' +
-                '<span class="dashicons dashicons-pets riwa-traveler-icon"></span>' +
-                'Animal/aux' +
-                '</div>' +
-                '<span class="riwa-traveler-count">' + bookingPets + '</span>' +
-                '</div>';
-        }
+
         
         if (travelersHtml === '') {
             travelersHtml = '<div class="riwa-traveler-item">' +
@@ -2059,6 +2337,68 @@ jQuery(document).ready(function($) {
     
     $('#preview-pdf').on('click', function() {
         alert('Aperçu PDF - Fonctionnalité à implémenter');
+    });
+    
+    // Test email client
+    $('#test_client_email').on('click', function() {
+        var testEmail = $('#test_email').val();
+        if (!testEmail) {
+            alert('Veuillez saisir un email de test');
+            return;
+        }
+        
+        $('#test_result').html('Envoi en cours...').removeClass('success error');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'riwa_test_client_email',
+                email: testEmail,
+                nonce: '<?php echo wp_create_nonce('riwa_test_email'); ?>'
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#test_result').html('✅ Email client envoyé avec succès !').addClass('success');
+                } else {
+                    $('#test_result').html('❌ Erreur : ' + response.data).addClass('error');
+                }
+            },
+            error: function() {
+                $('#test_result').html('❌ Erreur lors de l\'envoi').addClass('error');
+            }
+        });
+    });
+    
+    // Test email admin
+    $('#test_admin_email').on('click', function() {
+        var testEmail = $('#test_email').val();
+        if (!testEmail) {
+            alert('Veuillez saisir un email de test');
+            return;
+        }
+        
+        $('#test_result').html('Envoi en cours...').removeClass('success error');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'riwa_test_admin_email',
+                email: testEmail,
+                nonce: '<?php echo wp_create_nonce('riwa_test_email'); ?>'
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#test_result').html('✅ Email admin envoyé avec succès !').addClass('success');
+                } else {
+                    $('#test_result').html('❌ Erreur : ' + response.data).addClass('error');
+                }
+            },
+            error: function() {
+                $('#test_result').html('❌ Erreur lors de l\'envoi').addClass('error');
+            }
+        });
     });
 });
 
