@@ -605,7 +605,7 @@ class RiwaBooking {
     }
     
     /**
-     * Calculer le prix total pour une période donnée
+     * Calculer le prix total avec détail par saison
      */
     private function calculate_total_price($check_in_date, $check_out_date, $guests_count) {
         global $wpdb;
@@ -616,19 +616,20 @@ class RiwaBooking {
         $nights = $check_in->diff($check_out)->days;
         
         if ($nights <= 0) {
-            return array('total' => 0, 'per_night' => 0);
+            return array('total' => 0, 'per_night' => 0, 'season_breakdown' => array());
         }
         
         $total_price = 0;
         $current_date = clone $check_in;
+        $season_breakdown = array(); // Détail par saison
         
-        // Calculer le prix pour chaque nuit
+        // Calculer le prix pour chaque nuit et grouper par saison
         for ($i = 0; $i < $nights; $i++) {
             $date_str = $current_date->format('Y-m-d');
             
             // Trouver le prix pour cette date
-            $price = $wpdb->get_var($wpdb->prepare("
-                SELECT price_per_night 
+            $price_result = $wpdb->get_row($wpdb->prepare("
+                SELECT price_per_night, season_name 
                 FROM $table_name 
                 WHERE start_date <= %s 
                 AND end_date >= %s 
@@ -637,21 +638,37 @@ class RiwaBooking {
                 LIMIT 1
             ", $date_str, $date_str));
             
-            if ($price) {
-                $total_price += floatval($price);
+            if ($price_result) {
+                $night_price = floatval($price_result->price_per_night);
+                $season_name = $price_result->season_name;
             } else {
-                // Prix par défaut si aucune saison trouvée
-                $total_price += 150.00;
+                $night_price = 150.00;
+                $season_name = 'Prix par défaut';
             }
+            
+            // Grouper par saison
+            if (!isset($season_breakdown[$season_name])) {
+                $season_breakdown[$season_name] = array(
+                    'nights' => 0,
+                    'price_per_night' => $night_price,
+                    'total' => 0
+                );
+            }
+            
+            $season_breakdown[$season_name]['nights']++;
+            $season_breakdown[$season_name]['total'] += $night_price;
+            $total_price += $night_price;
             
             $current_date->add(new DateInterval('P1D'));
         }
         
+        // Le prix par nuit est simplement le total divisé par le nombre de nuits
         $price_per_night = $total_price / $nights;
         
         return array(
             'total' => $total_price,
-            'per_night' => $price_per_night
+            'per_night' => $price_per_night,
+            'season_breakdown' => $season_breakdown
         );
     }
     

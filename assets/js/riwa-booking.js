@@ -367,47 +367,73 @@ jQuery(document).ready(function($) {
         if (!checkIn || !checkOut) {
             $('#summary-price-per-night').text('0 €');
             $('#summary-total-price').text('0 €');
+            $('#season-breakdown').html('');
             return;
         }
 
-        // Utiliser les données de tarification saisonnière depuis PHP
         const pricingData = riwa_ajax.pricing || [];
         const nights = Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
         
         let totalPrice = 0;
-        let pricePerNight = 0;
+        let seasonBreakdown = {}; // Détail par saison
         const currentDate = new Date(checkIn);
 
-        // Calculer le prix pour chaque nuit en utilisant les saisons
+        // Calculer le prix pour chaque nuit et grouper par saison
         for (let i = 0; i < nights; i++) {
             const dateStr = currentDate.toISOString().split('T')[0];
             let nightPrice = 150; // Prix par défaut
+            let seasonName = 'Prix par défaut';
 
             // Chercher le prix pour cette date dans les saisons
             for (const season of pricingData) {
                 if (dateStr >= season.start_date && dateStr <= season.end_date) {
                     nightPrice = season.price_per_night;
+                    seasonName = season.name;
                     break;
                 }
             }
 
+            // Grouper par saison
+            if (!seasonBreakdown[seasonName]) {
+                seasonBreakdown[seasonName] = {
+                    nights: 0,
+                    pricePerNight: nightPrice,
+                    total: 0
+                };
+            }
+            
+            seasonBreakdown[seasonName].nights++;
+            seasonBreakdown[seasonName].total += nightPrice;
             totalPrice += nightPrice;
+            
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        pricePerNight = totalPrice / nights;
+        // Le prix par nuit est simplement le total divisé par le nombre de nuits
+        const pricePerNight = totalPrice / nights;
 
-        // Appliquer les suppléments pour les voyageurs supplémentaires
-        const baseGuests = 2; // Gratuit pour 2 personnes
-        const extraGuests = Math.max(0, totalGuests - baseGuests);
-        const guestSurcharge = 20; // Supplément par personne supplémentaire
-        const totalSurcharge = extraGuests * guestSurcharge * nights;
-
-        totalPrice += totalSurcharge;
-        pricePerNight += (totalSurcharge / nights);
+        // Afficher le détail par saison dans le résumé
+        updateSeasonBreakdown(seasonBreakdown);
 
         $('#summary-price-per-night').text(`${pricePerNight.toFixed(2)} €`);
         $('#summary-total-price').text(`${totalPrice.toFixed(2)} €`);
+    }
+
+    // Nouvelle fonction pour afficher le détail par saison
+    function updateSeasonBreakdown(seasonBreakdown) {
+        let breakdownHtml = '';
+        
+        for (const season in seasonBreakdown) {
+            const data = seasonBreakdown[season];
+            breakdownHtml += `
+                <div class="summary-season-row">
+                    <div class="summary-season-label">${season} (${data.nights} nuit${data.nights > 1 ? 's' : ''})</div>
+                    <div class="summary-season-value">${data.total.toFixed(2)} €</div>
+                </div>
+            `;
+        }
+        
+        $('#season-breakdown').html(breakdownHtml);
     }
 
     // Gestionnaires d'événements pour la navigation

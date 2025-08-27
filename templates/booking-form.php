@@ -124,7 +124,7 @@ if (!defined('ABSPATH')) {
                     <input type="text" id="riwa-guest-company" name="guest_company" placeholder="Société (optionnel)" aria-label="Société">
                 </div>
                 <div class="riwa-form-group">
-                    <input type="email" id="riwa-guest-email" name="guest_email" placeholder="Email professionnel" required aria-label="Email professionnel">
+                    <input type="email" id="riwa-guest-email" name="guest_email" placeholder="Email" required aria-label="Email">
                 </div>
                 <div class="riwa-form-group">
                     <input type="tel" id="riwa-guest-phone" name="guest_phone" placeholder="Téléphone" required aria-label="Téléphone">
@@ -176,6 +176,14 @@ if (!defined('ABSPATH')) {
                              <div class="summary-label">Bébés</div>
                              <div class="summary-value"><span id="summary-babies">0</span></div>
                          </div>
+                        
+                        <!-- Détail des tarifs -->
+                        <div class="summary-section">
+                            <div class="summary-title">Détail des tarifs</div>
+                            <div id="season-breakdown">
+                                <!-- Le détail par saison sera injecté ici -->
+                            </div>
+                        </div>
                         
                         <!-- Tarification -->
                         <div class="summary-row">

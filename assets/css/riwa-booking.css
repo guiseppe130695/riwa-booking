@@ -22,6 +22,45 @@
     box-sizing: border-box;
 }
 
+/* Styles pour le détail des tarifs par saison */
+.summary-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--riwa-gray-200);
+}
+
+.summary-title {
+    font-weight: 500;
+    color: var(--riwa-gray-700);
+    margin-bottom: 10px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-season-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--riwa-gray-100);
+}
+
+.summary-season-row:last-child {
+    border-bottom: none;
+}
+
+.summary-season-label {
+    color: var(--riwa-gray-600);
+    font-weight: 400;
+}
+
+.summary-season-value {
+    color: var(--riwa-gray-800);
+    font-weight: 500;
+}
+
 /* Import de la police Roboto */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
 
