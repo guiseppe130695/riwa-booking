@@ -175,7 +175,7 @@
      * Ajouter une recherche rapide
      */
     function addQuickSearch() {
-        // Ajouter un champ de recherche avant le tableau
+        // Ajouter un champ de recherche avant le tableau des réservations uniquement
         const searchHTML = `
             <div class="riwa-search-container" style="margin-bottom: 20px;">
                 <input type="text" id="riwa-search" placeholder="Rechercher par nom, email ou téléphone..." 
@@ -184,7 +184,8 @@
             </div>
         `;
         
-        $('.wp-list-table').before(searchHTML);
+        // Ajouter le champ de recherche seulement dans la section des réservations
+        $('#bookings-section .wp-list-table').before(searchHTML);
         
         // Fonctionnalité de recherche
         $('#riwa-search').on('input', function() {

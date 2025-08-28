@@ -217,6 +217,11 @@ class RiwaBooking {
         if ('toplevel_page_riwa-bookings' === $hook) {
             wp_enqueue_style('riwa-booking-admin', RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-booking-admin.css', array(), RIWA_BOOKING_VERSION);
             wp_enqueue_script('riwa-booking-admin', RIWA_BOOKING_PLUGIN_URL . 'assets/js/riwa-booking-admin.js', array('jquery'), RIWA_BOOKING_VERSION, true);
+            
+            // Inclusion de Flatpickr pour les dates en format français (pour la section tarification)
+            wp_enqueue_style('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', array(), '4.6.13');
+            wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', array('jquery'), '4.6.13', true);
+            wp_enqueue_script('flatpickr-fr', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js', array('flatpickr'), '4.6.13', true);
         }
         
         // Scripts pour la page de personnalisation PDF
@@ -252,16 +257,6 @@ class RiwaBooking {
             30
         );
         
-        // Sous-menu pour la tarification
-        add_submenu_page(
-            'riwa-bookings',
-            'Tarification',
-            'Tarification',
-            'manage_options',
-            'riwa-pricing',
-            array($this, 'pricing_page')
-        );
-        
         // Sous-menu pour la personnalisation PDF
         add_submenu_page(
             'riwa-bookings',
@@ -271,8 +266,6 @@ class RiwaBooking {
             'riwa-pdf-settings',
             array($this, 'pdf_settings_page')
         );
-        
-
     }
     
     /**
@@ -292,10 +285,6 @@ class RiwaBooking {
     
     public function admin_page() {
         include RIWA_BOOKING_PLUGIN_PATH . 'admin/admin-page.php';
-    }
-    
-    public function pricing_page() {
-        include RIWA_BOOKING_PLUGIN_PATH . 'admin/pricing-page.php';
     }
     
     public function pdf_settings_page() {

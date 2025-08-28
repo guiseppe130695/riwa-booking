@@ -60,18 +60,17 @@ if (isset($_POST['save_email_settings']) && wp_verify_nonce($_POST['riwa_email_n
     echo '<div class="notice notice-success is-dismissible"><p>Configuration des emails sauvegardée avec succès !</p></div>';
 }
 
+// Fonction pour calculer le nombre total de voyageurs
+function get_total_guests($booking) {
+    return ($booking->adults_count ?? 0) + ($booking->children_count ?? 0) + ($booking->babies_count ?? 0);
+}
+
 // Récupération de toutes les réservations
 $bookings = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
 
 // Debug temporaire pour vérifier les données
 if (empty($bookings)) {
     echo '<div class="notice notice-warning"><p>Aucune réservation trouvée dans la base de données.</p></div>';
-} else {
-    // Vérifier la structure de la première réservation
-    $first_booking = $bookings[0];
-    if (!isset($first_booking->guests_count)) {
-        echo '<div class="notice notice-error"><p>Attention : La colonne "guests_count" n\'existe pas dans la table des réservations.</p></div>';
-    }
 }
 ?>
 
@@ -80,16 +79,6 @@ if (empty($bookings)) {
         <div class="riwa-header-content">
             <h1>Gestion des Réservations</h1>
             <p class="riwa-subtitle">Consultez et gérez toutes vos réservations</p>
-        </div>
-        <div class="riwa-header-actions">
-            <button type="button" class="riwa-btn riwa-btn-secondary" id="export-bookings">
-                <span class="dashicons dashicons-download"></span>
-                Exporter
-            </button>
-            <button type="button" class="riwa-btn riwa-btn-primary" id="refresh-bookings">
-                <span class="dashicons dashicons-update"></span>
-                Actualiser
-            </button>
         </div>
     </div>
     
@@ -136,23 +125,376 @@ if (empty($bookings)) {
                     <p>Vue d'ensemble de vos réservations</p>
                 </div>
                 <div class="riwa-section-content">
-                    <div class="riwa-form-grid">
-                        <div class="riwa-form-group">
-                            <h3>Total des réservations</h3>
-                            <span class="stat-number"><?php echo count($bookings); ?></span>
+                    <!-- Statistiques en mode linéaire -->
+                    <div class="riwa-stats-linear">
+                        <div class="riwa-stat-item">
+                            <div class="riwa-stat-label">Total des réservations</div>
+                            <div class="riwa-stat-value"><?php echo count($bookings); ?></div>
                         </div>
-                        <div class="riwa-form-group">
-                            <h3>En attente</h3>
-                            <span class="stat-number pending"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'pending'; })); ?></span>
+                        <div class="riwa-stat-item">
+                            <div class="riwa-stat-label">En attente</div>
+                            <div class="riwa-stat-value riwa-stat-pending"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'pending'; })); ?></div>
                         </div>
-                        <div class="riwa-form-group">
-                            <h3>Confirmées</h3>
-                            <span class="stat-number confirmed"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'confirmed'; })); ?></span>
+                        <div class="riwa-stat-item">
+                            <div class="riwa-stat-label">Confirmées</div>
+                            <div class="riwa-stat-value riwa-stat-confirmed"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'confirmed'; })); ?></div>
                         </div>
-                        <div class="riwa-form-group">
-                            <h3>Annulées</h3>
-                            <span class="stat-number cancelled"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'cancelled'; })); ?></span>
+                        <div class="riwa-stat-item">
+                            <div class="riwa-stat-label">Annulées</div>
+                            <div class="riwa-stat-value riwa-stat-cancelled"><?php echo count(array_filter($bookings, function($b) { return $b->status === 'cancelled'; })); ?></div>
                         </div>
+                    </div>
+                    
+                    <!-- Liste des réservations récentes -->
+                    <div class="riwa-recent-bookings">
+                        <h3>Réservations récentes</h3>
+                        <?php if (empty($bookings)): ?>
+                            <div class="riwa-empty-state">
+                                <span class="dashicons dashicons-calendar-alt"></span>
+                                <h3>Aucune réservation</h3>
+                                <p>Aucune réservation n'a été trouvée dans le système.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="riwa-bookings-table">
+                                <div class="riwa-table-header">
+                                    <div class="riwa-table-info">
+                                        <span class="riwa-table-count"><?php echo count($bookings); ?> réservation<?php echo count($bookings) > 1 ? 's' : ''; ?></span>
+                                    </div>
+                                    <div class="riwa-table-actions">
+                                        <button type="button" class="riwa-btn riwa-btn-secondary button-small" id="filter-bookings">
+                                            <span class="dashicons dashicons-filter"></span>
+                                            Filtrer
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="riwa-table-wrapper">
+                                    <table class="riwa-modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="riwa-th-id">ID</th>
+                                                <th class="riwa-th-reference">Référence</th>
+                                                <th class="riwa-th-client">Client & Contact</th>
+                                                <th class="riwa-th-price">Prix</th>
+                                                <th class="riwa-th-status">Statut</th>
+                                                <th class="riwa-th-date">Créée le</th>
+                                                <th class="riwa-th-actions">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($bookings as $booking): ?>
+                                                <tr class="riwa-booking-row">
+                                                    <td class="riwa-td-id">
+                                                        <span class="riwa-booking-id">#<?php echo esc_html($booking->id); ?></span>
+                                                    </td>
+                                                    <td class="riwa-td-reference">
+                                                        <span class="riwa-booking-reference">RIWA-<?php echo str_pad($booking->id, 6, '0', STR_PAD_LEFT); ?></span>
+                                                    </td>
+                                                    <td class="riwa-td-client">
+                                                        <div class="riwa-client-info">
+                                                            <div class="riwa-client-name"><?php echo esc_html($booking->guest_name); ?></div>
+                                                            <div class="riwa-client-contact">
+                                                                <a href="mailto:<?php echo esc_attr($booking->guest_email); ?>"><?php echo esc_html($booking->guest_email); ?></a>
+                                                                <span class="riwa-contact-separator">•</span>
+                                                                <a href="tel:<?php echo esc_attr($booking->guest_phone); ?>"><?php echo esc_html($booking->guest_phone); ?></a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="riwa-td-price">
+                                                        <?php if ($booking->total_price > 0): ?>
+                                                            <span class="riwa-price-total"><?php echo number_format($booking->total_price, 0, ',', ' '); ?> €</span>
+                                                        <?php else: ?>
+                                                            <span class="riwa-price-unknown">
+                                                                <span class="dashicons dashicons-minus"></span>
+                                                                Non calculé
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="riwa-td-status">
+                                                        <span class="riwa-status-badge riwa-status-<?php echo esc_attr($booking->status); ?>">
+                                                            <?php 
+                                                            switch($booking->status) {
+                                                                case 'pending': echo 'En attente'; break;
+                                                                case 'confirmed': echo 'Confirmée'; break;
+                                                                case 'cancelled': echo 'Annulée'; break;
+                                                                default: echo ucfirst($booking->status);
+                                                            }
+                                                            ?>
+                                                        </span>
+                                                    </td>
+                                                    <td class="riwa-td-date">
+                                                        <span class="riwa-date-created"><?php echo date('d/m/Y', strtotime($booking->created_at)); ?></span>
+                                                    </td>
+                                                    <td class="riwa-td-actions">
+                                                        <div class="riwa-actions-compact">
+                                                            <select name="new_status" onchange="updateBookingStatus(<?php echo esc_attr($booking->id); ?>, this.value)" class="riwa-status-select-compact">
+                                                                <option value="">Statut</option>
+                                                                <option value="pending" <?php selected($booking->status, 'pending'); ?>>En attente</option>
+                                                                <option value="confirmed" <?php selected($booking->status, 'confirmed'); ?>>Confirmée</option>
+                                                                <option value="cancelled" <?php selected($booking->status, 'cancelled'); ?>>Annulée</option>
+                                                            </select>
+                                                            
+                                                            <button type="button" class="riwa-btn riwa-btn-secondary button-small view-details-popup" 
+                                                                    data-booking-id="<?php echo esc_attr($booking->id); ?>"
+                                                                    data-booking-name="<?php echo esc_attr($booking->guest_name); ?>"
+                                                                    data-booking-email="<?php echo esc_attr($booking->guest_email); ?>"
+                                                                    data-booking-phone="<?php echo esc_attr($booking->guest_phone); ?>"
+                                                                    data-booking-checkin="<?php echo esc_attr($booking->check_in_date); ?>"
+                                                                    data-booking-checkout="<?php echo esc_attr($booking->check_out_date); ?>"
+                                                                    data-booking-guests="<?php echo esc_attr(($booking->adults_count ?? 0) + ($booking->children_count ?? 0) + ($booking->babies_count ?? 0)); ?>"
+                                                                    data-booking-adults="<?php echo esc_attr($booking->adults_count ?? 0); ?>"
+                                                                    data-booking-children="<?php echo esc_attr($booking->children_count ?? 0); ?>"
+                                                                    data-booking-babies="<?php echo esc_attr($booking->babies_count ?? 0); ?>"
+                                                                    data-booking-price="<?php echo esc_attr($booking->total_price); ?>"
+                                                                    data-booking-price-per-night="<?php echo esc_attr($booking->price_per_night); ?>"
+                                                                    data-booking-status="<?php echo esc_attr($booking->status); ?>"
+                                                                    data-booking-created="<?php echo esc_attr($booking->created_at); ?>"
+                                                                    data-booking-requests="<?php echo esc_attr($booking->special_requests); ?>">
+                                                                <span class="dashicons dashicons-visibility"></span>
+                                                                Détails
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Tarification -->
+            <div class="riwa-section" id="pricing-section">
+                <?php
+                // Inclure le contenu de la page de tarification
+                global $wpdb;
+                $pricing_table = $wpdb->prefix . 'riwa_pricing';
+                
+                /**
+                 * Vérifier s'il y a des chevauchements de dates avec les périodes existantes
+                 */
+                function check_date_overlap($start_date, $end_date, $exclude_id = null) {
+                    global $wpdb;
+                    $pricing_table = $wpdb->prefix . 'riwa_pricing';
+                    
+                    $query = $wpdb->prepare("
+                        SELECT id, season_name, start_date, end_date 
+                        FROM $pricing_table 
+                        WHERE (
+                            (start_date <= %s AND end_date >= %s) OR  -- La nouvelle période commence pendant une période existante
+                            (start_date <= %s AND end_date >= %s) OR  -- La nouvelle période se termine pendant une période existante
+                            (start_date >= %s AND end_date <= %s)     -- La nouvelle période est entièrement contenue dans une période existante
+                        )
+                        AND is_active = 1
+                    ", $start_date, $start_date, $end_date, $end_date, $start_date, $end_date);
+                    
+                    // Exclure l'ID actuel si on modifie une période existante
+                    if ($exclude_id) {
+                        $query .= $wpdb->prepare(" AND id != %d", $exclude_id);
+                    }
+                    
+                    return $wpdb->get_results($query);
+                }
+
+                // Gestion des actions de tarification
+                if (isset($_POST['action'])) {
+                    $action = sanitize_text_field($_POST['action']);
+                    
+                    if ($action === 'add_pricing' && wp_verify_nonce($_POST['pricing_nonce'], 'riwa_pricing_nonce')) {
+                        $season_name = sanitize_text_field($_POST['season_name']);
+                        $start_date = sanitize_text_field($_POST['start_date']);
+                        $end_date = sanitize_text_field($_POST['end_date']);
+                        $price_per_night = floatval($_POST['price_per_night']);
+                        $min_stay = intval($_POST['min_stay']);
+                        
+                        if (!empty($season_name) && !empty($start_date) && !empty($end_date) && $price_per_night > 0) {
+                            // Vérifier que la date de fin est après la date de début
+                            if ($end_date <= $start_date) {
+                                echo '<div class="notice notice-error"><p>La date de fin doit être après la date de début.</p></div>';
+                            } else {
+                                // Vérifier les chevauchements
+                                $overlaps = check_date_overlap($start_date, $end_date);
+                                
+                                                if (!empty($overlaps)) {
+                    $overlap_message = '<p>Cette période chevauche avec les périodes suivantes :</p><ul>';
+                    foreach ($overlaps as $overlap) {
+                        $overlap_start = new DateTime($overlap->start_date);
+                        $overlap_end = new DateTime($overlap->end_date);
+                        $overlap_message .= '<li><strong>' . esc_html($overlap->season_name) . '</strong> : ' . 
+                                          $overlap_start->format('d/m/Y') . ' - ' . $overlap_end->format('d/m/Y') . '</li>';
+                    }
+                    $overlap_message .= '</ul><p>Veuillez ajuster les dates pour éviter les conflits.</p>';
+                    
+                    // Stocker le message pour l'afficher via JavaScript
+                    echo '<script>
+                        window.riwaNotificationMessage = `' . addslashes($overlap_message) . '`;
+                        window.riwaNotificationType = "error";
+                    </script>';
+                } else {
+                                    // Aucun chevauchement, on peut insérer
+                                    $result = $wpdb->insert(
+                                        $pricing_table,
+                                        array(
+                                            'season_name' => $season_name,
+                                            'start_date' => $start_date,
+                                            'end_date' => $end_date,
+                                            'price_per_night' => $price_per_night,
+                                            'min_stay' => $min_stay,
+                                            'is_active' => 1
+                                        ),
+                                        array('%s', '%s', '%s', '%f', '%d', '%d')
+                                    );
+                                    
+                                                        if ($result) {
+                        echo '<script>
+                            window.riwaNotificationMessage = "Période tarifaire ajoutée avec succès !";
+                            window.riwaNotificationType = "success";
+                        </script>';
+                    } else {
+                        echo '<script>
+                            window.riwaNotificationMessage = "Erreur lors de l\'ajout de la période tarifaire.";
+                            window.riwaNotificationType = "error";
+                        </script>';
+                    }
+                                }
+                            }
+                                } else {
+            echo '<script>
+                window.riwaNotificationMessage = "Veuillez remplir tous les champs obligatoires.";
+                window.riwaNotificationType = "error";
+            </script>';
+        }
+                    }
+                    
+                        if ($action === 'delete_pricing' && isset($_POST['pricing_id'])) {
+        $pricing_id = intval($_POST['pricing_id']);
+        $wpdb->delete($pricing_table, array('id' => $pricing_id), array('%d'));
+        echo '<script>
+            window.riwaNotificationMessage = "Période tarifaire supprimée avec succès !";
+            window.riwaNotificationType = "success";
+        </script>';
+    }
+                    
+                    if ($action === 'toggle_pricing' && isset($_POST['pricing_id'])) {
+                        $pricing_id = intval($_POST['pricing_id']);
+                        $current_status = $wpdb->get_var($wpdb->prepare("SELECT is_active FROM $pricing_table WHERE id = %d", $pricing_id));
+                        $new_status = $current_status ? 0 : 1;
+                        
+                        $wpdb->update(
+                            $pricing_table,
+                            array('is_active' => $new_status),
+                            array('id' => $pricing_id),
+                            array('%d'),
+                            array('%d')
+                        );
+                        
+                        $status_text = $new_status ? 'activée' : 'désactivée';
+                        echo '<div class="notice notice-success"><p>Période tarifaire ' . $status_text . ' avec succès !</p></div>';
+                    }
+                }
+
+                // Récupération des périodes tarifaires
+                $pricing_seasons = $wpdb->get_results("SELECT * FROM $pricing_table ORDER BY start_date ASC");
+                ?>
+                
+                <div class="riwa-section-header">
+                    <h2>Gestion de la Tarification</h2>
+                    <p>Configurez vos tarifs saisonniers</p>
+                </div>
+                <div class="riwa-section-content">
+                    <div class="riwa-form-container">
+                        <form method="post" class="riwa-pricing-form">
+                            <input type="hidden" name="action" value="add_pricing">
+                            <?php wp_nonce_field('riwa_pricing_nonce', 'pricing_nonce'); ?>
+                            
+                            <div class="riwa-form-linear">
+                                <div class="riwa-form-row">
+                                    <div class="riwa-form-group">
+                                        <label for="season_name">Nom de la saison *</label>
+                                        <input type="text" id="season_name" name="season_name" required placeholder="Ex: Haute saison été">
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="price_per_night">Prix par nuit (€) *</label>
+                                        <input type="number" id="price_per_night" name="price_per_night" step="0.01" min="0" required placeholder="150.00">
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="start_date">Date de début *</label>
+                                        <input type="text" id="start_date" name="start_date" required placeholder="JJ/MM/AAAA" readonly>
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="end_date">Date de fin *</label>
+                                        <input type="text" id="end_date" name="end_date" required placeholder="JJ/MM/AAAA" readonly>
+                                    </div>
+                                    <div class="riwa-form-group">
+                                        <label for="min_stay">Séjour min. (nuits)</label>
+                                        <input type="number" id="min_stay" name="min_stay" min="1" value="1">
+                                    </div>
+                                    <div class="riwa-form-group riwa-form-submit">
+                                        <button type="submit" class="riwa-btn riwa-btn-primary">
+                                            <span class="dashicons dashicons-plus-alt"></span>
+                                            Ajouter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="riwa-table-container">
+                        <h3>Périodes tarifaires configurées</h3>
+                        <?php if (empty($pricing_seasons)): ?>
+                            <div class="riwa-empty-state">
+                                <span class="dashicons dashicons-calendar-alt"></span>
+                                <h3>Aucune période tarifaire</h3>
+                                <p>Ajoutez votre première période tarifaire ci-dessus.</p>
+                            </div>
+                        <?php else: ?>
+                            <table class="wp-list-table widefat fixed striped">
+                                <thead>
+                                    <tr>
+                                        <th>Saison</th>
+                                        <th>Période</th>
+                                        <th>Prix/nuit</th>
+                                        <th>Séjour min.</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($pricing_seasons as $season): ?>
+                                        <tr>
+                                            <td><strong><?php echo esc_html($season->season_name); ?></strong></td>
+                                            <td>
+                                                <?php 
+                                                $start = new DateTime($season->start_date);
+                                                $end = new DateTime($season->end_date);
+                                                echo $start->format('d/m/Y') . ' - ' . $end->format('d/m/Y');
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <span class="price-display"><?php echo number_format($season->price_per_night, 2, ',', ' '); ?> €</span>
+                                            </td>
+                                            <td><?php echo isset($season->min_stay) ? $season->min_stay : 1; ?> nuit<?php echo (isset($season->min_stay) ? $season->min_stay : 1) > 1 ? 's' : ''; ?></td>
+                                            <td>
+                                                <span class="status-badge status-<?php echo $season->is_active ? 'active' : 'inactive'; ?>">
+                                                    <?php echo $season->is_active ? 'Active' : 'Inactive'; ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form method="post" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette période tarifaire ?');">
+                                                    <input type="hidden" name="action" value="delete_pricing">
+                                                    <input type="hidden" name="pricing_id" value="<?php echo $season->id; ?>">
+                                                    <button type="submit" class="riwa-btn riwa-btn-danger button-small">Supprimer</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -258,7 +600,7 @@ if (empty($bookings)) {
                                                                     data-booking-phone="<?php echo esc_attr($booking->guest_phone); ?>"
                                                                     data-booking-checkin="<?php echo esc_attr($booking->check_in_date); ?>"
                                                                     data-booking-checkout="<?php echo esc_attr($booking->check_out_date); ?>"
-                                                                    data-booking-guests="<?php echo esc_attr($booking->guests_count); ?>"
+                                                                    data-booking-guests="<?php echo esc_attr(get_total_guests($booking)); ?>"
                                                                     data-booking-adults="<?php echo esc_attr($booking->adults_count ?? 0); ?>"
                                                                     data-booking-children="<?php echo esc_attr($booking->children_count ?? 0); ?>"
                                                                     data-booking-babies="<?php echo esc_attr($booking->babies_count ?? 0); ?>"
@@ -846,7 +1188,6 @@ if (empty($bookings)) {
     display: flex;
     flex-direction: column;
     text-align: center;
-    padding: 2rem;
     background: #f8f9fa;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -2082,6 +2423,802 @@ body.riwa-popup-open {
         padding: 1rem;
         overflow-x: auto;
     }
+    
+    /* Responsive pour le formulaire linéaire */
+    .riwa-form-row {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem;
+    }
+    
+    .riwa-form-group {
+        min-width: auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    .riwa-form-submit {
+        align-self: flex-start;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Styles pour les statistiques linéaires */
+.riwa-stats-linear {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    border: 1px solid #e1e5e9;
+}
+
+.riwa-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.riwa-stat-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.riwa-stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.riwa-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1;
+}
+
+.riwa-stat-pending {
+    color: #f39c12;
+}
+
+.riwa-stat-confirmed {
+    color: #27ae60;
+}
+
+.riwa-stat-cancelled {
+    color: #e74c3c;
+}
+
+/* Styles pour la section des réservations récentes */
+.riwa-recent-bookings {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e1e5e9;
+}
+
+.riwa-recent-bookings h3 {
+    margin: 0;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+    border-bottom: 1px solid #e1e5e9;
+    background: #f8f9fa;
+}
+
+/* Styles pour les statistiques linéaires */
+.riwa-stats-linear {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    border: 1px solid #e1e5e9;
+}
+
+.riwa-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.riwa-stat-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.riwa-stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.riwa-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1;
+}
+
+.riwa-stat-pending {
+    color: #f39c12;
+}
+
+.riwa-stat-confirmed {
+    color: #27ae60;
+}
+
+.riwa-stat-cancelled {
+    color: #e74c3c;
+}
+
+/* Styles pour la section des réservations récentes */
+.riwa-recent-bookings {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e1e5e9;
+}
+
+.riwa-recent-bookings h3 {
+    margin: 0;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+    border-bottom: 1px solid #e1e5e9;
+    background: #f8f9fa;
+}
+
+/* Styles pour la section tarification */
+.riwa-form-linear {
+    margin-bottom: 2rem;
+}
+
+/* Masquer le champ de recherche dans la section tarification */
+#pricing-section input[type="search"],
+#pricing-section input[placeholder*="Rechercher"],
+#pricing-section .riwa-table-container input[type="search"],
+#pricing-section .riwa-table-container input[placeholder*="Rechercher"] {
+    display: none !important;
+}
+
+.riwa-form-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e1e5e9;
+}
+
+.riwa-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.riwa-form-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    flex: 1;
+    min-width: 120px;
+}
+
+.riwa-form-submit {
+    flex: 0 0 auto;
+    min-width: auto;
+    display: flex;
+    align-items: flex-end;
+}
+
+.riwa-form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d2327;
+    margin-bottom: 0.5rem;
+}
+
+.riwa-form-group input,
+.riwa-form-group select,
+.riwa-form-group textarea {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+    height: 38px;
+}
+
+.riwa-form-group input:focus,
+.riwa-form-group select:focus,
+.riwa-form-group textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+.riwa-form-group input.error {
+    border-color: #d63638;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+.riwa-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.riwa-table-container {
+    padding: 2rem;
+}
+
+.riwa-table-container h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wp-list-table {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.wp-list-table th {
+    background: #f6f7f7;
+    border-bottom: 1px solid #e1e5e9;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wp-list-table td {
+    border-bottom: 1px solid #f0f0f1;
+}
+
+/* État vide */
+.riwa-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #646970;
+}
+
+.riwa-empty-state .dashicons {
+    font-size: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.riwa-empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.riwa-empty-state p {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 14px;
+}
+
+/* Badges de statut pour tarification */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: #edfaef;
+    color: #008a20;
+}
+
+.status-inactive {
+    background: #fcf0f1;
+    color: #d63638;
+}
+
+/* Affichage des prix */
+.price-display {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Boutons */
+.riwa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    background: white;
+    color: #1d2327;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.riwa-btn:hover {
+    background: #f6f7f7;
+    border-color: #8c8f94;
+}
+
+.riwa-btn-primary {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: white;
+}
+
+.riwa-btn-primary:hover {
+    background: #135e96;
+    border-color: #135e96;
+}
+
+.riwa-btn-secondary {
+    background: #f6f7f7;
+    border-color: #dcdcde;
+}
+
+.riwa-btn-secondary:hover {
+    background: #f0f0f1;
+    border-color: #8c8f94;
+}
+
+.riwa-btn-danger {
+    background: #fcf0f1;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.riwa-btn-danger:hover {
+    background: #d63638;
+    color: white;
+}
+
+.riwa-btn.button-small {
+    padding: 0.5rem 1rem;
+    font-size: 12px;
+}
+
+/* Style pour le bouton d'ajout dans le formulaire linéaire */
+.riwa-form-submit .riwa-btn {
+    height: 38px;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+}
+
+/* Styles pour les messages d'erreur de validation */
+.form-error {
+    color: #d63638;
+    font-size: 12px;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background-color: #fef7f1;
+    border-left: 3px solid #d63638;
+    border-radius: 2px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Styles pour Flatpickr */
+.flatpickr-input {
+    background-color: white !important;
+    cursor: pointer;
+}
+
+.flatpickr-input:focus {
+    border-color: #2271b1 !important;
+    box-shadow: 0 0 0 1px #2271b1 !important;
+}
+
+/* Personnalisation du calendrier Flatpickr */
+.flatpickr-calendar {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.flatpickr-day.selected {
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+}
+
+.flatpickr-day:hover {
+    background: #f0f6fc !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: #2271b1;
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    color: white;
+}
+
+.flatpickr-current-month input.cur-year {
+    color: white;
+}
+
+/* Styles pour les notifications push */
+.riwa-notification {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    max-width: 400px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 14px;
+    line-height: 1.4;
+    z-index: 9999;
+    cursor: pointer;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-left: 4px solid;
+}
+
+.riwa-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.riwa-notification-success {
+    background: #d4edda;
+    color: #155724;
+    border-left-color: #28a745;
+}
+
+.riwa-notification-error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left-color: #dc3545;
+}
+
+.riwa-notification-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-left-color: #17a2b8;
+}
+
+.riwa-notification-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left-color: #ffc107;
+}
+
+.riwa-notification ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+}
+
+.riwa-notification li {
+    margin-bottom: 4px;
+}
+
+.riwa-notification p {
+    margin: 0 0 8px 0;
+}
+
+.riwa-notification p:last-child {
+    margin-bottom: 0;
+}
+
+/* État vide */
+.riwa-empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6c757d;
+}
+
+.riwa-empty-state .dashicons {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.riwa-empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.riwa-empty-state p {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Table des réservations */
+.riwa-bookings-table {
+    background: white;
+}
+
+.riwa-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e1e5e9;
+    background: #f8f9fa;
+}
+
+.riwa-table-info {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.riwa-table-count {
+    font-weight: 500;
+}
+
+.riwa-table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.riwa-table-wrapper {
+    overflow-x: auto;
+}
+
+.riwa-modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.riwa-modern-table th {
+    background: #f8f9fa;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.riwa-modern-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.riwa-modern-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Colonnes spécifiques */
+.riwa-th-id, .riwa-td-id {
+    width: 60px;
+}
+
+.riwa-th-reference, .riwa-td-reference {
+    width: 120px;
+}
+
+.riwa-th-client, .riwa-td-client {
+    min-width: 200px;
+}
+
+.riwa-th-price, .riwa-td-price {
+    width: 100px;
+    text-align: right;
+}
+
+.riwa-th-status, .riwa-td-status {
+    width: 100px;
+}
+
+.riwa-th-date, .riwa-td-date {
+    width: 100px;
+}
+
+.riwa-th-actions, .riwa-td-actions {
+    width: 150px;
+}
+
+/* Contenu des cellules */
+.riwa-booking-id {
+    font-weight: 600;
+    color: #495057;
+}
+
+.riwa-booking-reference {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.riwa-client-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.riwa-client-name {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.riwa-client-contact {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.riwa-client-contact a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.riwa-client-contact a:hover {
+    text-decoration: underline;
+}
+
+.riwa-contact-separator {
+    margin: 0 0.5rem;
+    color: #adb5bd;
+}
+
+.riwa-price-total {
+    font-weight: 600;
+    color: #27ae60;
+}
+
+.riwa-price-unknown {
+    color: #6c757d;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.riwa-status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.riwa-status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.riwa-status-confirmed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.riwa-status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.riwa-date-created {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.riwa-actions-compact {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.riwa-status-select-compact {
+    font-size: 11px;
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: white;
+    min-width: 80px;
+}
+
+.riwa-btn-secondary {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.riwa-btn-secondary:hover {
+    background: #5a6268;
+    border-color: #545b62;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .riwa-stats-linear {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .riwa-stat-item {
+        width: 100%;
+    }
+    
+    .riwa-table-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .riwa-modern-table {
+        font-size: 12px;
+    }
+    
+    .riwa-modern-table th,
+    .riwa-modern-table td {
+        padding: 8px 12px;
+    }
+    
+    .riwa-actions-compact {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
 }
 </style>
 
@@ -2400,6 +3537,174 @@ jQuery(document).ready(function($) {
             }
         });
     });
+    
+    // Validation du formulaire d'ajout de tarification
+    $('.riwa-pricing-form').on('submit', function(e) {
+        var startDate = $('#start_date').attr('data-iso-date');
+        var endDate = $('#end_date').attr('data-iso-date');
+        var seasonName = $('#season_name').val();
+        var pricePerNight = $('#price_per_night').val();
+        
+        // Réinitialiser les messages d'erreur et les classes d'erreur
+        $('.form-error').remove();
+        $('.riwa-form-group input').removeClass('error');
+        
+        var hasError = false;
+        
+        // Validation des champs obligatoires
+        if (!seasonName.trim()) {
+            $('#season_name').addClass('error').after('<div class="form-error">Le nom de la saison est obligatoire</div>');
+            hasError = true;
+        }
+        
+        if (!pricePerNight || parseFloat(pricePerNight) <= 0) {
+            $('#price_per_night').addClass('error').after('<div class="form-error">Le prix par nuit doit être supérieur à 0</div>');
+            hasError = true;
+        }
+        
+        if (!startDate) {
+            $('#start_date').addClass('error').after('<div class="form-error">La date de début est obligatoire</div>');
+            hasError = true;
+        }
+        
+        if (!endDate) {
+            $('#end_date').addClass('error').after('<div class="form-error">La date de fin est obligatoire</div>');
+            hasError = true;
+        }
+        
+        // Validation des dates
+        if (startDate && endDate) {
+            var start = new Date(startDate);
+            var end = new Date(endDate);
+            
+            if (end <= start) {
+                $('#end_date').addClass('error').after('<div class="form-error">La date de fin doit être après la date de début</div>');
+                hasError = true;
+            }
+        }
+        
+        if (hasError) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Convertir les dates en format ISO pour l'envoi au serveur
+        $('#start_date').val(startDate);
+        $('#end_date').val(endDate);
+    });
+    
+    // Initialisation de Flatpickr pour les dates en format français
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('#start_date', {
+            dateFormat: 'd/m/Y',
+            locale: 'fr',
+            allowInput: true,
+            clickOpens: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                // Convertir le format français vers le format ISO pour la validation
+                var dateParts = dateStr.split('/');
+                if (dateParts.length === 3) {
+                    var isoDate = dateParts[2] + '-' + dateParts[1].padStart(2, '0') + '-' + dateParts[0].padStart(2, '0');
+                    instance.input.setAttribute('data-iso-date', isoDate);
+                }
+                validateDates();
+            }
+        });
+        
+        flatpickr('#end_date', {
+            dateFormat: 'd/m/Y',
+            locale: 'fr',
+            allowInput: true,
+            clickOpens: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                // Convertir le format français vers le format ISO pour la validation
+                var dateParts = dateStr.split('/');
+                if (dateParts.length === 3) {
+                    var isoDate = dateParts[2] + '-' + dateParts[1].padStart(2, '0') + '-' + dateParts[0].padStart(2, '0');
+                    instance.input.setAttribute('data-iso-date', isoDate);
+                }
+                validateDates();
+            }
+        });
+    }
+    
+    // Fonction de validation des dates
+    function validateDates() {
+        var startDate = $('#start_date').attr('data-iso-date');
+        var endDate = $('#end_date').attr('data-iso-date');
+        
+        $('.date-error').remove();
+        $('#end_date').removeClass('error');
+        
+        if (startDate && endDate) {
+            var start = new Date(startDate);
+            var end = new Date(endDate);
+            
+            if (end <= start) {
+                $('#end_date').addClass('error').after('<div class="date-error form-error">La date de fin doit être après la date de début</div>');
+            }
+        }
+    }
+    
+    // Validation en temps réel des autres champs
+    $('#season_name').on('input', function() {
+        if ($(this).val().trim()) {
+            $(this).removeClass('error');
+            $(this).next('.form-error').remove();
+        }
+    });
+    
+    $('#price_per_night').on('input', function() {
+        var value = parseFloat($(this).val());
+        if (value > 0) {
+            $(this).removeClass('error');
+            $(this).next('.form-error').remove();
+        }
+    });
+    
+    // Fonction pour afficher les notifications push
+    window.showNotification = function(message, type = 'info') {
+        // Créer l'élément de notification
+        var notification = document.createElement('div');
+        notification.className = 'riwa-notification riwa-notification-' + type;
+        notification.innerHTML = message;
+        
+        // Ajouter au body
+        document.body.appendChild(notification);
+        
+        // Animation d'apparition
+        setTimeout(function() {
+            notification.classList.add('show');
+        }, 100);
+        
+        // Disparition automatique après 5 secondes
+        setTimeout(function() {
+            notification.classList.remove('show');
+            setTimeout(function() {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
+        
+        // Fermer au clic
+        notification.addEventListener('click', function() {
+            notification.classList.remove('show');
+            setTimeout(function() {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        });
+    };
+    
+    // Vérifier s'il y a des notifications à afficher au chargement de la page
+    if (window.riwaNotificationMessage && window.riwaNotificationType) {
+        showNotification(window.riwaNotificationMessage, window.riwaNotificationType);
+        // Nettoyer les variables
+        delete window.riwaNotificationMessage;
+        delete window.riwaNotificationType;
+    }
 });
 
 // Fonction pour mettre à jour le statut d'une réservation

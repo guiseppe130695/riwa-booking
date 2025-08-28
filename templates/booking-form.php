@@ -186,10 +186,6 @@ if (!defined('ABSPATH')) {
                         </div>
                         
                         <!-- Tarification -->
-                        <div class="summary-row">
-                            <div class="summary-label">Prix par nuit</div>
-                            <div class="summary-value" id="summary-price-per-night">0 €</div>
-                        </div>
                         <div class="summary-row summary-total-row">
                             <div class="summary-label">Total</div>
                             <div class="summary-value" id="summary-total-price">0 €</div>

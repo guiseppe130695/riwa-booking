@@ -7,6 +7,32 @@ if (!defined('ABSPATH')) {
 global $wpdb;
 $pricing_table = $wpdb->prefix . 'riwa_pricing';
 
+/**
+ * Vérifier s'il y a des chevauchements de dates avec les périodes existantes
+ */
+function check_date_overlap($start_date, $end_date, $exclude_id = null) {
+    global $wpdb;
+    $pricing_table = $wpdb->prefix . 'riwa_pricing';
+    
+    $query = $wpdb->prepare("
+        SELECT id, season_name, start_date, end_date 
+        FROM $pricing_table 
+        WHERE (
+            (start_date <= %s AND end_date >= %s) OR  -- La nouvelle période commence pendant une période existante
+            (start_date <= %s AND end_date >= %s) OR  -- La nouvelle période se termine pendant une période existante
+            (start_date >= %s AND end_date <= %s)     -- La nouvelle période est entièrement contenue dans une période existante
+        )
+        AND is_active = 1
+    ", $start_date, $start_date, $end_date, $end_date, $start_date, $end_date);
+    
+    // Exclure l'ID actuel si on modifie une période existante
+    if ($exclude_id) {
+        $query .= $wpdb->prepare(" AND id != %d", $exclude_id);
+    }
+    
+    return $wpdb->get_results($query);
+}
+
 // Gestion des actions
 if (isset($_POST['action'])) {
     $action = sanitize_text_field($_POST['action']);
@@ -19,23 +45,44 @@ if (isset($_POST['action'])) {
         $min_stay = intval($_POST['min_stay']);
         
         if (!empty($season_name) && !empty($start_date) && !empty($end_date) && $price_per_night > 0) {
-            $result = $wpdb->insert(
-                $pricing_table,
-                array(
-                    'season_name' => $season_name,
-                    'start_date' => $start_date,
-                    'end_date' => $end_date,
-                    'price_per_night' => $price_per_night,
-                    'min_stay' => $min_stay,
-                    'is_active' => 1
-                ),
-                array('%s', '%s', '%s', '%f', '%d', '%d')
-            );
-            
-            if ($result) {
-                echo '<div class="notice notice-success"><p>Période tarifaire ajoutée avec succès !</p></div>';
+            // Vérifier que la date de fin est après la date de début
+            if ($end_date <= $start_date) {
+                echo '<div class="notice notice-error"><p>La date de fin doit être après la date de début.</p></div>';
             } else {
-                echo '<div class="notice notice-error"><p>Erreur lors de l\'ajout de la période tarifaire.</p></div>';
+                // Vérifier les chevauchements
+                $overlaps = check_date_overlap($start_date, $end_date);
+                
+                if (!empty($overlaps)) {
+                    $overlap_message = '<p>Cette période chevauche avec les périodes suivantes :</p><ul>';
+                    foreach ($overlaps as $overlap) {
+                        $overlap_start = new DateTime($overlap->start_date);
+                        $overlap_end = new DateTime($overlap->end_date);
+                        $overlap_message .= '<li><strong>' . esc_html($overlap->season_name) . '</strong> : ' . 
+                                          $overlap_start->format('d/m/Y') . ' - ' . $overlap_end->format('d/m/Y') . '</li>';
+                    }
+                    $overlap_message .= '</ul><p>Veuillez ajuster les dates pour éviter les conflits.</p>';
+                    echo '<div class="notice notice-error">' . $overlap_message . '</div>';
+                } else {
+                    // Aucun chevauchement, on peut insérer
+                    $result = $wpdb->insert(
+                        $pricing_table,
+                        array(
+                            'season_name' => $season_name,
+                            'start_date' => $start_date,
+                            'end_date' => $end_date,
+                            'price_per_night' => $price_per_night,
+                            'min_stay' => $min_stay,
+                            'is_active' => 1
+                        ),
+                        array('%s', '%s', '%s', '%f', '%d', '%d')
+                    );
+                    
+                    if ($result) {
+                        echo '<div class="notice notice-success"><p>Période tarifaire ajoutée avec succès !</p></div>';
+                    } else {
+                        echo '<div class="notice notice-error"><p>Erreur lors de l\'ajout de la période tarifaire.</p></div>';
+                    }
+                }
             }
         } else {
             echo '<div class="notice notice-error"><p>Veuillez remplir tous les champs obligatoires.</p></div>';
@@ -182,11 +229,11 @@ $pricing_seasons = $wpdb->get_results("SELECT * FROM $pricing_table ORDER BY sta
                                 </div>
                                 <div class="riwa-form-group">
                                     <label for="start_date">Date de début *</label>
-                                    <input type="date" id="start_date" name="start_date" required>
+                                    <input type="text" id="start_date" name="start_date" required placeholder="JJ/MM/AAAA" readonly>
                                 </div>
                                 <div class="riwa-form-group">
                                     <label for="end_date">Date de fin *</label>
-                                    <input type="date" id="end_date" name="end_date" required>
+                                    <input type="text" id="end_date" name="end_date" required placeholder="JJ/MM/AAAA" readonly>
                                 </div>
                                 <div class="riwa-form-group">
                                     <label for="min_stay">Séjour minimum (nuits)</label>
@@ -252,14 +299,6 @@ $pricing_seasons = $wpdb->get_results("SELECT * FROM $pricing_table ORDER BY sta
                                                 </span>
                                             </td>
                                             <td>
-                                                <form method="post" style="display: inline;">
-                                                    <input type="hidden" name="action" value="toggle_pricing">
-                                                    <input type="hidden" name="pricing_id" value="<?php echo $season->id; ?>">
-                                                    <button type="submit" class="riwa-btn riwa-btn-secondary button-small">
-                                                        <?php echo $season->is_active ? 'Désactiver' : 'Activer'; ?>
-                                                    </button>
-                                                </form>
-                                                
                                                 <form method="post" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette période tarifaire ?');">
                                                     <input type="hidden" name="action" value="delete_pricing">
                                                     <input type="hidden" name="pricing_id" value="<?php echo $season->id; ?>">
@@ -784,6 +823,83 @@ $pricing_seasons = $wpdb->get_results("SELECT * FROM $pricing_table ORDER BY sta
         overflow-x: auto;
     }
 }
+
+/* Styles pour les messages d'erreur de validation */
+.form-error {
+    color: #d63638;
+    font-size: 12px;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background-color: #fef7f1;
+    border-left: 3px solid #d63638;
+    border-radius: 2px;
+}
+
+.riwa-form-group {
+    position: relative;
+}
+
+.riwa-form-group input.error {
+    border-color: #d63638;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+/* Animation pour les messages d'erreur */
+.form-error {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Styles pour Flatpickr */
+.flatpickr-input {
+    background-color: white !important;
+    cursor: pointer;
+}
+
+.flatpickr-input:focus {
+    border-color: #2271b1 !important;
+    box-shadow: 0 0 0 1px #2271b1 !important;
+}
+
+/* Personnalisation du calendrier Flatpickr */
+.flatpickr-calendar {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.flatpickr-day.selected {
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+}
+
+.flatpickr-day:hover {
+    background: #f0f6fc !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: #2271b1;
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    color: white;
+}
+
+.flatpickr-current-month input.cur-year {
+    color: white;
+}
 </style>
 
 <script>
@@ -826,6 +942,130 @@ jQuery(document).ready(function($) {
     // Importer les tarifs
     $('#import-pricing').on('click', function() {
         alert('Fonctionnalité d\'import à implémenter');
+    });
+    
+    // Validation du formulaire d'ajout de tarification
+    $('.riwa-pricing-form').on('submit', function(e) {
+        var startDate = $('#start_date').attr('data-iso-date');
+        var endDate = $('#end_date').attr('data-iso-date');
+        var seasonName = $('#season_name').val();
+        var pricePerNight = $('#price_per_night').val();
+        
+        // Réinitialiser les messages d'erreur et les classes d'erreur
+        $('.form-error').remove();
+        $('.riwa-form-group input').removeClass('error');
+        
+        var hasError = false;
+        
+        // Validation des champs obligatoires
+        if (!seasonName.trim()) {
+            $('#season_name').addClass('error').after('<div class="form-error">Le nom de la saison est obligatoire</div>');
+            hasError = true;
+        }
+        
+        if (!pricePerNight || parseFloat(pricePerNight) <= 0) {
+            $('#price_per_night').addClass('error').after('<div class="form-error">Le prix par nuit doit être supérieur à 0</div>');
+            hasError = true;
+        }
+        
+        if (!startDate) {
+            $('#start_date').addClass('error').after('<div class="form-error">La date de début est obligatoire</div>');
+            hasError = true;
+        }
+        
+        if (!endDate) {
+            $('#end_date').addClass('error').after('<div class="form-error">La date de fin est obligatoire</div>');
+            hasError = true;
+        }
+        
+        // Validation des dates
+        if (startDate && endDate) {
+            var start = new Date(startDate);
+            var end = new Date(endDate);
+            
+            if (end <= start) {
+                $('#end_date').addClass('error').after('<div class="form-error">La date de fin doit être après la date de début</div>');
+                hasError = true;
+            }
+        }
+        
+        if (hasError) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Convertir les dates en format ISO pour l'envoi au serveur
+        $('#start_date').val(startDate);
+        $('#end_date').val(endDate);
+    });
+    
+    // Initialisation de Flatpickr pour les dates en format français
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('#start_date', {
+            dateFormat: 'd/m/Y',
+            locale: 'fr',
+            allowInput: true,
+            clickOpens: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                // Convertir le format français vers le format ISO pour la validation
+                var dateParts = dateStr.split('/');
+                if (dateParts.length === 3) {
+                    var isoDate = dateParts[2] + '-' + dateParts[1].padStart(2, '0') + '-' + dateParts[0].padStart(2, '0');
+                    instance.input.setAttribute('data-iso-date', isoDate);
+                }
+                validateDates();
+            }
+        });
+        
+        flatpickr('#end_date', {
+            dateFormat: 'd/m/Y',
+            locale: 'fr',
+            allowInput: true,
+            clickOpens: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                // Convertir le format français vers le format ISO pour la validation
+                var dateParts = dateStr.split('/');
+                if (dateParts.length === 3) {
+                    var isoDate = dateParts[2] + '-' + dateParts[1].padStart(2, '0') + '-' + dateParts[0].padStart(2, '0');
+                    instance.input.setAttribute('data-iso-date', isoDate);
+                }
+                validateDates();
+            }
+        });
+    }
+    
+    // Fonction de validation des dates
+    function validateDates() {
+        var startDate = $('#start_date').attr('data-iso-date');
+        var endDate = $('#end_date').attr('data-iso-date');
+        
+        $('.date-error').remove();
+        $('#end_date').removeClass('error');
+        
+        if (startDate && endDate) {
+            var start = new Date(startDate);
+            var end = new Date(endDate);
+            
+            if (end <= start) {
+                $('#end_date').addClass('error').after('<div class="date-error form-error">La date de fin doit être après la date de début</div>');
+            }
+        }
+    }
+    
+    // Validation en temps réel des autres champs
+    $('#season_name').on('input', function() {
+        if ($(this).val().trim()) {
+            $(this).removeClass('error');
+            $(this).next('.form-error').remove();
+        }
+    });
+    
+    $('#price_per_night').on('input', function() {
+        var value = parseFloat($(this).val());
+        if (value > 0) {
+            $(this).removeClass('error');
+            $(this).next('.form-error').remove();
+        }
     });
 });
 </script> 

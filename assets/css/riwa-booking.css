@@ -613,30 +613,45 @@
 
 /* Dates réservées minimalistes */
 .flatpickr-day.booked {
-    background: var(--riwa-gray-100) !important;
-    color: var(--riwa-gray-400) !important;
+    background: #f5f5f5 !important;
+    color: #999 !important;
     cursor: not-allowed !important;
     position: relative !important;
+    opacity: 0.7 !important;
 }
 
 .flatpickr-day.booked::after {
-    content: '—' !important;
+    content: 'X' !important;
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    font-size: 12px !important;
+    font-size: 14px !important;
     color: var(--riwa-gray-400) !important;
-    font-weight: 300 !important;
+    font-weight: 600 !important;
+    z-index: 10 !important;
 }
 
 .flatpickr-day.booked .day-price {
-    color: var(--riwa-gray-400) !important;
+    display: none !important;
 }
 
 .flatpickr-day.booked:hover {
-    background: var(--riwa-gray-100) !important;
-    color: var(--riwa-gray-400) !important;
+    background: #f5f5f5 !important;
+    color: #999 !important;
+}
+
+/* Indicateur de date réservée */
+.booked-indicator {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: #999 !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
 }
 
 .flatpickr-current-month {

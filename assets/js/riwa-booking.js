@@ -81,6 +81,29 @@ jQuery(document).ready(function($) {
                 if (isDateBooked(dateStr)) {
                     dayElem.classList.add('booked');
                     dayElem.setAttribute('title', 'Date non disponible');
+                    
+                    // Masquer le prix pour les dates réservées
+                    const priceElement = dayElem.querySelector('.day-price');
+                    if (priceElement) {
+                        priceElement.style.display = 'none';
+                    }
+                    
+                    // Ajouter un indicateur visuel clair
+                    const bookedIndicator = document.createElement('div');
+                    bookedIndicator.className = 'booked-indicator';
+                    bookedIndicator.textContent = 'X';
+                    bookedIndicator.style.cssText = `
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: #999;
+                        z-index: 10;
+                        pointer-events: none;
+                    `;
+                    dayElem.appendChild(bookedIndicator);
                 }
             }
         });
