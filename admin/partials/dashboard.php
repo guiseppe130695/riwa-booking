@@ -14,7 +14,7 @@ $prev_month    = $current_month === 1 ? 12 : $current_month - 1;
 // Totaux globaux
 $total_bookings = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}");
 $total_revenue  = (float) $wpdb->get_var(
-    "SELECT COALESCE(SUM(total_price), 0) FROM {$table} WHERE status != 'cancelled'"
+    "SELECT COALESCE(SUM(total_price), 0) FROM {$table} WHERE status = 'confirmed'"
 );
 
 // Totaux mois courant
@@ -24,7 +24,7 @@ $bookings_this_month = (int) $wpdb->get_var($wpdb->prepare(
 ));
 $revenue_this_month = (float) $wpdb->get_var($wpdb->prepare(
     "SELECT COALESCE(SUM(total_price), 0) FROM {$table}
-     WHERE YEAR(created_at) = %d AND MONTH(created_at) = %d AND status != 'cancelled'",
+     WHERE YEAR(created_at) = %d AND MONTH(created_at) = %d AND status = 'confirmed'",
     $current_year, $current_month
 ));
 
@@ -35,17 +35,19 @@ $bookings_prev_month = (int) $wpdb->get_var($wpdb->prepare(
 ));
 $revenue_prev_month = (float) $wpdb->get_var($wpdb->prepare(
     "SELECT COALESCE(SUM(total_price), 0) FROM {$table}
-     WHERE YEAR(created_at) = %d AND MONTH(created_at) = %d AND status != 'cancelled'",
+     WHERE YEAR(created_at) = %d AND MONTH(created_at) = %d AND status = 'confirmed'",
     $prev_year, $prev_month
 ));
 
 // Calcul des tendances
-function riwa_trend($current, $previous) {
-    if ($previous <= 0) {
-        return $current > 0 ? ['pct' => 100, 'up' => true] : ['pct' => 0, 'up' => true];
+if (!function_exists('riwa_trend')) {
+    function riwa_trend($current, $previous) {
+        if ($previous <= 0) {
+            return $current > 0 ? ['pct' => 100, 'up' => true] : ['pct' => 0, 'up' => true];
+        }
+        $pct = round(($current - $previous) / $previous * 100);
+        return ['pct' => abs($pct), 'up' => $pct >= 0];
     }
-    $pct = round(($current - $previous) / $previous * 100);
-    return ['pct' => abs($pct), 'up' => $pct >= 0];
 }
 $trend_bookings = riwa_trend($bookings_this_month, $bookings_prev_month);
 $trend_revenue  = riwa_trend($revenue_this_month, $revenue_prev_month);
@@ -54,7 +56,7 @@ $trend_revenue  = riwa_trend($revenue_this_month, $revenue_prev_month);
 $days_in_month  = (int) date('t');
 $nights_booked  = (int) $wpdb->get_var($wpdb->prepare(
     "SELECT COALESCE(SUM(DATEDIFF(check_out_date, check_in_date)), 0) FROM {$table}
-     WHERE status != 'cancelled'
+     WHERE status = 'confirmed'
        AND MONTH(check_in_date) = %d AND YEAR(check_in_date) = %d",
     $current_month, $current_year
 ));
@@ -99,7 +101,7 @@ $recent_bookings = $wpdb->get_results(
                 <div class="riwa-stat-icon"><span class="dashicons dashicons-money-alt"></span></div>
                 <div class="riwa-stat-body">
                     <div class="riwa-stat-value"><?php echo number_format($total_revenue, 0, ',', ' '); ?> €</div>
-                    <div class="riwa-stat-label">Revenus totaux</div>
+                    <div class="riwa-stat-label">Revenus confirmés</div>
                     <div class="riwa-stat-sub">
                         <span class="riwa-stat-month"><?php echo number_format($revenue_this_month, 0, ',', ' '); ?> € ce mois</span>
                         <span class="riwa-stat-trend <?php echo $trend_revenue['up'] ? 'riwa-stat-trend-up' : 'riwa-stat-trend-down'; ?>">
@@ -124,14 +126,14 @@ $recent_bookings = $wpdb->get_results(
                 </div>
             </div>
 
-            <div class="riwa-stat-card">
+            <div class="riwa-stat-card riwa-stat-card--wide">
                 <div class="riwa-stat-icon"><span class="dashicons dashicons-tag"></span></div>
                 <div class="riwa-stat-body">
-                    <div class="riwa-stat-label" style="margin-bottom:0.5rem;">Statuts</div>
+                    <div class="riwa-stat-label" style="margin-bottom:0.75rem;">Répartition par statut</div>
                     <div class="riwa-stat-badges">
                         <span class="riwa-status-badge riwa-status-pending"><?php echo esc_html($count_pending); ?> En attente</span>
-                        <span class="riwa-status-badge riwa-status-confirmed"><?php echo esc_html($count_confirmed); ?> Confirmée</span>
-                        <span class="riwa-status-badge riwa-status-cancelled"><?php echo esc_html($count_cancelled); ?> Annulée</span>
+                        <span class="riwa-status-badge riwa-status-confirmed"><?php echo esc_html($count_confirmed); ?> Confirmée<?php echo $count_confirmed > 1 ? 's' : ''; ?></span>
+                        <span class="riwa-status-badge riwa-status-cancelled"><?php echo esc_html($count_cancelled); ?> Annulée<?php echo $count_cancelled > 1 ? 's' : ''; ?></span>
                     </div>
                 </div>
             </div>

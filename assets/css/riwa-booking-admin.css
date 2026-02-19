@@ -366,11 +366,20 @@
 }
 
 .riwa-subtitle {
-    margin: 0;
+    margin: 0 0 0.35rem 0;
     color: #646970;
     font-size: 14px;
     font-weight: 400;
 }
+
+.riwa-header-desc {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 500px;
+}
+
 
 .riwa-header-actions { display: flex; gap: 0.75rem; }
 
@@ -406,14 +415,14 @@
 
 .riwa-content-panel { flex: 1; overflow-y: auto; background: #f8f9fa; }
 
-.riwa-section { display: none; padding: 2rem; }
-.riwa-section.active { display: block !important; }
+.riwa-section { display: block; padding: 2rem; }
+.riwa-section.active { display: block; }
 
 .riwa-section-header { margin-bottom: 2rem; }
 .riwa-section-header h2 { margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 600; color: #1d2327; }
 .riwa-section-header p { margin: 0; color: #646970; font-size: 14px; }
 
-.riwa-section-content { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+.riwa-section-content { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; padding: 10px; }
 
 .riwa-preview-container { padding: 0 !important; }
 
@@ -688,7 +697,7 @@ body.riwa-popup-open { overflow: hidden; }
 /* Dashboard — Grille de statistiques */
 .riwa-dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr 1fr 1.6fr;
     gap: 1.25rem;
     margin-bottom: 2rem;
 }
@@ -732,7 +741,7 @@ body.riwa-popup-open { overflow: hidden; }
 .riwa-stat-trend { font-size: 11px; font-weight: 600; }
 .riwa-stat-trend-up { color: #00a32a; }
 .riwa-stat-trend-down { color: #d63638; }
-.riwa-stat-badges { display: flex; flex-direction: column; gap: 0.4rem; }
+.riwa-stat-badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.4rem; }
 
 /* Barre de progression */
 .riwa-progress-bar {

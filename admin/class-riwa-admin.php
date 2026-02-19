@@ -122,12 +122,17 @@ class Riwa_Admin {
         // Données partagées
         $pricing_seasons = Riwa_Pricing_Table::get_all_seasons();
         $email_options   = Riwa_Email_Settings::get_options();
+
         ?>
         <div class="wrap riwa-pdf-admin">
             <div class="riwa-admin-header">
                 <div class="riwa-header-content">
                     <h1>Riwa Booking</h1>
-                    <p class="riwa-subtitle">Gestion des réservations</p>
+                    <p class="riwa-subtitle">Plateforme de gestion des réservations de votre villa</p>
+                    <p class="riwa-header-desc">
+                        Suivez vos réservations, gérez vos tarifs saisonniers, personnalisez vos emails et documents PDF —
+                        tout ce dont vous avez besoin pour gérer votre hébergement en un seul endroit.
+                    </p>
                 </div>
             </div>
 

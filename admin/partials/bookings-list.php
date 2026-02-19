@@ -23,14 +23,16 @@ $total_pages = $per_page > 0 ? (int) ceil($total / $per_page) : 1;
 
 $base_url = admin_url('admin.php?page=riwa-bookings&section=bookings');
 
-function riwa_filter_url($params) {
-    $base = admin_url('admin.php?page=riwa-bookings&section=bookings');
-    foreach ($params as $k => $v) {
-        if ($v !== '' && $v !== null && $v !== 0) {
-            $base .= '&' . urlencode($k) . '=' . urlencode($v);
+if (!function_exists('riwa_filter_url')) {
+    function riwa_filter_url($params) {
+        $base = admin_url('admin.php?page=riwa-bookings&section=bookings');
+        foreach ($params as $k => $v) {
+            if ($v !== '' && $v !== null && $v !== 0) {
+                $base .= '&' . urlencode($k) . '=' . urlencode($v);
+            }
         }
+        return $base;
     }
-    return $base;
 }
 ?>
 <div class="riwa-section" id="bookings-section">
