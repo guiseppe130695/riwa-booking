@@ -338,4 +338,60 @@
 
     // Riwa Booking Admin initialisé avec succès
 
-})(jQuery); 
+})(jQuery);
+
+/**
+ * Fonction globale de mise à jour de statut (appelée via onchange dans les partials HTML)
+ * Envoie le nonce admin pour satisfaire la vérification sécurité côté PHP.
+ */
+function updateBookingStatus(bookingId, newStatus) {
+    if (!newStatus) return;
+
+    var labels = { pending: 'En attente', confirmed: 'Confirmée', cancelled: 'Annulée' };
+    if (!confirm('Êtes-vous sûr de vouloir changer le statut vers "' + (labels[newStatus] || newStatus) + '" ?')) {
+        // Recharger pour réinitialiser le select
+        location.reload();
+        return;
+    }
+
+    var nonce = (typeof riwa_admin_ajax !== 'undefined') ? riwa_admin_ajax.admin_nonce : '';
+
+    jQuery.post(location.href, {
+        action:          'update_status',
+        booking_id:      bookingId,
+        new_status:      newStatus,
+        riwa_admin_nonce: nonce
+    }, function() {
+        location.reload();
+    });
+}
+
+// Onglets des Paramètres
+jQuery(function($) {
+    var $tabs    = $('.riwa-settings-tab');
+    var $content = $('.riwa-settings-tab-content');
+
+    $tabs.on('click', function() {
+        var tab = $(this).data('tab');
+        $tabs.removeClass('active');
+        $content.removeClass('active');
+        $(this).addClass('active');
+        $('#settings-tab-' + tab).addClass('active');
+    });
+
+    // Media uploader pour le logo
+    $('#riwa-logo-picker').on('click', function(e) {
+        e.preventDefault();
+        var frame = wp.media({ title: 'Choisir un logo', multiple: false });
+        frame.on('select', function() {
+            var attachment = frame.state().get('selection').first().toJSON();
+            $('#riwa_logo_url').val(attachment.url);
+        });
+        frame.open();
+    });
+
+    // Color picker pour la couleur principale
+    if ($.fn.wpColorPicker) {
+        $('.riwa-color-picker').wpColorPicker();
+    }
+});
