@@ -247,7 +247,7 @@ jQuery(document).ready(function($) {
     }
 
     function getStepId(stepNumber) {
-        const steps = ['dates', 'travelers', 'info', 'summary'];
+        const steps = ['dates', 'travelers', 'info', 'upsells', 'summary'];
         return steps[stepNumber - 1];
     }
 
@@ -463,10 +463,14 @@ jQuery(document).ready(function($) {
     $('.riwa-next-btn').on('click', function() {
         const nextStep = parseInt($(this).data('next'));
         const currentStep = nextStep - 1;
-        
+
         if (validateStep(currentStep)) {
             showStep(nextStep);
             updateSummary();
+            // Rafraîchir les prix upsells quand on arrive à l'étape 4 ou 5
+            if (nextStep === 4 || nextStep === 5) {
+                updateUpsellsUI();
+            }
         }
     });
 
@@ -567,6 +571,142 @@ jQuery(document).ready(function($) {
         $('#riwa-booking-total').text(totalPrice);
     }
 
+    // ── UPSELLS : initialisation et calcul ────────────────────
+    const upsellsData   = (typeof riwa_ajax !== 'undefined' && riwa_ajax.upsells) ? riwa_ajax.upsells : [];
+    const selectedUpsells = {}; // { upsell_id: quantity }
+
+    function getPricingTypeLabel(type) {
+        const labels = {
+            'fixed':               'Prix fixe',
+            'per_night':           '/ nuit',
+            'per_person':          '/ personne',
+            'per_person_per_night':'/ pers. / nuit'
+        };
+        return labels[type] || '';
+    }
+
+    function calcUpsellPrice(upsell) {
+        const qty     = selectedUpsells[upsell.id] || 0;
+        if (!qty) return 0;
+        const price   = parseFloat(upsell.price) || 0;
+        const checkIn  = $('#riwa-check-in').val();
+        const checkOut = $('#riwa-check-out').val();
+        const nights   = (checkIn && checkOut)
+            ? Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000)
+            : 0;
+        const guests   = getCurrentValue('adults') + getCurrentValue('children') + getCurrentValue('babies');
+
+        switch (upsell.pricing_type) {
+            case 'per_night':           return price * nights * qty;
+            case 'per_person':          return price * guests * qty;
+            case 'per_person_per_night':return price * guests * nights * qty;
+            case 'fixed': default:      return price * qty;
+        }
+    }
+
+    function calcUpsellsTotal() {
+        return upsellsData.reduce(function(sum, u) { return sum + calcUpsellPrice(u); }, 0);
+    }
+
+    function updateUpsellsUI() {
+        let total = calcUpsellsTotal();
+        const $totalRow = $('#riwa-upsells-total-row');
+        const $totalVal = $('#riwa-upsells-total');
+
+        if (total > 0) {
+            $totalVal.text(total.toLocaleString('fr-FR', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + ' €');
+            $totalRow.show();
+        } else {
+            $totalRow.hide();
+        }
+
+        // Mettre à jour le total récap (hébergement + upsells)
+        const checkIn  = $('#riwa-check-in').val();
+        const checkOut = $('#riwa-check-out').val();
+        const guests   = getCurrentValue('adults') + getCurrentValue('children');
+        let baseTotal  = 0;
+        if (checkIn && checkOut) {
+            const nights = Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000);
+            const pd = riwa_ajax.pricing || [];
+            const cur = new Date(checkIn);
+            for (let i = 0; i < nights; i++) {
+                const ds = cur.toISOString().split('T')[0];
+                let np = 150;
+                for (const s of pd) { if (ds >= s.start_date && ds <= s.end_date) { np = parseFloat(s.price_per_night); break; } }
+                baseTotal += np;
+                cur.setDate(cur.getDate() + 1);
+            }
+        }
+        const grand = baseTotal + total;
+        $('#summary-total-price').text(grand > 0 ? grand.toLocaleString('fr-FR', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + ' €' : '0 €');
+
+        // Section upsells dans le récap
+        const $sec = $('#summary-upsells-section');
+        const $brk = $('#summary-upsells-breakdown');
+        if (Object.keys(selectedUpsells).some(function(id) { return selectedUpsells[id] > 0; })) {
+            let html = '';
+            upsellsData.forEach(function(u) {
+                const qty = selectedUpsells[u.id] || 0;
+                if (!qty) return;
+                const t = calcUpsellPrice(u);
+                html += '<div class="summary-upsell-row"><span>' + u.icon + ' ' + u.name + '</span><span>' + t.toLocaleString('fr-FR') + ' €</span></div>';
+            });
+            $brk.html(html);
+            $sec.show();
+        } else {
+            $sec.hide();
+        }
+
+        // Injecter les champs cachés
+        const $hf = $('#riwa-upsells-hidden-fields').empty();
+        upsellsData.forEach(function(u) {
+            const qty = selectedUpsells[u.id] || 0;
+            if (!qty) return;
+            $hf.append('<input type="hidden" name="upsells[' + u.id + '][id]" value="' + u.id + '">');
+            $hf.append('<input type="hidden" name="upsells[' + u.id + '][quantity]" value="' + qty + '">');
+        });
+    }
+
+    function initUpsells() {
+        const $list = $('#riwa-upsells-list');
+        if (!$list.length || !upsellsData.length) {
+            $list.html('<p style="color:#6b7280;font-size:14px;">Aucun service additionnel disponible pour le moment.</p>');
+            return;
+        }
+
+        let html = '';
+        upsellsData.forEach(function(u) {
+            var icon = u.icon || 'dashicons-admin-generic';
+            var iconHTML = '<span class="dashicons ' + icon + '"></span>';
+            html += '<div class="riwa-upsell-item" data-id="' + u.id + '">'
+                + '<div class="riwa-upsell-item-icon">' + iconHTML + '</div>'
+                + '<div class="riwa-upsell-item-body">'
+                +   '<div class="riwa-upsell-item-name">' + u.name + '</div>'
+                +   '<div class="riwa-upsell-item-desc">' + (u.description || '') + '</div>'
+                + '</div>'
+                + '<div class="riwa-upsell-item-right">'
+                +   '<div class="riwa-upsell-item-price">' + parseFloat(u.price).toLocaleString('fr-FR') + ' €</div>'
+                +   '<div class="riwa-upsell-item-price-type">' + getPricingTypeLabel(u.pricing_type) + '</div>'
+                + '</div>'
+                + '<div class="riwa-upsell-check"></div>'
+                + '</div>';
+        });
+        $list.html(html);
+
+        // Clic sur une carte upsell : toggle sélection
+        $list.on('click', '.riwa-upsell-item', function() {
+            const id = $(this).data('id');
+            if (selectedUpsells[id]) {
+                delete selectedUpsells[id];
+                $(this).removeClass('is-selected');
+            } else {
+                selectedUpsells[id] = 1;
+                $(this).addClass('is-selected');
+            }
+            updateUpsellsUI();
+        });
+    }
+
     // Gestionnaire pour les champs de nom
     $('#riwa-guest-first-name, #riwa-guest-last-name').on('input', function() {
         updateGuestName();
@@ -625,6 +765,7 @@ jQuery(document).ready(function($) {
     // Charger d'abord les dates réservées, puis initialiser le calendrier
     loadBookedDates();
     initTravelersCounters();
+    initUpsells();
     
     // Initialiser le calendrier après un court délai pour s'assurer que les dates sont chargées
     setTimeout(function() {

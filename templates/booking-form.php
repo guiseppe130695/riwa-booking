@@ -24,6 +24,10 @@ if (!defined('ABSPATH')) {
         </div>
         <div class="riwa-progress-step" data-step="4">
             <span class="riwa-step-number">4</span>
+            <span class="riwa-step-label">Services</span>
+        </div>
+        <div class="riwa-progress-step" data-step="5">
+            <span class="riwa-step-number">5</span>
             <span class="riwa-step-label">Confirmation</span>
         </div>
     </div>
@@ -140,9 +144,32 @@ if (!defined('ABSPATH')) {
             </div>
         </div>
 
-        <!-- Étape 4: Récapitulatif -->
-        <div class="riwa-step" data-step="4" id="riwa-summary-step">
-            
+        <!-- Étape 4: Services additionnels (Upsells) -->
+        <div class="riwa-step" data-step="4" id="riwa-upsells-step">
+            <h2>Services additionnels</h2>
+            <p class="riwa-upsells-intro">Personnalisez votre séjour avec nos services optionnels</p>
+
+            <div class="riwa-upsells-list" id="riwa-upsells-list">
+                <!-- Injecté dynamiquement par JS depuis riwa_ajax.upsells -->
+            </div>
+
+            <div class="riwa-upsells-total-row" id="riwa-upsells-total-row" style="display:none;">
+                <span class="riwa-upsells-total-label">Services sélectionnés :</span>
+                <span class="riwa-upsells-total-value" id="riwa-upsells-total">0 €</span>
+            </div>
+
+            <!-- Champs cachés pour les upsells sélectionnés (injectés par JS) -->
+            <div id="riwa-upsells-hidden-fields"></div>
+
+            <div class="riwa-step-buttons">
+                <button type="button" class="riwa-prev-btn" data-prev="3">Précédent</button>
+                <button type="button" class="riwa-next-btn" data-next="5">Suivant</button>
+            </div>
+        </div>
+
+        <!-- Étape 5: Récapitulatif -->
+        <div class="riwa-step" data-step="5" id="riwa-summary-step">
+
             <div class="booking-summary">
                 <div class="summary-single-section">
                     <div class="summary-header">
@@ -162,7 +189,7 @@ if (!defined('ABSPATH')) {
                             <div class="summary-label">Durée</div>
                             <div class="summary-value" id="summary-duration">0 nuits</div>
                         </div>
-                        
+
                         <!-- Voyageurs -->
                         <div class="summary-row">
                             <div class="summary-label">Adultes</div>
@@ -172,11 +199,11 @@ if (!defined('ABSPATH')) {
                             <div class="summary-label">Enfants</div>
                             <div class="summary-value"><span id="summary-children">0</span></div>
                         </div>
-                                                 <div class="summary-row">
-                             <div class="summary-label">Bébés</div>
-                             <div class="summary-value"><span id="summary-babies">0</span></div>
-                         </div>
-                        
+                        <div class="summary-row">
+                            <div class="summary-label">Bébés</div>
+                            <div class="summary-value"><span id="summary-babies">0</span></div>
+                        </div>
+
                         <!-- Détail des tarifs -->
                         <div class="summary-section">
                             <div class="summary-title">Détail des tarifs</div>
@@ -184,8 +211,14 @@ if (!defined('ABSPATH')) {
                                 <!-- Le détail par saison sera injecté ici -->
                             </div>
                         </div>
-                        
-                        <!-- Tarification -->
+
+                        <!-- Upsells sélectionnés -->
+                        <div class="summary-section" id="summary-upsells-section" style="display:none;">
+                            <div class="summary-title">Services additionnels</div>
+                            <div id="summary-upsells-breakdown"></div>
+                        </div>
+
+                        <!-- Total -->
                         <div class="summary-row summary-total-row">
                             <div class="summary-label">Total</div>
                             <div class="summary-value" id="summary-total-price">0 €</div>
@@ -196,7 +229,7 @@ if (!defined('ABSPATH')) {
 
             <div class="riwa-error-message" id="riwa-summary-error"></div>
             <div class="riwa-step-buttons">
-                <button type="button" class="riwa-prev-btn" data-prev="3">Précédent</button>
+                <button type="button" class="riwa-prev-btn" data-prev="4">Précédent</button>
                 <button type="submit" class="riwa-submit-btn">Confirmer la réservation</button>
             </div>
         </div>

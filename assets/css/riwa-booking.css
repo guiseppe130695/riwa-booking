@@ -1220,3 +1220,152 @@ button.riwa-counter-btn {
         font-size: 14px;
     }
 } 
+/* ═══════════════════════════════════════════════════════
+   UPSELLS - Étape Services du formulaire
+   ═══════════════════════════════════════════════════════ */
+
+.riwa-upsells-intro {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 1.25rem 0;
+}
+
+.riwa-upsells-list {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+
+.riwa-upsell-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: .875rem 1rem;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    user-select: none;
+    position: relative;
+}
+.riwa-upsell-item:hover {
+    border-color: #a3c4f3;
+    box-shadow: 0 2px 8px rgba(34,113,177,.08);
+}
+.riwa-upsell-item.is-selected {
+    border-color: #2271b1;
+    background: #eff6ff;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.riwa-upsell-item-icon {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 36px;
+    text-align: center;
+}
+
+.riwa-upsell-item-body {
+    flex: 1;
+    min-width: 0;
+}
+.riwa-upsell-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 2px;
+}
+.riwa-upsell-item-desc {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.riwa-upsell-item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.riwa-upsell-item-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.riwa-upsell-item-price-type {
+    font-size: 10px;
+    color: #9ca3af;
+    text-align: right;
+}
+.riwa-upsell-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+    transition: background .15s, border-color .15s;
+    align-self: center;
+}
+.riwa-upsell-item.is-selected .riwa-upsell-check {
+    background: #2271b1;
+    border-color: #2271b1;
+}
+.riwa-upsell-check::after {
+    content: '';
+    width: 6px;
+    height: 10px;
+    border: 2px solid transparent;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+    transform: rotate(40deg) translateY(-1px);
+    display: none;
+}
+.riwa-upsell-item.is-selected .riwa-upsell-check::after { display: block; }
+
+/* Total upsells sélectionnés */
+.riwa-upsells-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+.riwa-upsells-total-label { font-size: 13px; color: #1e40af; }
+.riwa-upsells-total-value { font-size: 15px; font-weight: 700; color: #1d4ed8; }
+
+/* Résumé upsells dans l'étape récap */
+#summary-upsells-section .summary-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .5rem;
+}
+.summary-upsell-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #374151;
+    padding: 3px 0;
+}
+.summary-upsell-row span:last-child { font-weight: 500; }
+
+/* ── Dashicons dans les cartes upsells (frontend) ── */
+.riwa-upsell-item-icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2271b1;
+}

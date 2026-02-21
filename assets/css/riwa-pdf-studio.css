@@ -1,0 +1,672 @@
+/* =========================================================================
+   RIWA DOC STUDIO — Éditeur PDF Canva-like
+   ========================================================================= */
+
+/* ── Variables ──────────────────────────────────────────────────────────── */
+:root {
+    --studio-bg       : #f1f5f9;
+    --studio-surface  : #ffffff;
+    --studio-border   : #e2e8f0;
+    --studio-primary  : #1a1a2e;
+    --studio-accent   : #2563eb;
+    --studio-text     : #1e293b;
+    --studio-muted    : #64748b;
+    --studio-success  : #16a34a;
+    --studio-danger   : #dc2626;
+    --studio-shadow   : 0 2px 8px rgba(0,0,0,.08);
+    --studio-radius   : 10px;
+    --studio-sidebar-w: 270px;
+    --studio-preview-w: 340px;
+}
+
+/* ── Reset contextuel ────────────────────────────────────────────────────── */
+.riwa-studio-wrap * { box-sizing: border-box; }
+/* Annuler les marges/paddings du .wrap WP et du #wpbody-content */
+.riwa-studio-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--studio-bg);
+    min-height: 100vh;
+}
+#wpbody-content .riwa-studio-wrap { margin-left: 0 !important; }
+/* Supprimer le padding-top que WP ajoute au #wpbody-content */
+.wp-admin #wpbody-content { padding-top: 0; }
+
+/* ── Topbar ──────────────────────────────────────────────────────────────── */
+.riwa-studio-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.5rem;
+    background: var(--studio-primary);
+    color: #fff;
+    position: sticky;
+    top: 32px; /* sous la barre admin WP (#wpadminbar = 32px) */
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+.riwa-studio-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.riwa-studio-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.1);
+    color: rgba(255,255,255,.8);
+    text-decoration: none;
+    transition: background .12s, color .12s;
+    flex-shrink: 0;
+}
+.riwa-studio-back-btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+.riwa-studio-back-btn .dashicons { font-size: 18px; width: 18px; height: 18px; }
+
+.riwa-studio-logo .dashicons {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+    color: #60a5fa;
+}
+.riwa-studio-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+.riwa-studio-subtitle {
+    margin: 0;
+    font-size: 11px;
+    color: rgba(255,255,255,.55);
+    line-height: 1;
+}
+.riwa-studio-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.riwa-studio-topbar-right .riwa-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.riwa-studio-topbar-right .riwa-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-studio-topbar-right .riwa-btn-secondary {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #fff;
+}
+.riwa-studio-topbar-right .riwa-btn-secondary:hover {
+    background: rgba(255,255,255,.22);
+    color: #fff;
+}
+.riwa-studio-topbar-right .riwa-btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+.riwa-studio-topbar-right .riwa-btn-primary:hover { background: #1d4ed8; }
+.riwa-studio-save-status {
+    font-size: 11px;
+    color: rgba(255,255,255,.5);
+    margin-right: 4px;
+}
+.riwa-studio-save-status.dirty { color: #fbbf24; }
+
+/* ── Layout principal ───────────────────────────────────────────────────── */
+.riwa-studio-layout {
+    display: grid;
+    grid-template-columns: var(--studio-sidebar-w) 1fr var(--studio-preview-w);
+    gap: 0;
+    height: calc(100vh - 90px); /* 32px barre WP + 58px topbar studio */
+    overflow: hidden;
+}
+
+/* ── Sidebar gauche ─────────────────────────────────────────────────────── */
+.riwa-studio-sidebar {
+    background: var(--studio-surface);
+    border-right: 1px solid var(--studio-border);
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Panels */
+.riwa-studio-panel {
+    border: 1px solid var(--studio-border);
+    border-radius: var(--studio-radius);
+}
+.riwa-studio-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--studio-muted);
+    border-bottom: 1px solid var(--studio-border);
+    border-radius: var(--studio-radius) var(--studio-radius) 0 0;
+}
+.riwa-studio-panel-title .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-studio-panel-hint {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #94a3b8;
+}
+
+/* Types de documents */
+.riwa-studio-doc-types {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+}
+.riwa-studio-doc-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 7px 10px;
+    text-align: left;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--studio-text);
+    transition: background .12s, border-color .12s;
+}
+.riwa-studio-doc-btn:hover { background: #f1f5f9; }
+.riwa-studio-doc-btn.active {
+    background: #eff6ff;
+    border-color: var(--studio-accent);
+    color: var(--studio-accent);
+    font-weight: 600;
+}
+
+/* Palette de blocs */
+.riwa-studio-palette {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+}
+.riwa-studio-palette-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: grab;
+    font-size: 12px;
+    color: var(--studio-text);
+    border: 1px solid transparent;
+    transition: background .12s;
+    user-select: none;
+}
+.riwa-studio-palette-item:hover {
+    background: #f1f5f9;
+    border-color: var(--studio-border);
+}
+.riwa-studio-palette-item:active { cursor: grabbing; }
+.riwa-studio-palette-item .dashicons { font-size: 15px; width: 15px; height: 15px; color: var(--studio-accent); }
+.riwa-studio-drag-hint { margin-left: auto; color: #cbd5e1; font-size: 13px; }
+
+/* Thèmes */
+.riwa-studio-themes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 8px;
+}
+.riwa-studio-theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border: 1px solid var(--studio-border);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--studio-text);
+    transition: border-color .12s, box-shadow .12s;
+}
+.riwa-studio-theme-btn:hover { border-color: var(--studio-accent); box-shadow: 0 0 0 2px rgba(37,99,235,.12); }
+.riwa-studio-theme-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(0,0,0,.1);
+}
+
+/* Champs settings sidebar */
+.riwa-studio-field-row {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--studio-border);
+}
+.riwa-studio-field-row:last-child { border-bottom: none; }
+.riwa-studio-field-row label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--studio-muted);
+    margin-bottom: 3px;
+}
+.riwa-studio-field-row .riwa-input {
+    width: 100%;
+    font-size: 12px;
+    padding: 5px 8px;
+    border: 1px solid var(--studio-border);
+    border-radius: 5px;
+    background: #f8fafc;
+}
+.riwa-studio-field-row .riwa-input:focus {
+    outline: none;
+    border-color: var(--studio-accent);
+    background: #fff;
+}
+
+/* ── Canvas central A4 ──────────────────────────────────────────────────── */
+.riwa-studio-canvas-wrap {
+    overflow-y: auto;
+    background: var(--studio-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+}
+.riwa-studio-canvas-header {
+    width: 100%;
+    max-width: 740px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+.riwa-studio-canvas-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--studio-text);
+}
+.riwa-studio-canvas-hint {
+    font-size: 11px;
+    color: var(--studio-muted);
+}
+
+/* Canvas A4 */
+.riwa-studio-a4 {
+    width: 100%;
+    max-width: 740px;
+    min-height: 1000px;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,.12);
+    border-radius: 4px;
+    padding: 28px 32px;
+    position: relative;
+    transition: outline .15s;
+}
+.riwa-studio-a4.drag-over {
+    outline: 2px dashed var(--studio-accent);
+    outline-offset: 4px;
+}
+
+/* Lignes de blocs */
+.riwa-studio-canvas-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    min-height: 48px;
+    border-radius: 6px;
+    transition: background .15s;
+}
+.riwa-studio-canvas-row:hover { background: #f8fafc; }
+
+/* Blocs dans le canvas */
+.riwa-studio-block {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--studio-border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--studio-text);
+    cursor: default;
+    position: relative;
+    transition: border-color .12s, box-shadow .12s;
+    min-height: 46px;
+}
+.riwa-studio-block:hover {
+    border-color: var(--studio-accent);
+    box-shadow: 0 0 0 2px rgba(37,99,235,.1);
+}
+.riwa-studio-block.block-full {
+    flex: 2;
+}
+.riwa-studio-block .dashicons {
+    color: var(--studio-accent);
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+.studio-block-drag {
+    cursor: grab;
+    color: #cbd5e1;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.studio-block-drag:active { cursor: grabbing; }
+.studio-block-label { flex: 1; }
+.studio-block-toggle {
+    background: none;
+    border: 1px solid var(--studio-border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--studio-muted);
+    opacity: 0;
+    transition: opacity .12s;
+}
+.riwa-studio-block:hover .studio-block-toggle { opacity: 1; }
+.studio-block-toggle:hover { background: #f1f5f9; color: var(--studio-text); }
+.studio-block-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1;
+    padding: 0 2px;
+    opacity: 0;
+    transition: opacity .12s, color .12s;
+    flex-shrink: 0;
+}
+.riwa-studio-block:hover .studio-block-remove { opacity: 1; }
+.studio-block-remove:hover { color: var(--studio-danger); }
+
+/* État vide */
+.riwa-studio-canvas-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: #94a3b8;
+    text-align: center;
+    gap: 0.75rem;
+}
+.riwa-studio-canvas-empty .dashicons { font-size: 36px; width: 36px; height: 36px; }
+.riwa-studio-canvas-empty p { margin: 0; font-size: 13px; }
+
+/* SortableJS states */
+.sortable-ghost {
+    opacity: .35;
+    background: #eff6ff !important;
+    border-color: var(--studio-accent) !important;
+}
+.sortable-chosen { box-shadow: 0 4px 16px rgba(37,99,235,.2) !important; }
+.sortable-drag   { opacity: .9; }
+
+/* ── Panneau preview droite ──────────────────────────────────────────────── */
+.riwa-studio-preview-panel {
+    background: #f8fafc;
+    border-left: 1px solid var(--studio-border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.riwa-studio-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--studio-surface);
+    border-bottom: 1px solid var(--studio-border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--studio-muted);
+}
+.riwa-studio-preview-header .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-studio-refresh-preview {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: var(--studio-muted);
+}
+.riwa-studio-refresh-preview:hover { background: #f1f5f9; color: var(--studio-accent); }
+.riwa-studio-preview-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+.riwa-studio-preview-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(248,250,252,.85);
+    font-size: 13px;
+    color: var(--studio-muted);
+    z-index: 5;
+}
+.riwa-studio-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+}
+
+/* ── Toast notifications ─────────────────────────────────────────────────── */
+.riwa-studio-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity .25s, transform .25s;
+    z-index: 999999;
+    pointer-events: none;
+    white-space: nowrap;
+}
+.riwa-studio-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.riwa-studio-toast--success { background: #16a34a; }
+.riwa-studio-toast--error   { background: #dc2626; }
+.riwa-studio-toast--info    { background: #0369a1; }
+
+/* ── Panneau de propriétés (drawer) ─────────────────────────────────────── */
+.riwa-studio-props-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.25);
+    z-index: 9998;
+}
+.riwa-studio-props-overlay.visible { display: block; }
+
+.riwa-studio-props-drawer {
+    position: fixed;
+    top: 32px; /* sous la barre WP */
+    right: -360px;
+    width: 340px;
+    height: calc(100vh - 32px);
+    background: var(--studio-surface);
+    border-left: 1px solid var(--studio-border);
+    box-shadow: -4px 0 20px rgba(0,0,0,.12);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    transition: right .22s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+}
+.riwa-studio-props-drawer.open { right: 0; }
+
+.riwa-studio-props-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: var(--studio-primary);
+    color: #fff;
+    flex-shrink: 0;
+}
+.riwa-studio-props-header .dashicons {
+    font-size: 18px; width: 18px; height: 18px; color: #60a5fa;
+}
+.riwa-studio-props-header span:nth-child(2) {
+    font-size: 14px; font-weight: 600; flex: 1;
+}
+.riwa-studio-props-close {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,.6); padding: 2px;
+}
+.riwa-studio-props-close:hover { color: #fff; }
+.riwa-studio-props-close .dashicons { font-size: 18px; width: 18px; height: 18px; }
+
+.riwa-studio-props-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.riwa-studio-props-section {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--studio-accent);
+    padding: 6px 0 2px;
+    border-bottom: 1px solid var(--studio-border);
+    margin-bottom: 2px;
+}
+.riwa-studio-props-section:first-child { padding-top: 0; }
+
+.riwa-studio-props-empty {
+    margin: 0;
+    color: var(--studio-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.riwa-studio-props-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.riwa-studio-props-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--studio-muted);
+}
+.riwa-studio-props-input {
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 13px;
+    border: 1px solid var(--studio-border);
+    border-radius: 6px;
+    background: #f8fafc;
+    color: var(--studio-text);
+    transition: border-color .12s, background .12s;
+    resize: vertical;
+}
+.riwa-studio-props-input:focus {
+    outline: none;
+    border-color: var(--studio-accent);
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(37,99,235,.1);
+}
+.riwa-studio-props-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--studio-text);
+    cursor: pointer;
+}
+.riwa-studio-props-checkbox input { width: 15px; height: 15px; cursor: pointer; }
+
+.riwa-studio-props-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--studio-border);
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    background: #f8fafc;
+}
+.riwa-studio-props-footer .riwa-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
+    padding: 7px 12px;
+}
+
+/* Sous-label dans le bloc canvas */
+.studio-block-sublabel {
+    font-size: 10px;
+    color: var(--studio-muted);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+}
+
+/* Curseur pointer sur les blocs configurables */
+.riwa-studio-block { cursor: pointer; }
+
+/* ── WP color picker inline override ─────────────────────────────────────── */
+.riwa-studio-field-row .wp-picker-container { width: 100%; }
+.riwa-studio-field-row .wp-color-result     { width: 100% !important; border-radius: 5px !important; font-size: 12px !important; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+    .riwa-studio-layout {
+        grid-template-columns: var(--studio-sidebar-w) 1fr;
+    }
+    .riwa-studio-preview-panel { display: none; }
+}
+@media (max-width: 900px) {
+    .riwa-studio-layout { grid-template-columns: 1fr; }
+    .riwa-studio-sidebar { border-right: none; border-bottom: 1px solid var(--studio-border); max-height: 320px; }
+}

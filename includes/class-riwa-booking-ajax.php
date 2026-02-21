@@ -68,6 +68,12 @@ class Riwa_Booking_Ajax {
             return;
         }
 
+        // Vérification de disponibilité (anti-chevauchement)
+        if (Riwa_Planning::has_overlap($check_in_date, $check_out_date)) {
+            wp_send_json_error('Ces dates ne sont pas disponibles. Veuillez choisir d\'autres dates.');
+            return;
+        }
+
         // Insertion en base de données
         global $wpdb;
         $table_name = $wpdb->prefix . 'riwa_bookings';
@@ -100,6 +106,37 @@ class Riwa_Booking_Ajax {
 
         $booking_id = $wpdb->insert_id;
 
+        // Calcul et mise à jour du prix de base
+        $nights      = (int) (new DateTime($check_out_date))->diff(new DateTime($check_in_date))->days;
+        $total_price = Riwa_Pricing::calculate_total($check_in_date, $check_out_date, $total_travelers);
+
+        // Upsells sélectionnés : [ ['id' => int, 'quantity' => int], ... ]
+        $upsells_raw    = $_POST['upsells'] ?? [];
+        $upsells_total  = 0.0;
+        if (!empty($upsells_raw) && is_array($upsells_raw)) {
+            $selected = [];
+            foreach ($upsells_raw as $item) {
+                $selected[] = [
+                    'id'       => intval($item['id'] ?? 0),
+                    'quantity' => max(1, intval($item['quantity'] ?? 1)),
+                ];
+            }
+            $upsells_total = Riwa_Upsells_Table::save_for_booking($booking_id, $selected, $nights, $total_travelers);
+        }
+
+        $grand_total = $total_price['total'] + $upsells_total;
+
+        $wpdb->update(
+            $table_name,
+            array(
+                'total_price'    => $grand_total,
+                'price_per_night' => $total_price['per_night'],
+            ),
+            array('id' => $booking_id),
+            array('%f', '%f'),
+            array('%d')
+        );
+
         // Envoi des emails
         try {
             Riwa_Emails::send_confirmation($guest_email, $guest_name, $check_in_date, $check_out_date);
@@ -117,23 +154,9 @@ class Riwa_Booking_Ajax {
             // Erreur silencieuse
         }
 
-        // Calcul et mise à jour du prix
-        $total_price = Riwa_Pricing::calculate_total($check_in_date, $check_out_date, $total_travelers);
-
-        $wpdb->update(
-            $table_name,
-            array(
-                'total_price'    => $total_price['total'],
-                'price_per_night' => $total_price['per_night'],
-            ),
-            array('id' => $booking_id),
-            array('%f', '%f'),
-            array('%d')
-        );
-
         $success_message = 'Votre réservation a été enregistrée avec succès !';
-        if ($total_price['total'] > 0) {
-            $success_message .= ' Prix total : ' . number_format($total_price['total'], 2, ',', ' ') . ' €';
+        if ($grand_total > 0) {
+            $success_message .= ' Prix total : ' . number_format($grand_total, 2, ',', ' ') . ' €';
         }
 
         wp_send_json_success(array(

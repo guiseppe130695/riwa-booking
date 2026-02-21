@@ -85,8 +85,9 @@ class Riwa_PDF_Generator {
         // Forcer le respect des styles CSS pour les images
         $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
         
-        // Générer le contenu HTML personnalisé
-        $html = self::get_pdf_content($booking, $options);
+        // Générer le contenu HTML personnalisé (via Studio si disponible)
+        $doc_type = isset($booking->doc_type) ? $booking->doc_type : 'confirmation';
+        $html = self::get_pdf_content($booking, $options, $doc_type);
         
         // Écrire le contenu HTML
         $pdf->writeHTML($html, true, false, true, false, '');
@@ -100,8 +101,20 @@ class Riwa_PDF_Generator {
     
     /**
      * Génère le contenu HTML pour le PDF avec personnalisation
+     * Délègue au Studio si disponible, sinon fallback legacy
      */
-    private static function get_pdf_content($booking, $options) {
+    public static function get_pdf_content($booking, $options, $doc_type = 'confirmation') {
+        if (class_exists('Riwa_PDF_Studio')) {
+            $settings = Riwa_PDF_Studio::get_settings();
+            return Riwa_PDF_Studio::render_layout_html($doc_type, $booking, $settings, false);
+        }
+        return self::get_pdf_content_legacy($booking, $options);
+    }
+
+    /**
+     * Contenu HTML legacy (avant PDF Studio)
+     */
+    private static function get_pdf_content_legacy($booking, $options) {
         // Calculer le nombre de nuits
         $nights = (strtotime($booking->check_out_date) - strtotime($booking->check_in_date)) / (60 * 60 * 24);
         
@@ -215,9 +228,20 @@ class Riwa_PDF_Generator {
         $html .= '<div class="section">';
         $html .= '<div class="section-title">Tarifs</div>';
         $html .= '<div class="info-row"><span class="label">Prix/nuit :</span> <span class="value">' . number_format($price_per_night, 2, ',', ' ') . ' €</span></div>';
+
+        // Upsells (services additionnels)
+        if (class_exists('Riwa_Upsells_Table')) {
+            $booking_upsells = Riwa_Upsells_Table::get_for_booking($booking_id);
+            if (!empty($booking_upsells)) {
+                foreach ($booking_upsells as $bu) {
+                    $html .= '<div class="info-row"><span class="label">+ ' . esc_html($bu->upsell_name) . ' :</span> <span class="value">' . number_format($bu->total_price, 2, ',', ' ') . ' €</span></div>';
+                }
+            }
+        }
+
         $html .= '<div class="total"><span class="label">Total :</span> <span class="value">' . number_format($total_price, 2, ',', ' ') . ' €</span></div>';
         $html .= '</div>';
-        
+
         $html .= '</div>'; // Fin colonne droite
         $html .= '</div>'; // Fin grid
         

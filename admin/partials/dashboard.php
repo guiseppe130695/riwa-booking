@@ -155,6 +155,7 @@ $recent_bookings = $wpdb->get_results(
                                 <th>Dates</th>
                                 <th>Prix</th>
                                 <th>Statut</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -179,6 +180,27 @@ $recent_bookings = $wpdb->get_results(
                                     <td>
                                         <?php $badge = Riwa_Bookings_Table::get_status_badge($booking->status); ?>
                                         <span class="riwa-status-badge riwa-status-<?php echo esc_attr($booking->status); ?>"><?php echo esc_html($badge['label']); ?></span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="riwa-btn riwa-btn-secondary button-small view-details-popup"
+                                                data-booking-id="<?php echo esc_attr($booking->id); ?>"
+                                                data-booking-name="<?php echo esc_attr($booking->guest_name); ?>"
+                                                data-booking-email="<?php echo esc_attr($booking->guest_email); ?>"
+                                                data-booking-phone="<?php echo esc_attr($booking->guest_phone); ?>"
+                                                data-booking-checkin="<?php echo esc_attr($booking->check_in_date); ?>"
+                                                data-booking-checkout="<?php echo esc_attr($booking->check_out_date); ?>"
+                                                data-booking-guests="<?php echo esc_attr(Riwa_Bookings_Table::get_total_guests($booking)); ?>"
+                                                data-booking-adults="<?php echo esc_attr($booking->adults_count ?? 0); ?>"
+                                                data-booking-children="<?php echo esc_attr($booking->children_count ?? 0); ?>"
+                                                data-booking-babies="<?php echo esc_attr($booking->babies_count ?? 0); ?>"
+                                                data-booking-price="<?php echo esc_attr($booking->total_price); ?>"
+                                                data-booking-price-per-night="<?php echo esc_attr($booking->price_per_night); ?>"
+                                                data-booking-status="<?php echo esc_attr($booking->status); ?>"
+                                                data-booking-created="<?php echo esc_attr($booking->created_at); ?>"
+                                                data-booking-requests="<?php echo esc_attr($booking->special_requests); ?>"
+                                                title="Voir les détails">
+                                            <span class="dashicons dashicons-visibility"></span>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

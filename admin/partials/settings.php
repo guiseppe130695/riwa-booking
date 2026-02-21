@@ -39,7 +39,9 @@ $gen_color     = get_option('riwa_setting_primary_color', '#2271b1');
             <button type="button" class="riwa-settings-tab active" data-tab="general">Général</button>
             <button type="button" class="riwa-settings-tab" data-tab="pricing">Tarification</button>
             <button type="button" class="riwa-settings-tab" data-tab="email">Email</button>
+            <button type="button" class="riwa-settings-tab" data-tab="notifications">Notifications</button>
             <button type="button" class="riwa-settings-tab" data-tab="debug">Diagnostic</button>
+            <button type="button" class="riwa-settings-tab" data-tab="demo">Données démo</button>
         </div>
 
         <!-- Onglet Général -->
@@ -129,10 +131,121 @@ $gen_color     = get_option('riwa_setting_primary_color', '#2271b1');
             <?php include RIWA_BOOKING_PLUGIN_PATH . 'admin/partials/email-form.php'; ?>
         </div>
 
+        <!-- Onglet Notifications -->
+        <div class="riwa-settings-tab-content" id="settings-tab-notifications">
+            <?php include RIWA_BOOKING_PLUGIN_PATH . 'admin/partials/notif-settings-form.php'; ?>
+        </div>
+
         <!-- Onglet Diagnostic -->
         <div class="riwa-settings-tab-content" id="settings-tab-debug">
             <?php include RIWA_BOOKING_PLUGIN_PATH . 'admin/partials/debug.php'; ?>
         </div>
 
+        <!-- Onglet Données démo -->
+        <div class="riwa-settings-tab-content" id="settings-tab-demo">
+            <div class="riwa-preview-container">
+                <div class="riwa-setting-group">
+                    <h3>Données de démonstration</h3>
+                    <p style="color:var(--riwa-text-light);margin-bottom:1.5rem;">
+                        Injectez des réservations, blocages et prix spéciaux fictifs pour tester le Planning.
+                        Toutes les données démo sont préfixées <code>[DEMO]</code> et peuvent être supprimées en un clic.
+                    </p>
+
+                    <div style="display:flex;flex-direction:column;gap:1rem;max-width:480px;">
+                        <div class="riwa-demo-action-card">
+                            <div class="riwa-demo-action-info">
+                                <span class="dashicons dashicons-database-add" style="color:#d97706;font-size:24px;"></span>
+                                <div>
+                                    <strong>Injecter les données démo</strong>
+                                    <p>24 réservations réalistes + 5 blocages + prix spéciaux week-end sur 90 jours</p>
+                                </div>
+                            </div>
+                            <button type="button" id="settings-seed-btn" class="riwa-btn riwa-btn-primary">
+                                <span class="dashicons dashicons-database-add"></span> Injecter
+                            </button>
+                        </div>
+
+                        <div class="riwa-demo-action-card" id="settings-clear-card" style="display:none;">
+                            <div class="riwa-demo-action-info">
+                                <span class="dashicons dashicons-database-remove" style="color:#dc2626;font-size:24px;"></span>
+                                <div>
+                                    <strong>Effacer les données démo</strong>
+                                    <p>Supprime toutes les entrées <code>[DEMO]</code> de la base de données</p>
+                                </div>
+                            </div>
+                            <button type="button" id="settings-clear-btn" class="riwa-btn riwa-btn-danger">
+                                <span class="dashicons dashicons-trash"></span> Effacer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="settings-demo-msg" style="margin-top:1rem;display:none;"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
+
+<script>
+(function($){
+    var AJAX_URL = (typeof riwa_admin_ajax !== 'undefined') ? riwa_admin_ajax.ajax_url : '/wp-admin/admin-ajax.php';
+    var NONCE    = (typeof riwa_planning_config !== 'undefined') ? riwa_planning_config.nonce : $('#riwa-planning-nonce').val() || '';
+
+    function showDemoMsg(msg, type) {
+        $('#settings-demo-msg')
+            .attr('class', 'notice notice-' + type)
+            .html('<p>' + msg + '</p>')
+            .show();
+    }
+
+    function checkDemoExists() {
+        $.post(AJAX_URL, { action: 'riwa_planning_demo_status', nonce: NONCE }, function(resp) {
+            if (resp.success && resp.data.has_demo) {
+                $('#settings-clear-card').show();
+            } else {
+                $('#settings-clear-card').hide();
+            }
+        });
+    }
+
+    $('#settings-seed-btn').on('click', function() {
+        if (!confirm('Injecter 24 réservations + blocages + prix spéciaux en base ?')) return;
+        var $btn = $(this).prop('disabled', true).text('Injection…');
+        $.post(AJAX_URL, { action: 'riwa_planning_seed_demo', nonce: NONCE }, function(resp) {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-database-add"></span> Injecter');
+            if (resp.success) {
+                showDemoMsg('✓ ' + resp.data.count + ' réservations injectées avec succès. Allez sur le Planning pour les voir.', 'success');
+                $('#settings-clear-card').show();
+            } else {
+                showDemoMsg('Erreur : ' + (resp.data || 'inconnue'), 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-database-add"></span> Injecter');
+            showDemoMsg('Erreur réseau', 'error');
+        });
+    });
+
+    $('#settings-clear-btn').on('click', function() {
+        if (!confirm('Supprimer toutes les données [DEMO] ? Action irréversible.')) return;
+        var $btn = $(this).prop('disabled', true).text('Suppression…');
+        $.post(AJAX_URL, { action: 'riwa_planning_clear_demo', nonce: NONCE }, function(resp) {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span> Effacer');
+            if (resp.success) {
+                showDemoMsg('✓ Données démo supprimées.', 'success');
+                $('#settings-clear-card').hide();
+            } else {
+                showDemoMsg('Erreur : ' + (resp.data || 'inconnue'), 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span> Effacer');
+            showDemoMsg('Erreur réseau', 'error');
+        });
+    });
+
+    // Vérifier si des données démo existent quand l'onglet est ouvert
+    $(document).on('click', '.riwa-settings-tab[data-tab="demo"]', function() {
+        checkDemoExists();
+    });
+}(jQuery));
+</script>

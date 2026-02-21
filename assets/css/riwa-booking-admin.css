@@ -179,6 +179,11 @@
     color: var(--riwa-gray-600);
 }
 
+.status-blocked {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
 /* Affichage des prix épuré */
 .price-display {
     font-weight: 400;
@@ -333,7 +338,6 @@
 .button:focus-visible {
     outline: 2px solid var(--riwa-black);
     outline-offset: 2px;
-}
 }
 
 /* =============================================================
@@ -521,7 +525,7 @@
 
 /* État vide */
 .riwa-empty-state { text-align: center; padding: 4rem 2rem; color: #646970; }
-.riwa-empty-state .dashicons { font-size: 48px; margin-bottom: 1rem; opacity: 0.5; }
+.riwa-empty-state .dashicons { font-size: 48px; margin-bottom: 2.5rem; opacity: 0.5; }
 .riwa-empty-state h3 { margin: 0 0 0.5rem 0; font-weight: 500; font-size: 16px; }
 .riwa-empty-state p { margin: 0; opacity: 0.7; font-size: 14px; }
 
@@ -531,8 +535,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 1.75rem;
-    border: 2px solid transparent;
-    border-radius: 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
     background: white;
     color: #1d2327;
     text-decoration: none;
@@ -540,57 +544,294 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.riwa-btn:hover { background: #f6f7f7; border-color: #8c8f94; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.riwa-btn:hover { background: #f6f7f7; border-color: #8c8f94; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
 .riwa-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .riwa-btn-primary { background: linear-gradient(135deg, #2271b1 0%, #135e96 100%); border-color: #2271b1; color: white; }
 .riwa-btn-primary:hover { background: linear-gradient(135deg, #135e96 0%, #0d4b7a 100%); border-color: #135e96; }
-.riwa-btn-secondary { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-color: #dee2e6; color: #495057; }
-.riwa-btn-secondary:hover { background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%); border-color: #adb5bd; }
+.riwa-btn-secondary { border-color: #dee2e6; color: #495057; }
+.riwa-btn-secondary:hover { border-color: #adb5bd; }
 .riwa-btn-danger { background: #fcf0f1; border-color: #d63638; color: #d63638; }
 .riwa-btn-danger:hover { background: #d63638; color: white; }
 .riwa-btn.button-small { padding: 0.5rem 1rem; font-size: 12px; }
 
-/* Popup */
+/* ── Popup redesign ──────────────────────────────── */
 .riwa-popup-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: none;
+    background: rgba(15, 23, 42, 0.55); display: none;
     justify-content: center; align-items: center;
-    z-index: 999999; backdrop-filter: blur(4px);
+    z-index: 999999; backdrop-filter: blur(6px);
 }
-.riwa-popup-overlay.show { display: flex; animation: riwa-fadeIn 0.3s ease; }
+
+/* Conteneur deux colonnes */
 .riwa-popup-container {
-    background: white; border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    max-width: 600px; width: 90%; max-height: 90vh; overflow: hidden;
-    animation: riwa-slideIn 0.3s ease;
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+    max-width: 780px; width: 95%; max-height: 92vh;
+    animation: riwa-slideIn 0.25s ease;
+    position: relative;
 }
-.riwa-popup-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1.5rem 2rem; border-bottom: 1px solid #f0f0f1; background: #f8f9fa;
+
+/* Bouton × — dans le panneau droit */
+.riwa-popup-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none;
+    font-size: 18px; line-height: 1; color: #94a3b8;
+    cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    transition: color 0.15s, background 0.15s; z-index: 10;
 }
-.riwa-popup-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: #1d2327; }
-.riwa-popup-close { background: none; border: none; color: #646970; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: all 0.2s ease; display: flex; align-items: center; }
-.riwa-popup-close:hover { background: #f0f0f1; color: #1d2327; }
-.riwa-popup-close .dashicons { font-size: 20px; width: 20px; height: 20px; }
-.riwa-popup-content { padding: 2rem; max-height: 60vh; overflow-y: auto; }
-.riwa-popup-section { margin-bottom: 2rem; }
-.riwa-popup-section:last-child { margin-bottom: 0; }
-.riwa-popup-section h4 {
-    margin: 0 0 1rem 0; font-size: 14px; font-weight: 600; color: #1d2327;
+.riwa-popup-close:hover { color: #1d2327; background: #f0f4f8; }
+
+/* ── Sidebar gauche ── */
+.riwa-popup-sidebar {
+    width: 240px; min-width: 240px;
+    background: linear-gradient(160deg, #0f4c75 0%, #1b6ca8 60%, #2196f3 100%);
+    padding: 2rem 1.5rem;
+    display: flex; flex-direction: column; gap: 2rem;
+    color: #fff;
+}
+.riwa-popup-sidebar-header {
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.riwa-popup-sidebar-icon {
+    font-size: 28px !important; width: 28px !important; height: 28px !important;
+    opacity: 0.9;
+}
+.riwa-popup-sidebar-ref {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+}
+.riwa-popup-sidebar-label {
+    font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* Steps sidebar */
+.riwa-popup-sidebar-steps {
+    display: flex; flex-direction: column; gap: 1.5rem;
+}
+.riwa-popup-step {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+}
+.riwa-popup-step-icon {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+}
+.riwa-popup-step.completed .riwa-popup-step-icon {
+    background: rgba(255,255,255,0.9);
+    color: #1b6ca8;
+}
+.riwa-popup-step-icon .dashicons { font-size: 16px; width: 16px; height: 16px; }
+.riwa-popup-step-body { display: flex; flex-direction: column; gap: 0.15rem; }
+.riwa-popup-step-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.65; }
+.riwa-popup-step-value { font-size: 14px; font-weight: 600; }
+.riwa-popup-step-sub { font-size: 12px; opacity: 0.75; word-break: break-all; }
+.riwa-popup-price { font-size: 18px !important; font-weight: 700 !important; }
+
+.riwa-popup-travelers-inline {
+    display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem;
+}
+.riwa-popup-travelers-inline .riwa-traveler-badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 2px 10px;
+    font-size: 11px; font-weight: 500;
+}
+
+/* ── Panneau droit ── */
+.riwa-popup-main {
+    flex: 1; display: flex; flex-direction: column;
+    background: #fff; overflow: hidden;
+}
+.riwa-popup-main-header {
+    padding: 1.5rem 2rem 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #f0f4f8;
+}
+.riwa-popup-main-header h3 { margin: 0; font-size: 17px; font-weight: 700; color: #1d2327; }
+
+/* Badge statut dans le header */
+.riwa-popup-status-badge {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.5px;
-    border-bottom: 1px solid #f0f0f1; padding-bottom: 0.5rem;
+    margin-right: 25px;
 }
-.riwa-popup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.riwa-popup-item { display: flex; flex-direction: column; gap: 0.25rem; }
-.riwa-popup-label { font-size: 12px; color: #646970; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
-.riwa-popup-value { font-size: 14px; color: #1d2327; font-weight: 500; }
-.riwa-popup-requests, .riwa-popup-travelers {
-    background: #f8f9fa; border: 1px solid #f0f0f1; border-radius: 6px; padding: 1rem; min-height: 60px;
+.riwa-popup-status-badge.status-pending   { background: #fff8e6; color: #b45309; }
+.riwa-popup-status-badge.status-confirmed { background: #edfaef; color: #008a20; }
+.riwa-popup-status-badge.status-cancelled { background: #fcf0f1; color: #d63638; }
+
+.riwa-popup-main-content {
+    flex: 1; padding: 1.5rem 2rem; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 1.5rem;
 }
-.riwa-popup-requests { font-size: 14px; color: #646970; line-height: 1.5; display: flex; align-items: center; }
-.riwa-popup-footer { padding: 1.5rem 2rem; border-top: 1px solid #f0f0f1; background: #f8f9fa; display: flex; justify-content: flex-end; }
+
+/* Bloc dates */
+.riwa-popup-dates-block {
+    display: flex; align-items: center; gap: 1rem;
+}
+.riwa-popup-date-card {
+    flex: 1;
+    background: #f8fafc; border: 1px solid #e8edf2;
+    border-radius: 10px; padding: 1rem 1.25rem;
+    text-align: center;
+}
+.riwa-popup-date-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: #94a3b8; font-weight: 600; margin-bottom: 0.4rem;
+}
+.riwa-popup-date-value {
+    font-size: 18px; font-weight: 700; color: #1d2327;
+}
+.riwa-popup-date-arrow {
+    color: #94a3b8;
+}
+.riwa-popup-date-arrow .dashicons { font-size: 22px; width: 22px; height: 22px; }
+
+/* Header sous-titre */
+.riwa-popup-main-sub {
+    font-size: 12px; color: #94a3b8; margin-top: 2px;
+}
+
+/* ── Timeline ── */
+.riwa-timeline {
+    display: flex; flex-direction: column;
+}
+.riwa-timeline-item {
+    display: flex; gap: 1rem; position: relative;
+    padding-bottom: 0;
+}
+/* Ligne verticale via le connecteur */
+.riwa-timeline-connector {
+    position: absolute;
+    left: 15px; top: 32px;
+    width: 2px; height: calc(100% + 4px);
+    background: #e2e8f0;
+    z-index: 0;
+}
+.riwa-timeline-item:last-child .riwa-timeline-connector { display: none; }
+
+/* Dot */
+.riwa-timeline-dot {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+    transition: all 0.3s ease;
+}
+.riwa-timeline-dot .dashicons {
+    font-size: 15px; width: 15px; height: 15px; color: #cbd5e1;
+}
+
+/* États */
+.riwa-timeline-item.tl-done .riwa-timeline-dot {
+    background: #1b6ca8; border-color: #1b6ca8;
+}
+.riwa-timeline-item.tl-done .riwa-timeline-dot .dashicons { color: #fff; }
+.riwa-timeline-item.tl-done .riwa-timeline-connector { background: #1b6ca8; }
+
+.riwa-timeline-item.tl-active .riwa-timeline-dot {
+    background: #fff; border-color: #1b6ca8;
+    box-shadow: 0 0 0 4px rgba(27, 108, 168, 0.15);
+}
+.riwa-timeline-item.tl-active .riwa-timeline-dot .dashicons { color: #1b6ca8; }
+
+.riwa-timeline-item.tl-cancelled .riwa-timeline-dot {
+    background: #d63638; border-color: #d63638;
+}
+.riwa-timeline-item.tl-cancelled .riwa-timeline-dot .dashicons { color: #fff; }
+
+/* Corps */
+.riwa-timeline-body {
+    padding-bottom: 1.4rem; flex: 1;
+}
+.riwa-timeline-label {
+    font-size: 13px; font-weight: 600; color: #1d2327; line-height: 1;
+    margin-top: 6px;
+}
+.riwa-timeline-item.tl-pending .riwa-timeline-label,
+.riwa-timeline-item:not(.tl-done):not(.tl-active):not(.tl-cancelled) .riwa-timeline-label {
+    color: #94a3b8;
+}
+.riwa-timeline-desc {
+    font-size: 12px; color: #94a3b8; margin-top: 3px; line-height: 1.4;
+}
+.riwa-timeline-item.tl-done .riwa-timeline-desc,
+.riwa-timeline-item.tl-active .riwa-timeline-desc { color: #64748b; }
+.riwa-timeline-date {
+    display: inline-block; margin-top: 4px;
+    font-size: 11px; font-weight: 600; color: #1b6ca8;
+    background: #eff6ff; border-radius: 4px; padding: 2px 7px;
+}
+.riwa-timeline-item:not(.tl-done):not(.tl-active) .riwa-timeline-date { display: none; }
+
+/* Demandes spéciales */
+.riwa-popup-requests-block {
+    background: #f8fafc; border: 1px solid #e8edf2;
+    border-radius: 10px; padding: 1rem 1.25rem;
+}
+.riwa-popup-requests-label {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 12px; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.5rem;
+}
+.riwa-popup-requests-label .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-popup-requests-text {
+    font-size: 13px; color: #475569; line-height: 1.6;
+}
+
+/* Actions rapides sous la timeline */
+.riwa-popup-actions {
+    display: flex; gap: 0.75rem; flex-wrap: wrap;
+    padding-top: 0.5rem;
+}
+.riwa-popup-actions:empty { display: none; }
+.riwa-popup-action-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.6rem 1.1rem; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    text-decoration: none;
+}
+.riwa-popup-action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.riwa-popup-action-btn .dashicons { font-size: 15px; width: 15px; height: 15px; }
+.riwa-popup-action-btn.confirm  { background: #edfaef; color: #008a20; }
+.riwa-popup-action-btn.cancel   { background: #fcf0f1; color: #d63638; }
+.riwa-popup-action-btn.email    { background: #eff6ff; color: #1b6ca8; }
+.riwa-popup-action-btn.contact  { background: #f0faf4; color: #1a7f4b; }
+.riwa-popup-action-btn.delete   { background: #fff8f8; color: #d63638; border: 1px solid #fca5a5; }
+
+/* Ménage dans la popup planning */
+.riwa-popup-hk-section {
+    width: 100%; padding: 0.75rem 0 0.25rem;
+    border-top: 1px solid #f1f5f9; margin-bottom: 0.5rem;
+}
+.riwa-popup-hk-label {
+    display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 0.5rem;
+}
+.riwa-popup-hk-btns { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.riwa-popup-hk-btn {
+    padding: 0.3rem 0.8rem; border: 1px solid #e2e8f0; border-radius: 999px;
+    background: #fff; font-size: 12px; color: #475569; cursor: pointer;
+    transition: all .12s;
+}
+.riwa-popup-hk-btn:hover    { border-color: #94a3b8; color: #1d2327; }
+.riwa-popup-hk-btn.is-active { background: #2271b1; border-color: #2271b1; color: #fff; }
+
+/* Footer minimaliste */
+.riwa-popup-main-footer {
+    padding: 0.85rem 2rem; border-top: 1px solid #f0f4f8;
+    display: flex; justify-content: flex-start; align-items: center;
+}
+.riwa-popup-footer-info {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 13px; color: #64748b;
+}
+.riwa-popup-footer-info .dashicons { font-size: 14px; width: 14px; height: 14px; color: #94a3b8; }
 
 /* Tarification */
 .riwa-pricing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
@@ -640,9 +881,12 @@
 body.riwa-popup-open { overflow: hidden; }
 
 @media (max-width: 768px) {
-    .riwa-popup-container { width: 95%; margin: 1rem; }
-    .riwa-popup-header, .riwa-popup-content, .riwa-popup-footer { padding: 1rem; }
-    .riwa-popup-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .riwa-popup-container { flex-direction: column; width: 98%; max-height: 95vh; }
+    .riwa-popup-sidebar { width: 100%; min-width: unset; padding: 1.25rem 1.5rem; }
+    .riwa-popup-sidebar-steps { flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+    .riwa-popup-step { flex: 1; min-width: 120px; }
+    .riwa-popup-main-content { padding: 1rem 1.25rem; }
+    .riwa-popup-info-grid { grid-template-columns: 1fr 1fr; }
 }
 
 /* =====================================================
@@ -762,23 +1006,379 @@ body.riwa-popup-open { overflow: hidden; }
 .riwa-dashboard-recent { margin-top: 1.5rem; }
 .riwa-dashboard-recent h3 { font-size: 16px; font-weight: 600; margin-bottom: 1rem; color: #1d2327; }
 
-/* Filtres barre réservations */
-.riwa-filters-bar {
+/* ── Smart View ──────────────────────────────────────────────────────────── */
+.riwa-smart-view {
     display: flex;
-    gap: 1rem;
     flex-wrap: wrap;
-    align-items: flex-end;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+}
+.riwa-smart-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.riwa-smart-chip:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); text-decoration: none; }
+.riwa-smart-chip strong { font-weight: 700; }
+.riwa-smart-chip .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-smart-chip--green  { background: #edfaef; color: #008a20; border-color: #c6f0c8; }
+.riwa-smart-chip--orange { background: #fff4e5; color: #c05000; border-color: #fcd6a0; }
+.riwa-smart-chip--blue   { background: #eff6ff; color: #1b6ca8; border-color: #bfdbfe; }
+.riwa-smart-chip--yellow { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.riwa-smart-chip--purple { background: #f5f3ff; color: #5b21b6; border-color: #ddd6fe; }
+.riwa-smart-chip--gray   { background: #f8fafc; color: #64748b; border-color: #e2e8f0; cursor: default; }
+
+/* ── Toolbar style Attio ─────────────────────────────────────────────────── */
+.riwa-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 0;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-toolbar-left  { display: flex; align-items: center; gap: 1rem; }
+.riwa-toolbar-right { display: flex; align-items: center; gap: 0.5rem; }
+
+.riwa-toolbar-count { font-size: 13px; color: #64748b; white-space: nowrap; }
+.riwa-toolbar-count strong { color: #1d2327; }
+
+/* Onglets de vue */
+.riwa-view-tabs { display: flex; gap: 0; background: #f1f5f9; border-radius: 6px; padding: 2px; }
+.riwa-view-tab {
+    padding: 0.3rem 0.75rem;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.12s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1.5;
+    font-family: inherit;
+}
+.riwa-view-tab:hover { color: #1d2327; text-decoration: none; }
+.riwa-view-tab.active { background: #fff; color: #1d2327; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+/* Bouton Reset filtres (toolbar) */
+.riwa-toolbar-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
+    transition: color 0.12s, background 0.12s;
+    white-space: nowrap;
+}
+.riwa-toolbar-reset:hover { color: #d63638; background: #fef2f2; text-decoration: none; }
+.riwa-toolbar-reset .dashicons { font-size: 13px; width: 13px; height: 13px; }
+
+/* Bouton Filtres */
+.riwa-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
     background: #fff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
 }
-.riwa-filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
-.riwa-filter-group label { font-size: 12px; font-weight: 600; color: #646970; text-transform: uppercase; letter-spacing: 0.4px; }
-.riwa-filter-search { flex: 1; min-width: 180px; }
-.riwa-filter-actions { display: flex; gap: 0.5rem; align-items: flex-end; }
+.riwa-toolbar-btn:hover { border-color: #94a3b8; color: #1d2327; }
+.riwa-toolbar-btn--active { border-color: #1b6ca8; color: #1b6ca8; background: #eff6ff; }
+.riwa-toolbar-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-filter-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #1b6ca8;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Tri select inline */
+.riwa-sort-form { display: flex; }
+.riwa-sort-select {
+    padding: 0.375rem 0.625rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #475569;
+    background: #fff;
+    cursor: pointer;
+    height: auto;
+}
+.riwa-sort-select:focus { border-color: #1b6ca8; outline: none; box-shadow: 0 0 0 2px rgba(27,108,168,0.15); }
+
+/* Recherche inline */
+.riwa-search-form { display: flex; }
+.riwa-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.riwa-search-icon {
+    position: absolute;
+    left: 8px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+.riwa-search-input {
+    padding: 0.375rem 2rem 0.375rem 1.875rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1d2327;
+    width: 180px;
+    background: #fff;
+    transition: border-color 0.12s, box-shadow 0.12s, width 0.2s;
+    height: auto;
+}
+.riwa-search-input:focus { border-color: #1b6ca8; box-shadow: 0 0 0 2px rgba(27,108,168,0.15); outline: none; width: 220px; }
+.riwa-search-clear {
+    position: absolute;
+    right: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-decoration: none;
+    line-height: 1;
+}
+.riwa-search-clear:hover { color: #d63638; }
+
+/* ── Dropdown filtres ancré au bouton ────────────────────────────────────── */
+.riwa-filter-dropdown-wrap {
+    position: relative;
+}
+.riwa-filter-dropdown {
+    position: fixed;
+    z-index: 100060;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    width: 340px;
+    overflow: hidden;
+}
+.riwa-filter-dropdown-body {
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.riwa-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+.riwa-filter-group-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+/* Chip radio buttons */
+.riwa-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.riwa-chip-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.7rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+}
+.riwa-chip-label input[type="radio"] { display: none; }
+.riwa-chip-label:hover { border-color: #94a3b8; color: #1d2327; }
+.riwa-chip-label.is-active {
+    background: #1b6ca8;
+    border-color: #1b6ca8;
+    color: #fff;
+}
+
+/* Select dans le dropdown */
+.riwa-filter-select {
+    width: 100%;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1d2327;
+    background: #fff;
+    cursor: pointer;
+}
+.riwa-filter-select:focus { border-color: #1b6ca8; outline: none; }
+
+/* Plage de dates */
+.riwa-filter-date-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.riwa-filter-date {
+    flex: 1;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1d2327;
+}
+.riwa-filter-date:focus { border-color: #1b6ca8; outline: none; }
+.riwa-filter-date-sep { font-size: 11px; color: #94a3b8; }
+
+/* Plage de prix */
+.riwa-filter-price-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.riwa-filter-price-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.riwa-filter-price-prefix {
+    padding: 0 0.45rem;
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 700;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    white-space: nowrap;
+    line-height: 30px;
+}
+.riwa-filter-price-input {
+    flex: 1;
+    border: none;
+    padding: 0.4rem 0.45rem;
+    font-size: 12.5px;
+    color: #1d2327;
+    width: 0;
+    min-width: 0;
+}
+.riwa-filter-price-input:focus { outline: none; }
+.riwa-filter-price-field:focus-within { border-color: #1b6ca8; }
+
+/* Séparateur (usages résiduels) */
+.riwa-date-sep { font-size: 12px; color: #94a3b8; }
+
+/* ── Tags des filtres actifs ─────────────────────────────────────────────── */
+.riwa-active-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.25rem;
+}
+.riwa-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.65rem;
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    font-size: 12px;
+    color: #1e40af;
+    font-weight: 500;
+}
+.riwa-active-tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    font-size: 9px;
+    color: #64748b;
+    text-decoration: none;
+    background: #dbeafe;
+    transition: all 0.1s;
+}
+.riwa-active-tag-remove:hover { background: #d63638; color: #fff; }
+.riwa-clear-all {
+    font-size: 12px;
+    color: #64748b;
+    text-decoration: none;
+    margin-left: 0.25rem;
+}
+.riwa-clear-all:hover { color: #d63638; text-decoration: underline; }
+
+/* Bouton ghost */
+.riwa-btn-ghost {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+.riwa-btn-ghost:hover { border-color: #94a3b8; color: #1d2327; }
+
+/* Résultats count */
 .riwa-results-count { font-size: 13px; color: #646970; margin: 0 0 0.75rem; }
+
+/* Colonne nuits + voyageurs dans le tableau */
+.riwa-nights-badge {
+    display: inline-block;
+    font-size: 11px;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-top: 2px;
+}
+.riwa-guests-compact { display: flex; align-items: center; gap: 3px; font-weight: 600; font-size: 14px; }
+.riwa-guests-compact .dashicons { font-size: 14px; width: 14px; height: 14px; color: #64748b; }
+.riwa-guests-detail { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 
 /* Bouton success (confirmer) */
 .riwa-btn-success {
@@ -788,17 +1388,14 @@ body.riwa-popup-open { overflow: hidden; }
 }
 .riwa-btn-success:hover { background: #c6f0c8; }
 
-/* Pagination */
-.riwa-pagination {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e2e8f0;
+/* Infinite scroll sentinel */
+.riwa-infinite-sentinel {
+    display: flex; justify-content: center; align-items: center;
+    padding: 1.5rem 0; color: #94a3b8; font-size: 13px;
 }
-.riwa-pagination-info { font-size: 13px; color: #646970; }
+.riwa-infinite-sentinel .riwa-infinite-spinner { display: flex; align-items: center; gap: 0.5rem; }
+.riwa-infinite-sentinel:not(.is-loading) .riwa-infinite-spinner { visibility: hidden; }
+.riwa-infinite-sentinel.is-done { display: none; }
 
 /* Onglets des Paramètres */
 .riwa-settings-tabs {
@@ -827,3 +1424,1806 @@ body.riwa-popup-open { overflow: hidden; }
 /* Retrait du padding de section imbriqué dans Paramètres */
 .riwa-settings-tab-content .riwa-section { margin: 0; }
 .riwa-settings-tab-content .riwa-section-header { display: none; }
+/* ═══════════════════════════════════════════════════════
+   UPSELLS / SERVICES ADMIN
+   ═══════════════════════════════════════════════════════ */
+
+/* Formulaire ajout/édition */
+.riwa-upsell-form-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+.riwa-upsell-form-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 1.25rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.riwa-upsell-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+.riwa-upsell-form-col { display: flex; flex-direction: column; gap: 1rem; }
+.riwa-form-row { display: flex; flex-direction: column; gap: 4px; }
+.riwa-form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.riwa-form-label .required { color: #d63638; }
+.riwa-form-input {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.riwa-form-input:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.12);
+}
+.riwa-form-hint { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.riwa-icon-input { font-size: 18px; width: 80px !important; text-align: center; }
+
+/* Toggle checkbox */
+.riwa-form-row--checkbox { flex-direction: row; align-items: center; gap: 8px; margin-top: 4px; }
+.riwa-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #475569;
+}
+.riwa-toggle-label input[type="checkbox"] { display: none; }
+.riwa-toggle-switch {
+    width: 36px;
+    height: 20px;
+    background: #cbd5e1;
+    border-radius: 20px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+.riwa-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.riwa-toggle-label input:checked ~ .riwa-toggle-switch { background: #2271b1; }
+.riwa-toggle-label input:checked ~ .riwa-toggle-switch::after { transform: translateX(16px); }
+
+/* Actions formulaire */
+.riwa-upsell-form-actions {
+    display: flex;
+    gap: .75rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* En-tête liste */
+.riwa-upsell-list-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.riwa-upsell-list-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+}
+
+/* Grille des cartes upsells */
+.riwa-upsell-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.riwa-upsell-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1rem 1rem 1rem;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0 .75rem;
+    align-items: start;
+    transition: box-shadow .15s, border-color .15s;
+    position: relative;
+}
+.riwa-upsell-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); border-color: #cbd5e1; }
+.riwa-upsell-card.is-inactive { opacity: .6; background: #f8fafc; }
+
+.riwa-upsell-card-icon {
+    grid-row: 1 / 3;
+    font-size: 24px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+.riwa-upsell-card-body { grid-column: 2; grid-row: 1; }
+.riwa-upsell-card-name { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 2px; }
+.riwa-upsell-card-desc { font-size: 12px; color: #64748b; line-height: 1.4; }
+.riwa-upsell-card-price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #1e293b;
+}
+.riwa-upsell-pricing-type {
+    font-size: 11px;
+    color: #94a3b8;
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 20px;
+}
+.riwa-upsell-card-status { grid-column: 3; grid-row: 1; }
+.riwa-upsell-card-actions {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    justify-content: flex-end;
+}
+
+/* Badges actif/inactif */
+.riwa-badge-active {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #008a20;
+    background: #edfaef;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid #c6f0c8;
+}
+.riwa-badge-inactive {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #646970;
+    background: #f0f0f1;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid #dcdcde;
+}
+
+/* Boutons icône */
+.riwa-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .12s, border-color .12s, color .12s;
+    padding: 0;
+}
+.riwa-icon-btn:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
+.riwa-icon-btn--danger:hover { background: #fef2f2; border-color: #fecaca; color: #d63638; }
+.riwa-icon-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+
+/* Bannière info bas de page */
+.riwa-upsell-info-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: 13px;
+    color: #1e40af;
+    margin-top: 1rem;
+}
+.riwa-upsell-info-banner .dashicons { font-size: 16px; flex-shrink: 0; }
+
+/* Popup : section upsells */
+.riwa-popup-upsells-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.riwa-popup-upsell-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #475569;
+}
+.riwa-popup-upsell-name { color: #334155; }
+.riwa-popup-upsell-price { font-weight: 600; color: #1e293b; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .riwa-upsell-form-grid { grid-template-columns: 1fr; }
+    .riwa-upsell-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Icônes Dashicons dans les cartes upsells (admin) ── */
+.riwa-upsell-card-icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2271b1;
+}
+/* Sélecteur d'icônes dans le formulaire */
+.riwa-icon-select-wrap { display: flex; flex-direction: column; gap: 6px; }
+.riwa-icon-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.riwa-icon-option {
+    width: 36px;
+    height: 36px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    padding: 0;
+}
+.riwa-icon-option:hover { border-color: #93c5fd; background: #eff6ff; }
+.riwa-icon-option.is-selected { border-color: #2271b1; background: #eff6ff; }
+.riwa-icon-option .dashicons { font-size: 16px; width: 16px; height: 16px; color: #475569; }
+.riwa-icon-option.is-selected .dashicons { color: #2271b1; }
+
+/* ── Barre d'outils Services ─────────────────────────────────────────────── */
+.riwa-upsell-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+}
+.riwa-upsell-toolbar-left { display: flex; align-items: center; gap: 0.75rem; }
+.riwa-upsell-toolbar-right { display: flex; align-items: center; gap: 0.5rem; }
+.riwa-upsell-count-label { font-size: 13px; color: #64748b; font-weight: 500; }
+
+/* ── Dropdown formulaire service ─────────────────────────────────────────── */
+.riwa-upsell-dropdown-wrap { position: relative; }
+.riwa-upsell-form-dropdown {
+    position: fixed;
+    z-index: 100060;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+    width: 560px;
+    overflow: hidden;
+}
+.riwa-upsell-form-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1e293b;
+}
+.riwa-upsell-dropdown-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #94a3b8;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color .15s;
+}
+.riwa-upsell-dropdown-close:hover { color: #d63638; }
+.riwa-upsell-form-dropdown-body {
+    padding: 1rem 1.1rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.riwa-upsell-form-dropdown-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.1rem;
+    border-top: 1px solid #f1f5f9;
+    background: #fafafa;
+}
+
+/* Suppression ancienne carte form (remplacée par dropdown) */
+.riwa-upsell-form-card { display: none; }
+
+/* Responsive */
+@media (max-width: 600px) {
+    .riwa-upsell-form-dropdown { width: calc(100vw - 16px); left: 8px !important; }
+}
+
+/* ── Boutons démo (toolbar Planning) ────────────────────────────────────── */
+#riwa-demo-seed-btn {
+    border-color: #d97706;
+    color: #92400e;
+    background: #fef9c3;
+}
+#riwa-demo-seed-btn:hover { background: #fde68a; border-color: #b45309; }
+#riwa-demo-clear-btn {
+    border-color: #e2e8f0;
+    color: #64748b;
+    background: #f8fafc;
+}
+#riwa-demo-clear-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+
+/* ── Bannière mode démo ──────────────────────────────────────────────────── */
+.riwa-demo-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%);
+    border: 1px solid #fde047;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: #713f12;
+}
+.riwa-demo-banner .dashicons {
+    font-size: 20px; width: 20px; height: 20px;
+    color: #d97706; flex-shrink: 0;
+}
+.riwa-demo-banner > div { flex: 1; line-height: 1.4; }
+.riwa-demo-banner strong { color: #92400e; }
+.riwa-demo-banner-cta {
+    white-space: nowrap;
+    background: #d97706;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s;
+}
+.riwa-demo-banner-cta:hover { background: #b45309; color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLANNING — Smart Planning Board
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Alertes du jour ─────────────────────────────────────────────────────── */
+.riwa-planning-alerts {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+.riwa-planning-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 200px;
+}
+.riwa-alert--arrival  { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+.riwa-alert--departure { background: #fff7ed; border: 1px solid #fbbf24; color: #92400e; }
+.riwa-planning-alert .dashicons { font-size: 18px; width: 18px; height: 18px; margin-top: 1px; }
+.riwa-alert-guests { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; }
+.riwa-alert-guest-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 500;
+    background: rgba(255,255,255,.6);
+}
+.riwa-alert-hk-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor; display: inline-block;
+}
+.riwa-housekeeping--pending  .riwa-alert-hk-dot { background: #f59e0b; }
+.riwa-housekeeping--cleaning .riwa-alert-hk-dot { background: #3b82f6; }
+.riwa-housekeeping--ready    .riwa-alert-hk-dot { background: #10b981; }
+
+/* ── Toolbar Planning ────────────────────────────────────────────────────── */
+.riwa-planning-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.riwa-planning-toolbar-left  { display: flex; align-items: center; gap: 0.4rem; }
+.riwa-planning-toolbar-center { flex: 1; display: flex; justify-content: center; }
+.riwa-planning-toolbar-right  { display: flex; align-items: center; gap: 0.4rem; }
+.riwa-planning-period-label {
+    font-size: 13.5px; font-weight: 600; color: #1e293b; padding: 0 0.5rem;
+    white-space: nowrap;
+}
+
+/* ── Vue tabs ────────────────────────────────────────────────────────────── */
+.riwa-view-tabs {
+    display: inline-flex;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+}
+.riwa-view-tab {
+    padding: 0.3rem 0.9rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #64748b;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all .15s;
+}
+.riwa-view-tab:hover  { color: #1e293b; }
+.riwa-view-tab.active { background: #fff; color: #1b6ca8; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+/* ── Barre d'occupation ──────────────────────────────────────────────────── */
+.riwa-occ-bar {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem 0.85rem;
+    margin-bottom: 1.25rem;
+}
+.riwa-occ-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+.riwa-occ-stat { display: flex; flex-direction: column; align-items: flex-start; }
+.riwa-occ-stat-value {
+    font-size: 20px; font-weight: 700; color: #1e293b; line-height: 1.2;
+}
+.riwa-occ-stat-label { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+.riwa-occ-revenue  { color: #059669; }
+.riwa-occ-potential { color: #d97706; }
+.riwa-occ-progress {
+    height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;
+}
+.riwa-occ-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2271b1 0%, #0ea5e9 100%);
+    border-radius: 4px;
+    transition: width .5s ease;
+}
+
+/* ── Timeline calendrier ─────────────────────────────────────────────────── */
+#riwa-timeline-cal, .riwa-timeline-cal {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 260px;
+}
+.riwa-planning-loader {
+    display: flex; align-items: center; gap: 0.5rem; justify-content: center;
+    padding: 3rem; color: #94a3b8; font-size: 14px;
+}
+.riwa-planning-error {
+    padding: 2rem; color: #d63638; text-align: center; font-size: 13px;
+}
+.riwa-spin {
+    animation: riwa-spin 1s linear infinite;
+    display: inline-block;
+}
+@keyframes riwa-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Wrapper grille */
+.riwa-tl-wrap {
+    min-width: 600px;
+}
+
+/* En-tête jours */
+.riwa-tl-header {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 2px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 10px 10px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    min-height: 58px;
+}
+.riwa-tl-row-label {
+    display: none;
+}
+.riwa-tl-day-header {
+    flex: 1;
+    min-width: var(--tl-col-width, 54px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    text-align: center;
+    padding: 0.3rem 0.1rem;
+    cursor: pointer;
+    border-right: 1px solid #f1f5f9;
+    transition: background .1s;
+    min-height: 58px;
+}
+.riwa-tl-day-header:hover { background: #eff6ff; }
+.riwa-tl-day-header.is-today { background: #eff6ff; }
+.riwa-tl-day-header.is-weekend { background: #fafaf9; }
+.riwa-tl-day-num {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1;
+}
+.riwa-tl-day-header.is-today .riwa-tl-day-num {
+    color: #fff;
+    background: #2271b1;
+}
+.riwa-tl-day-name {
+    font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; line-height: 1;
+}
+.riwa-tl-override-price {
+    font-size: 9px; font-weight: 700; color: #059669;
+    white-space: nowrap; line-height: 1;
+    background: #dcfce7; border-radius: 3px; padding: 1px 3px;
+}
+.riwa-tl-day-header.has-override { background: #f0fdf4; }
+
+/* Rangée */
+.riwa-tl-row {
+    display: flex;
+    border-bottom: 1px solid #f1f5f9;
+}
+.riwa-tl-row-cells {
+    flex: 1;
+    display: flex;
+    min-height: 72px;
+    position: relative;
+}
+
+/* Cellules de fond */
+.riwa-tl-cell {
+    flex: 1;
+    min-width: var(--tl-col-width, 54px);
+    border-right: 1px solid #f8fafc;
+    cursor: pointer;
+    transition: background .1s;
+}
+.riwa-tl-cell:hover   { background: #f8fafc; }
+.riwa-tl-cell.is-today   { background: #eff6ff40; }
+.riwa-tl-cell.is-weekend  { background: #fafaf980; }
+
+/* Barres réservations/blocages */
+.riwa-tl-bar {
+    position: absolute;
+    /* top + height posés inline par le JS (multi-lane) */
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: filter .15s, transform .1s;
+    z-index: 1;
+}
+.riwa-tl-bar:hover { filter: brightness(.93); transform: scaleY(1.04); }
+.riwa-tl-bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.riwa-tl-bar--confirmed { background: #dcfce7; border: 1.5px solid #86efac; color: #166534; }
+.riwa-tl-bar--pending   { background: #fef9c3; border: 1.5px solid #fde047; color: #854d0e; }
+.riwa-tl-bar--blocked   { background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #475569; top: 40px; }
+.riwa-tl-bar--blocked .dashicons { font-size: 13px; width: 13px; height: 13px; margin-right: 2px; }
+
+/* Housekeeping highlights sur check-out */
+.riwa-tl-bar--hk-pending  { border-color: #f59e0b !important; box-shadow: 0 0 0 2px #fef3c7; }
+.riwa-tl-bar--hk-cleaning { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px #dbeafe; }
+
+/* Prix override dans le date panel (quick panel hors réservations) */
+.riwa-qp-label {
+    display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 0.4rem;
+}
+.riwa-btn-sm { padding: 0.3rem 0.75rem !important; font-size: 12px !important; }
+.riwa-btn-danger {
+    background: #d63638; border-color: #d63638; color: #fff;
+    padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 13px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    text-decoration: none; border: none; font-weight: 500; transition: background .15s;
+}
+.riwa-btn-danger:hover { background: #b02a2c; }
+
+/* Status badges dans quick panel */
+.riwa-status-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600;
+}
+.riwa-status--confirmed { background: #dcfce7; color: #166534; }
+.riwa-status--pending   { background: #fef9c3; color: #854d0e; }
+.riwa-status--cancelled { background: #fee2e2; color: #991b1b; }
+.riwa-status--blocked   { background: #f1f5f9; color: #475569; }
+.riwa-status--free      { background: #eff6ff; color: #1e40af; }
+
+/* ── Légende ─────────────────────────────────────────────────────────────── */
+.riwa-planning-legend {
+    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+    margin-top: 1rem; padding: 0.6rem 0; font-size: 12px; color: #64748b;
+}
+.riwa-legend-item { display: flex; align-items: center; gap: 5px; }
+.riwa-legend-dot {
+    width: 14px; height: 14px; border-radius: 3px; display: inline-block;
+}
+.riwa-dot--confirmed  { background: #86efac; border: 1.5px solid #4ade80; }
+.riwa-dot--pending    { background: #fde047; border: 1.5px solid #facc15; }
+.riwa-dot--blocked    { background: #cbd5e1; border: 1.5px solid #94a3b8; }
+.riwa-dot--price      { background: #bbf7d0; border: 1.5px solid #059669; }
+.riwa-dot--hk-pending { background: #fde68a; border: 1.5px solid #f59e0b; }
+
+/* ── Historique d'activité ───────────────────────────────────────────────── */
+.riwa-activity-log {
+    margin-top: 1.25rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.riwa-activity-log-header {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.75rem 1.1rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px; font-weight: 600; color: #475569;
+}
+.riwa-activity-log-header .dashicons { font-size: 15px; width: 15px; height: 15px; color: #94a3b8; }
+.riwa-activity-log-count {
+    margin-left: auto;
+    background: #e2e8f0; color: #475569;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+}
+.riwa-activity-log-body {
+    padding: 0.5rem 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+/* Groupes de dates */
+.riwa-log-date-group {
+    padding: 0.5rem 1.1rem 0.25rem;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em;
+    color: #94a3b8;
+}
+
+/* Items */
+.riwa-log-item {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.5rem 1.1rem;
+    border-left: 3px solid transparent;
+    transition: background .1s;
+}
+.riwa-log-item:hover { background: #f8fafc; }
+.riwa-log-icon {
+    flex-shrink: 0; margin-top: 1px;
+    font-size: 15px; width: 15px; height: 15px;
+    color: #94a3b8;
+}
+.riwa-log-body {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+}
+.riwa-log-label { font-size: 13px; color: #1e293b; font-weight: 500; }
+.riwa-log-sub   { font-size: 11px; color: #94a3b8; }
+
+/* Couleurs par type */
+.riwa-log-item.log-confirmed { border-left-color: #4ade80; }
+.riwa-log-item.log-confirmed .riwa-log-icon { color: #16a34a; }
+
+.riwa-log-item.log-pending   { border-left-color: #facc15; }
+.riwa-log-item.log-pending   .riwa-log-icon { color: #ca8a04; }
+
+.riwa-log-item.log-cancelled { border-left-color: #fca5a5; }
+.riwa-log-item.log-cancelled .riwa-log-icon { color: #dc2626; }
+
+.riwa-log-item.log-blocked   { border-left-color: #cbd5e1; }
+.riwa-log-item.log-blocked   .riwa-log-icon { color: #64748b; }
+
+.riwa-log-item.log-price     { border-left-color: #6ee7b7; }
+.riwa-log-item.log-price     .riwa-log-icon { color: #059669; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .riwa-planning-toolbar { flex-direction: column; align-items: flex-start; }
+    .riwa-occ-stats { gap: 1rem; }
+}
+
+/* ── Onglet Données démo (Settings) ─────────────────────────────────────── */
+.riwa-demo-action-card {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding: 1.25rem 1.5rem;
+    background: #fff; border: 1px solid var(--riwa-border);
+    border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.riwa-demo-action-info {
+    display: flex; align-items: flex-start; gap: 1rem; flex: 1;
+}
+.riwa-demo-action-info strong { display: block; margin-bottom: 2px; }
+.riwa-demo-action-info p { margin: 0; font-size: 12px; color: #64748b; }
+.riwa-btn-danger {
+    background: #dc2626; color: #fff; border: none;
+    padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+    white-space: nowrap;
+}
+.riwa-btn-danger:hover { background: #b91c1c; }
+
+/* ── Dates passées ───────────────────────────────────────────────────────── */
+.riwa-tl-day-header.is-past {
+    opacity: 0.5;
+    background: #f1f5f9;
+}
+.riwa-tl-day-header.is-past .riwa-tl-day-num {
+    color: #94a3b8;
+    background: none;
+}
+.riwa-tl-day-header.is-past .riwa-tl-day-name {
+    color: #cbd5e1;
+}
+.riwa-tl-cell.is-past {
+    background: repeating-linear-gradient(
+        135deg,
+        transparent,
+        transparent 4px,
+        rgba(148,163,184,.12) 4px,
+        rgba(148,163,184,.12) 8px
+    );
+    opacity: 0.7;
+}
+/* Barres passées : décolorées + légèrement transparentes */
+.riwa-tl-bar.is-past {
+    opacity: 0.45;
+    filter: grayscale(60%);
+}
+
+/* ── Multi-lane : la row-cells s'adapte en hauteur via JS ────────────────── */
+.riwa-tl-row-cells {
+    overflow: visible;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* ── STATISTICS — Pulse Board ──────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Navigation onglets */
+.riwa-stats-nav {
+    display: flex; gap: 0.25rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+.riwa-stats-tab {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.65rem 1.25rem;
+    background: none; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 500; color: #64748b;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    border-radius: 4px 4px 0 0;
+    transition: color .15s, border-color .15s;
+}
+.riwa-stats-tab:hover { color: #1e293b; }
+.riwa-stats-tab.active { color: #2271b1; border-bottom-color: #2271b1; background: #f0f6ff; }
+.riwa-stats-tab .dashicons { font-size: 15px; width: 15px; height: 15px; }
+
+/* Loader */
+.riwa-stats-loader {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 2rem; color: #94a3b8; font-size: 13px;
+}
+
+/* Contenu onglets */
+.riwa-stats-tab-content { display: none; }
+.riwa-stats-tab-content.active { display: block; }
+
+/* ── Pulse : grille score + météo ───────────────────────────────────────── */
+.riwa-pulse-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+@media (max-width: 900px) { .riwa-pulse-grid { grid-template-columns: 1fr; } }
+
+/* Carte score de santé */
+.riwa-pulse-score-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 1.5rem; display: flex; gap: 1.5rem; align-items: flex-start;
+}
+.riwa-pulse-score-ring {
+    position: relative; width: 110px; height: 110px; flex-shrink: 0;
+}
+.riwa-score-svg { width: 110px; height: 110px; }
+.riwa-score-inner {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.riwa-score-value { font-size: 26px; font-weight: 800; line-height: 1; }
+.riwa-score-label { font-size: 11px; color: #94a3b8; }
+.riwa-pulse-score-info { flex: 1; min-width: 0; }
+.riwa-pulse-grade {
+    display: inline-block;
+    color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 4px;
+}
+.riwa-pulse-grade-label { font-size: 15px; font-weight: 600; color: #1e293b; margin-bottom: 12px; }
+
+/* Breakdown barres */
+.riwa-pulse-breakdown { display: flex; flex-direction: column; gap: 6px; }
+.riwa-pb-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.riwa-pb-label { width: 120px; color: #64748b; flex-shrink: 0; }
+.riwa-pb-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.riwa-pb-fill  { height: 100%; border-radius: 3px; transition: width .6s; }
+.riwa-pb-pts   { width: 36px; text-align: right; color: #94a3b8; font-size: 11px; }
+
+/* Météo financière 7 jours */
+.riwa-pulse-week-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 1.25rem;
+}
+.riwa-pulse-week-header {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 1rem;
+}
+.riwa-pulse-week-header .dashicons { color: #2271b1; }
+.riwa-pulse-week-total { margin-left: auto; font-size: 16px; color: #1e293b; }
+.riwa-pulse-week-bars {
+    display: flex; gap: 4px; align-items: flex-end; height: 80px;
+}
+.riwa-week-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+.riwa-week-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.riwa-week-bar-fill {
+    width: 100%; border-radius: 3px 3px 0 0;
+    background: linear-gradient(to top, #2271b1, #5b9bd5);
+    min-height: 2px; transition: height .5s;
+}
+.riwa-week-label { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+
+/* Alertes */
+.riwa-pulse-alerts {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    overflow: hidden;
+}
+.riwa-pulse-alerts-title {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.1rem;
+    font-size: 12px; font-weight: 600; color: #475569;
+    background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+}
+.riwa-pulse-alerts-title .dashicons { color: #f59e0b; font-size: 15px; width: 15px; height: 15px; }
+.riwa-alert-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1.1rem;
+    border-left: 3px solid transparent;
+    font-size: 13px;
+}
+.riwa-alert-item + .riwa-alert-item { border-top: 1px solid #f1f5f9; }
+.riwa-alert-icon { flex-shrink: 0; font-size: 16px; width: 16px; height: 16px; }
+.riwa-alert-msg { flex: 1; color: #334155; }
+.riwa-alert-cta {
+    font-size: 12px; font-weight: 600; padding: 4px 10px;
+    border-radius: 6px; border: 1px solid; white-space: nowrap;
+    text-decoration: none;
+}
+.riwa-alert--warning { border-left-color: #f59e0b; }
+.riwa-alert--warning .riwa-alert-icon { color: #d97706; }
+.riwa-alert--warning .riwa-alert-cta { color: #d97706; border-color: #fde68a; background: #fffbeb; }
+.riwa-alert--danger  { border-left-color: #ef4444; }
+.riwa-alert--danger  .riwa-alert-icon { color: #dc2626; }
+.riwa-alert--danger  .riwa-alert-cta  { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.riwa-alert--info    { border-left-color: #3b82f6; }
+.riwa-alert--info    .riwa-alert-icon { color: #2563eb; }
+.riwa-alert--info    .riwa-alert-cta  { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+.riwa-pulse-all-good {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 1rem 1.1rem; font-size: 13px; color: #16a34a;
+}
+.riwa-pulse-all-good .dashicons { color: #16a34a; }
+
+/* ── Analyse : KPIs ─────────────────────────────────────────────────────── */
+.riwa-stats-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+.riwa-stats-kpi-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1.1rem 1.1rem; display: flex; align-items: flex-start; gap: 0.75rem;
+}
+.riwa-stats-kpi-card.riwa-kpi--danger { border-left: 3px solid #ef4444; }
+.riwa-kpi-icon { font-size: 20px; width: 20px; height: 20px; color: #2271b1; flex-shrink: 0; }
+.riwa-kpi-value { font-size: 18px; font-weight: 700; color: #1e293b; line-height: 1.2; }
+.riwa-kpi-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.riwa-kpi--danger .riwa-kpi-value { color: #dc2626; }
+
+/* Charts */
+.riwa-stats-chart-section { margin-bottom: 1.5rem; }
+.riwa-stats-chart-title {
+    font-size: 13px; font-weight: 600; color: #475569;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.riwa-stats-chart-title .dashicons { font-size: 15px; width: 15px; height: 15px; color: #2271b1; }
+.riwa-chart-container {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1rem; height: 240px;
+}
+.riwa-chart-container.riwa-chart-small { height: 180px; }
+
+/* Profil voyageurs */
+.riwa-stats-profile-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+.riwa-stats-profile-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1rem;
+}
+/* Durées */
+.riwa-dur-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 0.5rem; }
+.riwa-dur-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.riwa-dur-label { width: 70px; color: #475569; flex-shrink: 0; }
+.riwa-dur-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.riwa-dur-fill  { height: 100%; background: #2271b1; border-radius: 4px; }
+.riwa-dur-pct   { width: 34px; text-align: right; color: #94a3b8; }
+/* Table jours d'arrivée */
+.riwa-arrival-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0.5rem; }
+.riwa-arrival-table tr:not(:last-child) td { border-bottom: 1px solid #f1f5f9; }
+.riwa-arr-day { padding: 6px 0; font-weight: 500; color: #1e293b; width: 60px; }
+.riwa-arr-cnt { padding: 6px 0; color: #64748b; }
+
+/* ── Prévision ──────────────────────────────────────────────────────────── */
+.riwa-forecast-summary {
+    display: grid; grid-template-columns: 1fr 2fr 1fr;
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+@media (max-width: 800px) { .riwa-forecast-summary { grid-template-columns: 1fr; } }
+.riwa-forecast-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1.1rem;
+}
+.riwa-forecast-card--projected {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border-color: #bfdbfe; text-align: center;
+}
+.riwa-forecast-label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.riwa-forecast-value { font-size: 20px; font-weight: 700; color: #1e293b; }
+.riwa-forecast-big   { font-size: 28px; color: #2271b1; }
+.riwa-forecast-vs    { font-size: 13px; font-weight: 600; margin-top: 4px; }
+
+/* Opportunités */
+.riwa-opp-section { margin-top: 1.5rem; }
+.riwa-opp-card {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding: 1rem 1.1rem;
+    border-radius: 10px; border: 1px solid; margin-bottom: 0.75rem;
+}
+.riwa-opp--green  { background: #f0fdf4; border-color: #86efac; }
+.riwa-opp--blue   { background: #eff6ff; border-color: #bfdbfe; }
+.riwa-opp--orange { background: #fffbeb; border-color: #fde68a; }
+.riwa-opp-icon { font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+.riwa-opp--green  .riwa-opp-icon { color: #16a34a; }
+.riwa-opp--blue   .riwa-opp-icon { color: #2563eb; }
+.riwa-opp--orange .riwa-opp-icon { color: #d97706; }
+.riwa-opp-body { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.riwa-opp-body strong { color: #1e293b; }
+.riwa-opp-body span   { color: #475569; }
+.riwa-gaps-list { margin: 6px 0 0 0; padding-left: 1.2rem; color: #64748b; font-size: 12px; }
+.riwa-gaps-list li { margin-bottom: 2px; }
+.riwa-opp-empty {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 1.5rem; color: #94a3b8; font-size: 13px; font-style: italic;
+}
+.riwa-opp-empty .dashicons { color: #16a34a; }
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  NOTIFICATIONS — WhatsApp semi-auto                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Section WA dans le popup de réservation ──────────────────────────────── */
+.riwa-popup-wa-section {
+    margin-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+}
+.riwa-popup-wa-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+}
+.riwa-popup-wa-icon {
+    display: flex;
+    align-items: center;
+}
+.riwa-popup-wa-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Boutons WhatsApp génériques */
+.riwa-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1.5px solid #25D366;
+    background: #fff;
+    color: #128C7E;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+.riwa-wa-btn:hover {
+    background: #25D366;
+    color: #fff;
+}
+.riwa-wa-btn.riwa-wa-btn-sm {
+    padding: 5px 10px;
+    font-size: 11px;
+}
+.riwa-wa-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Log de notifications dans le popup */
+.riwa-popup-notif-log {
+    margin-top: 0.5rem;
+    min-height: 20px;
+}
+.riwa-notif-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.riwa-notif-log-entry {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 3px 6px;
+    background: #f8fafc;
+    border-radius: 4px;
+    color: #64748b;
+}
+.riwa-notif-log-type { font-weight: 500; color: #128C7E; }
+.riwa-notif-log-date { color: #94a3b8; }
+.riwa-notif-log-empty { font-size: 11px; color: #94a3b8; font-style: italic; margin: 0; }
+
+/* ── Modal de prévisualisation WhatsApp ───────────────────────────────────── */
+.riwa-wa-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.riwa-wa-modal {
+    background: #fff;
+    border-radius: 14px;
+    width: min(500px, 94vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.riwa-wa-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #075E54;
+    color: #fff;
+}
+.riwa-wa-modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    color: #fff;
+}
+.riwa-wa-modal-icon { display: flex; align-items: center; }
+.riwa-wa-modal-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.75);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.riwa-wa-modal-close:hover { color: #fff; }
+.riwa-wa-modal-body {
+    padding: 1.25rem;
+    background: #ECE5DD;
+    flex: 1;
+}
+.riwa-wa-bubble-wrap {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 0.75rem;
+}
+.riwa-wa-bubble {
+    background: #fff;
+    border-radius: 0 10px 10px 10px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 90%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    color: #111b21;
+}
+.riwa-wa-modal-phone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #128C7E;
+}
+.riwa-wa-modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.9rem 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+}
+.riwa-btn-wa {
+    background: #25D366;
+    color: #fff;
+    border-color: #25D366;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+.riwa-btn-wa:hover {
+    background: #128C7E;
+    border-color: #128C7E;
+    color: #fff;
+}
+
+/* ── Section Notifications (page dédiée) ─────────────────────────────────── */
+.riwa-notif-today-section,
+.riwa-notif-log-section {
+    margin-bottom: 2rem;
+}
+.riwa-notif-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-badge-count {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+.riwa-notif-empty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    background: #f0fdf4;
+    border-radius: 8px;
+    color: #16a34a;
+    font-size: 13px;
+}
+.riwa-notif-bookings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.riwa-notif-booking-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+}
+.riwa-notif-booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+.riwa-notif-booking-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+}
+.riwa-notif-day-label {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+.riwa-notif-day-label.arriving  { background: #dcfce7; color: #166534; }
+.riwa-notif-day-label.departing { background: #fee2e2; color: #991b1b; }
+.riwa-notif-day-label.staying   { background: #eff6ff; color: #1d4ed8; }
+.riwa-notif-booking-meta {
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+.riwa-notif-booking-meta .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+.riwa-notif-booking-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Historique global */
+.riwa-notif-log-table-wrap { overflow-x: auto; }
+.riwa-notif-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.riwa-notif-log-table th {
+    background: #f8fafc;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-notif-log-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+.riwa-notif-log-table tr:last-child td { border-bottom: none; }
+.riwa-notif-log-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* ── Formulaire templates (Paramètres → Notifications) ───────────────────── */
+.riwa-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 13px;
+}
+.riwa-toggle-slider {
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    background: #cbd5e1;
+    border-radius: 99px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.riwa-toggle-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.riwa-toggle-label input[type="checkbox"]:checked ~ .riwa-toggle-slider {
+    background: #25D366;
+}
+.riwa-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.riwa-toggle-label input[type="checkbox"]:checked ~ .riwa-toggle-slider::before {
+    transform: translateX(16px);
+}
+.riwa-field-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    margin: 4px 0 0;
+}
+.riwa-notif-vars-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 0.25rem;
+}
+.riwa-notif-var-chip {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 11.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    cursor: default;
+    user-select: all;
+}
+.riwa-notif-tpl-textarea {
+    width: 100%;
+    font-family: monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+/* ============================================================
+   Module Paiements
+   ============================================================ */
+
+/* Onglets */
+.riwa-pay-tabs {
+    display: flex;
+    gap: 2px;
+    padding: .75rem 1.25rem 0;
+    border-bottom: 2px solid #e2e8f0;
+    background: #fff;
+    margin-bottom: 0;
+}
+.riwa-pay-tab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 4px 4px 0 0;
+    transition: color .15s, border-color .15s;
+}
+.riwa-pay-tab .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-pay-tab:hover { color: #2271b1; background: #f1f5f9; }
+.riwa-pay-tab.active { color: #2271b1; border-bottom-color: #2271b1; background: #f0f6ff; }
+.riwa-pay-tab-content { display: none; padding: 1.25rem; }
+.riwa-pay-tab-content.active { display: block; }
+
+/* KPIs */
+.riwa-pay-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+.riwa-pay-kpi {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    min-width: 0;
+    overflow: hidden;
+}
+.riwa-pay-kpi-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.riwa-pay-kpi-icon .dashicons { font-size: 15px; width: 15px; height: 15px; }
+.riwa-pay-kpi-body { min-width: 0; flex: 1; overflow: hidden; }
+.riwa-pay-kpi-label {
+    font-size: 9.5px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.riwa-pay-kpi-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+.riwa-pay-kpi-sub {
+    font-size: 9.5px;
+    color: #94a3b8;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Section titles */
+.riwa-pay-section-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 1rem;
+}
+.riwa-pay-section-title .dashicons { font-size: 16px; width: 16px; height: 16px; }
+
+/* Liste retards */
+.riwa-pay-overdue-wrap { margin-bottom: 2rem; }
+.riwa-pay-overdue-list { display: flex; flex-direction: column; gap: 8px; }
+.riwa-pay-overdue-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+.riwa-pay-overdue-client { flex: 1; font-size: 13px; }
+.riwa-pay-overdue-meta { display: flex; gap: 1.5rem; font-size: 12px; color: #64748b; }
+
+/* Formulaire rapide */
+.riwa-pay-quick-form {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+.riwa-pay-inline-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.riwa-pay-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+.riwa-pay-field { display: flex; flex-direction: column; min-width: 0; }
+.riwa-pay-field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+}
+.riwa-pay-field-lg  { flex: 2 1 200px; }
+.riwa-pay-field-md  { flex: 1.2 1 140px; }
+.riwa-pay-field-sm  { flex: 0.8 1 100px; }
+.riwa-pay-field-action { flex: 0 0 auto; }
+.riwa-pay-field-wide { grid-column: 1 / -1; }
+/* Inputs compacts dans le formulaire inline */
+.riwa-pay-inline-form .riwa-input,
+.riwa-pay-quick-form .riwa-input {
+    padding: 6px 10px;
+    font-size: 12.5px;
+    height: 34px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    width: 100%;
+}
+.riwa-pay-submit-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    padding: 0 14px;
+    height: 34px;
+    box-sizing: border-box;
+}
+.riwa-pay-submit-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-pay-form-actions { display: flex; align-items: center; gap: 1rem; }
+.riwa-pay-form-msg { font-size: 12px; }
+.riwa-pay-hint { font-size: 11px; color: #94a3b8; font-weight: 400; }
+
+/* Filtres */
+.riwa-pay-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.riwa-pay-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all .15s;
+}
+.riwa-pay-filter-btn:hover { border-color: #2271b1; color: #2271b1; }
+.riwa-pay-filter-btn.active { background: #2271b1; color: #fff; border-color: #2271b1; }
+.riwa-pay-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* Table */
+.riwa-pay-table-wrap { overflow-x: auto; }
+.riwa-pay-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.riwa-pay-table th {
+    background: #f8fafc;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-pay-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+.riwa-pay-table tr:last-child td { border-bottom: none; }
+.riwa-pay-table tr:hover td { background: #f8fafc; }
+.riwa-pay-row-overdue td { background: #fff5f5 !important; }
+
+/* Badge statut */
+.riwa-pay-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Boutons action */
+.riwa-pay-action-btn {
+    width: 28px; height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition: all .15s;
+    margin-right: 4px;
+}
+.riwa-pay-action-btn:hover { background: #2271b1; color: #fff; border-color: #2271b1; }
+.riwa-pay-action-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+
+/* Pagination */
+.riwa-pay-pagination { display: flex; gap: 4px; justify-content: center; margin-top: 1rem; }
+.riwa-pay-page-btn {
+    width: 30px; height: 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+}
+.riwa-pay-page-btn.active { background: #2271b1; color: #fff; border-color: #2271b1; }
+
+/* Panel détail */
+.riwa-pay-detail-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.3);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+}
+.riwa-pay-detail-overlay.open { opacity: 1; pointer-events: all; }
+.riwa-pay-detail-panel {
+    position: fixed;
+    top: 32px; right: -420px;
+    width: 420px; bottom: 0;
+    background: #fff;
+    z-index: 9999;
+    box-shadow: -4px 0 20px rgba(0,0,0,.12);
+    display: flex;
+    flex-direction: column;
+    transition: right .25s ease;
+}
+.riwa-pay-detail-panel.open { right: 0; }
+.riwa-pay-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-weight: 700;
+    background: #f8fafc;
+}
+.riwa-pay-detail-close { background: none; border: none; cursor: pointer; color: #64748b; padding: 2px; }
+.riwa-pay-detail-body { flex: 1; overflow-y: auto; padding: 1rem; }
+.riwa-pay-detail-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.riwa-pay-detail-stat span { display: block; font-size: 11px; color: #64748b; margin-bottom: 2px; }
+.riwa-pay-detail-stat strong { font-size: 15px; }
+.riwa-pay-detail-deposit {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #4c1d95;
+    margin-bottom: 1rem;
+}
+
+/* Timeline */
+.riwa-pay-timeline { padding: 4px 0; }
+.riwa-pay-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #f1f5f9;
+}
+.riwa-pay-timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0; margin-top: 4px; }
+.riwa-pay-timeline-content { flex: 1; }
+.riwa-pay-timeline-amount { font-size: 14px; font-weight: 700; color: #16a34a; }
+.riwa-pay-timeline-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+.riwa-pay-timeline-note { font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 2px; }
+.riwa-pay-delete-payment { background: none; border: none; cursor: pointer; color: #cbd5e1; padding: 2px; flex-shrink: 0; }
+.riwa-pay-delete-payment:hover { color: #ef4444; }
+.riwa-pay-mini-form { margin-top: 1rem; }
+.riwa-pay-mini-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Modal */
+.riwa-pay-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 9998; }
+.riwa-pay-modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 12px;
+    width: 560px;
+    max-width: 95vw;
+    z-index: 9999;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.riwa-pay-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 15px; font-weight: 700;
+}
+.riwa-pay-modal-close { background: none; border: none; cursor: pointer; color: #64748b; }
+.riwa-pay-modal-body { padding: 1.25rem 1.5rem; }
+.riwa-pay-modal-footer {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 0 0 12px 12px;
+}
+.riwa-pay-deposit-section { margin-top: 1rem; }
+
+/* Export */
+.riwa-pay-export-wrap { display: flex; justify-content: center; padding: 2rem; }
+.riwa-pay-export-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 2.5rem; text-align: center; max-width: 420px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+.riwa-pay-export-icon {
+    width: 64px; height: 64px; background: #f0f9ff; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;
+}
+.riwa-pay-export-icon .dashicons { font-size: 30px; width: 30px; height: 30px; color: #0369a1; }
+.riwa-pay-export-card h3 { font-size: 16px; margin: 0 0 .5rem; }
+.riwa-pay-export-card p { font-size: 13px; color: #64748b; margin: 0 0 1.5rem; }
+.riwa-pay-export-filters { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 1.5rem; font-size: 13px; }
+.riwa-pay-export-btn { display: inline-flex; align-items: center; gap: 6px; }
+
+/* States */
+.riwa-pay-loading, .riwa-pay-empty { text-align: center; padding: 2rem; color: #94a3b8; font-size: 13px; }
+.riwa-pay-empty .dashicons { font-size: 20px; width: 20px; height: 20px; vertical-align: middle; }
