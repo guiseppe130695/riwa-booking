@@ -1,242 +1,199 @@
-# Riwa Booking - Plugin de Réservation de Villas
+# Riwa Booking — Plugin de Gestion de Réservations de Villa
 
-## 📋 Description
+**Version 2.0.0** — Février 2026
 
-**Riwa Booking** est un plugin WordPress sur-mesure développé pour la gestion des réservations de villas. Il offre un système complet de réservation avec calendrier interactif, gestion des tarifs saisonniers et interface d'administration intuitive.
-
-## ✨ Fonctionnalités Principales
-
-### 🏠 Système de Réservation
-- **Formulaire de réservation responsive** avec validation en temps réel
-- **Calendrier interactif** avec Flatpickr pour la sélection des dates
-- **Gestion des voyageurs** : adultes, enfants, bébés et animaux de compagnie
-- **Validation automatique** des disponibilités et des dates
-- **Calcul automatique des prix** selon les saisons tarifaires
-
-### 💰 Gestion des Tarifs
-- **Tarification saisonnière** avec périodes personnalisables
-- **Prix par nuit** configurables pour chaque saison
-- **Séjour minimum** par saison
-- **Calcul automatique** du prix total selon la durée du séjour
-
-### 🎛️ Interface d'Administration
-- **Tableau de bord** pour visualiser toutes les réservations
-- **Gestion des statuts** : en attente, confirmée, annulée
-- **Page de tarification** pour configurer les saisons et prix
-- **Filtres et recherche** dans les réservations
-
-### 📧 Notifications
-- **Email de confirmation** automatique aux clients
-- **Gestion des erreurs** avec logs détaillés
-- **Mode debug** pour le développement
-
-## 🚀 Installation
-
-### Prérequis
-- WordPress 5.0 ou supérieur
-- PHP 7.4 ou supérieur
-- MySQL 5.7 ou supérieur
-
-### Étapes d'Installation
-
-1. **Télécharger le plugin**
-   ```bash
-   # Cloner le repository ou télécharger les fichiers
-   git clone [url-du-repo]
-   ```
-
-2. **Installer dans WordPress**
-   - Copier le dossier `riwa-booking` dans `/wp-content/plugins/`
-   - Ou compresser le dossier et l'uploader via l'interface WordPress
-
-3. **Activer le plugin**
-   - Aller dans **Extensions > Extensions installées**
-   - Activer **Riwa Booking**
-
-4. **Configuration initiale**
-   - Le plugin crée automatiquement les tables de base de données
-   - Des tarifs par défaut sont insérés automatiquement
-
-## 📖 Utilisation
-
-### Shortcode Principal
-Utilisez le shortcode `[riwa_booking]` sur n'importe quelle page ou article :
-
-```php
-[riwa_booking title="Réserver votre villa" show_calendar="true"]
-```
-
-**Paramètres disponibles :**
-- `title` : Titre du formulaire (défaut : "Réserver votre villa")
-- `show_calendar` : Afficher le calendrier (défaut : "true")
-
-### Interface d'Administration
-
-#### Tableau de Bord des Réservations
-- Accès via **Riwa Bookings** dans le menu WordPress
-- Visualisation de toutes les réservations
-- Filtrage par statut et dates
-- Actions : confirmer, annuler, supprimer
-
-#### Gestion des Tarifs
-- Accès via **Riwa Bookings > Tarification**
-- Ajout/modification des saisons tarifaires
-- Configuration des prix par nuit
-- Définition des séjours minimum
-
-## 🗄️ Structure de la Base de Données
-
-### Table `wp_riwa_bookings`
-```sql
-- id (clé primaire)
-- guest_name (nom du client)
-- guest_email (email)
-- guest_phone (téléphone)
-- check_in_date (date d'arrivée)
-- check_out_date (date de départ)
-- adults_count (nombre d'adultes)
-- children_count (nombre d'enfants)
-- babies_count (nombre de bébés)
-- pets_count (nombre d'animaux)
-- special_requests (demandes spéciales)
-- total_price (prix total)
-- price_per_night (prix par nuit)
-- status (statut de la réservation)
-- created_at (date de création)
-```
-
-### Table `wp_riwa_pricing`
-```sql
-- id (clé primaire)
-- season_name (nom de la saison)
-- start_date (date de début)
-- end_date (date de fin)
-- price_per_night (prix par nuit)
-- min_stay (séjour minimum)
-- is_active (actif/inactif)
-- created_at (date de création)
-```
-
-## 🎨 Personnalisation
-
-### CSS Personnalisé
-Le plugin utilise des classes CSS modulaires pour faciliter la personnalisation :
-
-```css
-/* Formulaire de réservation */
-.riwa-booking-form { }
-.riwa-booking-calendar { }
-.riwa-booking-submit { }
-
-/* Calendrier */
-.flatpickr-calendar { }
-.flatpickr-day.booked { }
-.flatpickr-day.available { }
-```
-
-### JavaScript
-Le plugin expose plusieurs hooks JavaScript pour les développeurs :
-
-```javascript
-// Événements disponibles
-riwa_booking_submitted // Après soumission d'une réservation
-riwa_booking_error     // En cas d'erreur
-riwa_dates_loaded      // Après chargement des dates réservées
-```
-
-## 🔧 Configuration Avancée
-
-### Variables d'Environnement
-```php
-// Activer le mode debug
-define('WP_DEBUG', true);
-
-// Logs détaillés
-error_log('Riwa Booking: Message de debug');
-```
-
-### Hooks WordPress
-Le plugin expose plusieurs hooks pour les développeurs :
-
-```php
-// Avant soumission d'une réservation
-do_action('riwa_before_booking_submit', $booking_data);
-
-// Après soumission d'une réservation
-do_action('riwa_after_booking_submit', $booking_id, $booking_data);
-
-// Personnalisation du calcul de prix
-add_filter('riwa_calculate_price', 'custom_price_calculation', 10, 3);
-```
-
-## 🐛 Dépannage
-
-### Problèmes Courants
-
-1. **Le calendrier ne s'affiche pas**
-   - Vérifier que jQuery est chargé
-   - Contrôler la console pour les erreurs JavaScript
-
-2. **Les réservations ne se sauvegardent pas**
-   - Vérifier les permissions de la base de données
-   - Contrôler les logs d'erreur PHP
-
-3. **Les emails ne s'envoient pas**
-   - Vérifier la configuration SMTP de WordPress
-   - Tester avec un plugin d'email comme WP Mail SMTP
-
-### Mode Debug
-Activez le mode debug pour obtenir plus d'informations :
-
-```php
-// Dans wp-config.php
-define('WP_DEBUG', true);
-define('WP_DEBUG_LOG', true);
-```
-
-## 📝 Changelog
-
-### Version 1.1.2
-- ✅ Ajout de la gestion des séjours minimum par saison
-- ✅ Amélioration du calcul automatique des prix
-- ✅ Correction des bugs de validation des dates
-- ✅ Optimisation des performances
-
-### Version 1.1.0
-- ✅ Ajout de la gestion des animaux de compagnie
-- ✅ Interface d'administration améliorée
-- ✅ Système de tarification saisonnière
-
-### Version 1.0.0
-- ✅ Version initiale du plugin
-- ✅ Formulaire de réservation basique
-- ✅ Calendrier interactif
-
-## 🤝 Support et Contribution
-
-### Support Technique
-Pour toute question ou problème :
-- Créer une issue sur le repository
-- Contacter l'équipe de développement
-
-### Contribution
-Les contributions sont les bienvenues ! Pour contribuer :
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité
-3. Commiter vos changements
-4. Pousser vers la branche
-5. Ouvrir une Pull Request
-
-## 📄 Licence
-
-Ce plugin est développé sur-mesure pour Riwa. Tous droits réservés.
-
-## 👥 Équipe de Développement
-
-- **Développeur** : Équipe Riwa
-- **Version** : 1.1.2
-- **Dernière mise à jour** : 2024
+Plugin WordPress sur-mesure pour la gestion complète du cycle de réservation d'une villa : du formulaire client jusqu'à la génération des documents PDF, en passant par le suivi des paiements et les notifications WhatsApp.
 
 ---
 
-**Riwa Booking** - Simplifiez la gestion de vos réservations de villas avec WordPress ! 🏖️ 
+## Fonctionnalités
+
+### Réservations (frontend)
+- Formulaire responsive avec calendrier Flatpickr
+- Sélection des voyageurs : adultes, enfants, bébés, animaux
+- Calcul automatique du prix selon les saisons tarifaires
+- Validation des disponibilités en temps réel
+- Email de confirmation automatique au client et à l'administrateur
+- Téléchargement du bon de réservation PDF
+
+### Tableau de bord admin
+- KPIs : total réservations, taux d'occupation, revenus du mois
+- Liste des 5 dernières réservations
+- Alertes : réservations en attente de confirmation
+- Statistiques de statut (en attente / confirmées / annulées)
+
+### Gestion des réservations
+- Liste complète avec filtres (statut, mois, recherche texte)
+- Pagination
+- Actions rapides par ligne : confirmer, annuler, PDF, détails
+- Popup détail : infos client, dates, prix, statut ménage, paiements, notifications WhatsApp, timeline
+
+### Planning
+- Vue calendrier mensuel (navigation mois par mois)
+- Couleurs par statut : jaune (en attente), vert (confirmée), rouge (annulée)
+- Blocages manuels de dates
+- Prix spéciaux ponctuels
+- Statistiques occupation / taux de remplissage
+
+### Paiements & Acomptes
+- KPIs temps réel : encaissé ce mois, en attente, en retard, acomptes reçus, prévision 30j
+- Alertes paiements en retard avec lien direct
+- Enregistrement rapide de paiement (formulaire inline)
+- Liste filtrée des réservations avec statut de paiement
+- 6 modes : espèces, virement, carte, mobile, plateforme, autre
+- Panel détail glissant : timeline des paiements + ajout de paiement
+- Modal d'ajout depuis la liste
+- Gestion des acomptes : pourcentage configurable + date limite solde
+- Export CSV compatible Excel/LibreOffice (encodage UTF-8, séparateur `;`)
+
+### Notifications WhatsApp
+- Boutons d'envoi semi-auto depuis le popup de chaque réservation
+- 4 templates éditables : confirmation, rappel, infos check-in, demande d'avis
+- 13 variables dynamiques : `{nom_client}`, `{date_arrivee}`, `{prix_total}`, etc.
+- Prévisualisation du message rendu avant envoi
+- Historique des notifications envoyées (timeline par réservation)
+- Centre de notifications : vue du jour (arrivées / départs / séjours en cours)
+
+### Statistiques — Pulse Board
+- **Pulse** : score de santé 0-100 (occupation, confirmations, annulations, ménage) + alertes actionnables
+- **Analyse** : KPIs annuels, graphique CA mensuel (Chart.js), graphique taux d'occupation, profil voyageurs
+- **Prévision** : projection fin d'année, opportunités tarifaires détectées
+
+### Paramètres
+Organisés en 6 onglets :
+- **Général** : langue, devise, fuseau horaire, logo, couleur principale
+- **Tarification** : ajout/suppression de périodes tarifaires saisonnières
+- **Email** : configuration expéditeur, templates client et admin, test d'envoi
+- **Notifications** : activation WhatsApp, numéro admin, templates messages
+- **Diagnostic** : infos système (PHP, WP, MySQL, version plugin, état des tables)
+- **Données démo** : injection de 24 réservations fictives pour tester le planning
+
+### Factures / PDF — Doc Studio
+- Éditeur visuel drag & drop (SortableJS)
+- 5 types de documents : confirmation, facture, devis, contrat, rapport
+- 10 types de blocs : header, infos société, client, séjour, voyageurs, tarifs, texte, signature, QR code, pied de page
+- Layout JSON par type de document, sauvegardé indépendamment
+- Aperçu iframe temps réel mis à jour au drop
+- Numérotation séquentielle par type (FAC-2026-001, etc.)
+- Génération PDF via TCPDF
+
+---
+
+## Installation
+
+### Prérequis
+- WordPress 5.8+
+- PHP 8.0+ (recommandé 8.1+)
+- MySQL 5.7+ ou MariaDB 10.3+
+- Extensions PHP : `curl`, `zip`, `gd`, `mbstring`
+
+### Étapes
+1. Copier le dossier `riwa-booking/` dans `/wp-content/plugins/`
+2. Activer via **Extensions > Extensions installées**
+3. Le plugin crée automatiquement les tables et insère les tarifs par défaut
+4. Placer le shortcode `[riwa_booking]` sur la page de réservation
+
+### Shortcode
+```
+[riwa_booking]
+[riwa_booking title="Réserver votre villa" show_calendar="true"]
+```
+
+---
+
+## Structure de la base de données
+
+### `wp_riwa_bookings`
+| Colonne | Type | Description |
+|---|---|---|
+| `id` | int | Clé primaire |
+| `guest_name` | varchar | Nom du client |
+| `guest_email` | varchar | Email |
+| `guest_phone` | varchar | Téléphone |
+| `check_in_date` | date | Date d'arrivée |
+| `check_out_date` | date | Date de départ |
+| `adults_count` | int | Adultes |
+| `children_count` | int | Enfants |
+| `babies_count` | int | Bébés |
+| `pets_count` | int | Animaux |
+| `special_requests` | text | Demandes spéciales |
+| `total_price` | decimal | Prix total |
+| `price_per_night` | decimal | Prix/nuit appliqué |
+| `deposit_percent` | decimal | % acompte requis |
+| `deposit_amount` | decimal | Montant acompte |
+| `balance_due_date` | date | Échéance solde |
+| `housekeeping_status` | varchar | `pending`/`in_progress`/`ready` |
+| `status` | varchar | `pending`/`confirmed`/`cancelled` |
+| `created_at` | datetime | Date de création |
+
+### `wp_riwa_pricing`
+| Colonne | Type | Description |
+|---|---|---|
+| `season_name` | varchar | Nom de la saison |
+| `start_date` / `end_date` | date | Période |
+| `price_per_night` | decimal | Prix/nuit |
+| `min_stay` | int | Séjour minimum (nuits) |
+| `is_active` | tinyint | 0 ou 1 |
+
+### `wp_riwa_payments`
+| Colonne | Type | Description |
+|---|---|---|
+| `booking_id` | int | Référence réservation |
+| `amount` | decimal | Montant |
+| `method` | varchar | `cash`/`transfer`/`card`/`mobile`/`platform`/`other` |
+| `payment_date` | date | Date du paiement |
+| `reference` | varchar | Référence / N° virement |
+| `note` | text | Note libre |
+
+### `wp_riwa_notification_log`
+| Colonne | Type | Description |
+|---|---|---|
+| `booking_id` | int | Réservation concernée |
+| `type` | varchar | `confirmation`/`reminder`/`checkin`/`review`/`custom` |
+| `channel` | varchar | `whatsapp`/`email` |
+| `sent_at` | datetime | Date/heure d'envoi |
+
+---
+
+## Dépendances
+
+| Librairie | Version | Usage | Chargement |
+|---|---|---|---|
+| Flatpickr | Latest CDN | Calendrier frontend | CDN |
+| TCPDF | Bundled | Génération PDF | Local (`includes/tcpdf/`) |
+| Chart.js | 4.4.0 | Graphiques statistiques | CDN |
+| SortableJS | 1.15.0 | Drag & drop PDF Studio | CDN |
+| jQuery | WordPress | JS général | WordPress core |
+
+---
+
+## Pas de build system
+
+Aucun webpack, npm ou outil de compilation. Les fichiers CSS et JS sont édités directement dans `assets/` et enqueués par WordPress.
+
+---
+
+## Changelog
+
+### v2.0.0 — Février 2026
+- Module Paiements & Acomptes complet (KPIs, timeline, CSV export)
+- Module Notifications WhatsApp semi-auto (4 templates, historique)
+- Statistiques Pulse Board avec Chart.js (3 onglets actionnables)
+- Planning calendrier mensuel avec blocages et prix spéciaux
+- PDF Doc Studio — éditeur drag & drop (SortableJS, 5 types, 10 blocs)
+- Refactorisation complète en classes statiques modulaires
+- Menu admin restructuré en 8 sections
+- Données démo injectables depuis les Paramètres
+- Migrations DB automatiques (deposit_percent, balance_due_date, riwa_payments, riwa_notification_log)
+
+### v1.1.2 — Décembre 2024
+- Gestion séjours minimum par saison
+- Amélioration calcul prix automatique
+- Correction bugs validation dates
+
+### v1.0.0
+- Version initiale : formulaire de réservation, calendrier, tarification saisonnière
+
+---
+
+Développé pour **Riwa Villa** — Tous droits réservés.

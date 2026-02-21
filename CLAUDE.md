@@ -1,84 +1,232 @@
-# CLAUDE.md
+# CLAUDE.md — Riwa Booking Plugin
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guide de référence pour Claude Code lors du travail sur ce projet.
 
-## Project Overview
+## Vue d'ensemble
 
-**Riwa Booking** (v1.1.2) is a custom WordPress plugin for villa reservation management. It is embedded in a WordPress installation at the parent `public/` directory, but the plugin itself lives in `wp-content/plugins/riwa-booking/`.
+**Riwa Booking** (v2.0.0) est un plugin WordPress sur-mesure pour la gestion complète des réservations de villas. Il couvre le cycle entier : formulaire frontend → réservation → paiement → notification WhatsApp → génération PDF.
 
-The WordPress environment runs locally via LocalWP (database: `local`, credentials: root/root, debug mode enabled).
+Environnement local : **LocalWP** — base `local`, credentials `root/root`, `WP_DEBUG=true`.
 
-## Plugin Architecture
+---
 
-The plugin follows a single-class architecture with the `RiwaBooking` class in `riwa-booking.php` as the entry point. All WordPress hooks, AJAX handlers, and shortcodes are registered in the constructor.
+## Architecture des fichiers
 
-**Key files:**
-- `riwa-booking.php` — Main plugin class; registers all hooks, AJAX actions, shortcode `[riwa_booking]`, and activation/deactivation callbacks
-- `production-config.php` — All configuration constants (pricing defaults, security settings, guest limits, messages, colors)
-- `admin/admin-page.php` — Bookings dashboard (128KB; the largest file)
-- `admin/pricing-page.php` — Seasonal pricing CRUD interface
-- `includes/class-riwa-pdf-admin.php` — PDF settings UI in admin
-- `includes/class-riwa-pdf-ajax.php` — AJAX handlers for PDF generation and download
-- `includes/class-riwa-pdf-generator.php` — PDF rendering logic using TCPDF
-- `templates/booking-form.php` — Frontend booking form rendered by the shortcode
-- `templates/booking-pdf.php` — PDF confirmation document template
-- `assets/js/riwa-booking.js` — Frontend: Flatpickr calendar, form submission, price calculation
-- `assets/js/riwa-booking-admin.js` — Admin dashboard interactions
-- `assets/js/riwa-pdf-admin.js` — PDF settings UI behavior
+```
+riwa-booking/
+├── riwa-booking.php                   — Bootstrap : hooks, AJAX, shortcode, migrations DB
+├── production-config.php              — Constantes (limites, sécurité, messages)
+│
+├── includes/
+│   ├── class-riwa-installer.php       — Installation TCPDF
+│   ├── class-riwa-emails.php          — Emails client/admin + handlers AJAX test
+│   ├── class-riwa-pricing.php         — Calcul prix, données tarifaires
+│   ├── class-riwa-booking-ajax.php    — submit_booking, get_booked_dates, download_pdf
+│   ├── class-riwa-payments.php        — Module paiements & acomptes (CRUD, KPIs, CSV)
+│   ├── class-riwa-notifications.php   — WhatsApp semi-auto + log notifications
+│   ├── class-riwa-pdf-generator.php   — Rendu PDF via TCPDF
+│   ├── class-riwa-pdf-admin.php       — UI paramètres PDF (ancien formulaire)
+│   ├── class-riwa-pdf-ajax.php        — Handlers AJAX PDF
+│   └── class-riwa-pdf-studio.php      — Doc Studio : layouts JSON, rendu, aperçu
+│
+├── admin/
+│   ├── class-riwa-admin.php           — Dispatcher : menus, enqueue, sections
+│   ├── class-riwa-bookings-table.php  — CRUD réservations + badge paiement
+│   ├── class-riwa-pricing-table.php   — CRUD tarification (check_date_overlap ici)
+│   ├── class-riwa-email-settings.php  — Save/get options email
+│   ├── class-riwa-notif-settings.php  — Save/get options notifications
+│   ├── class-riwa-stats.php           — Calculs statistiques + handler AJAX
+│   └── partials/
+│       ├── dashboard.php              — Tableau de bord (KPIs, réservations récentes)
+│       ├── bookings.php               — Liste réservations (filtres, pagination)
+│       ├── bookings-list.php          — idem (alias)
+│       ├── planning.php               — Calendrier planning mensuel
+│       ├── payments.php               — Module paiements (3 onglets)
+│       ├── notifications.php          — Centre notifications
+│       ├── statistics.php             — Statistiques (Pulse / Analyse / Prévision)
+│       ├── settings.php               — Paramètres (6 onglets)
+│       ├── email-form.php             — Formulaire config email
+│       ├── pricing.php                — Formulaire + liste tarification
+│       ├── notif-settings-form.php    — Formulaire templates WhatsApp
+│       ├── debug.php                  — Diagnostic système
+│       ├── pdf-studio.php             — Éditeur PDF drag & drop
+│       ├── pdf-studio-preview.php     — Template aperçu iframe PDF
+│       └── booking-detail-popup.php   — Popup détail réservation
+│
+├── templates/
+│   ├── booking-form.php               — Frontend : formulaire shortcode
+│   └── booking-pdf.php                — Template PDF (conservé, non utilisé)
+│
+└── assets/
+    ├── css/
+    │   ├── riwa-booking.css            — Frontend
+    │   ├── riwa-booking-admin.css      — Admin (toutes sections)
+    │   └── riwa-pdf-studio.css         — Éditeur Doc Studio
+    └── js/
+        ├── riwa-booking.js             — Frontend : Flatpickr, formulaire, calcul prix
+        ├── riwa-booking-admin.js       — Admin : popup, filtres, tabs paramètres
+        ├── riwa-pdf-admin.js           — PDF admin (ancien formulaire)
+        ├── riwa-pdf-studio.js          — Doc Studio : SortableJS + interactions
+        ├── riwa-payments.js            — Module paiements
+        ├── riwa-notifications.js       — WhatsApp boutons + prévisualisation
+        └── riwa-stats.js               — Charts Chart.js + rendu stats
+```
 
-## Database Schema
+---
 
-Two custom tables are created on plugin activation:
+## Base de données
 
-**`wp_riwa_bookings`** — Guest reservations
-Columns: `id`, `guest_name`, `guest_email`, `guest_phone`, `check_in_date`, `check_out_date`, `adults_count`, `children_count`, `babies_count`, `pets_count`, `special_requests`, `total_price`, `price_per_night`, `status`, `created_at`
-Status values: `pending`, `confirmed`, `cancelled`
+### Tables existantes
 
-**`wp_riwa_pricing`** — Seasonal pricing periods
-Columns: `id`, `season_name`, `start_date`, `end_date`, `price_per_night`, `min_stay`, `is_active`, `created_at`
-Indexed on `(start_date, end_date)`
+**`wp_riwa_bookings`** — Réservations
+```
+id, guest_name, guest_email, guest_phone,
+check_in_date, check_out_date,
+adults_count, children_count, babies_count, pets_count,
+special_requests, total_price, price_per_night,
+deposit_percent, deposit_amount, balance_due_date,   ← ajoutés v2.0
+housekeeping_status,                                  ← ménage
+status, created_at
+```
+Statuts : `pending` | `confirmed` | `cancelled`
+Housekeeping : `pending` | `in_progress` | `ready`
 
-## AJAX Endpoints
+**`wp_riwa_pricing`** — Saisons tarifaires
+```
+id, season_name, start_date, end_date, price_per_night, min_stay, is_active, created_at
+```
 
-All registered via `wp_ajax_` / `wp_ajax_nopriv_` hooks:
+**`wp_riwa_payments`** — Paiements (v2.0)
+```
+id, booking_id, amount, method, payment_date, reference, note, created_at
+```
+Méthodes : `cash` | `transfer` | `card` | `mobile` | `platform` | `other`
 
-| Action | Access | Purpose |
+**`wp_riwa_notification_log`** — Log notifications (v2.0)
+```
+id, booking_id, type, channel, sent_at
+```
+Types : `confirmation` | `reminder` | `checkin` | `review` | `custom`
+Canaux : `whatsapp` | `email`
+
+---
+
+## Patterns de code
+
+- **Toutes les classes sont statiques** — pas d'instanciation, appel direct `Riwa_Payments::ajax_add_payment()`
+- **Nonce admin** : `riwa_admin_action`, passé via `riwa_admin_ajax.admin_nonce` en `wp_localize_script`
+- **Migrations DB** : gérées dans `check_table_updates()` de `riwa-booking.php` (pattern `SHOW COLUMNS` / `SHOW TABLES`)
+- **Options WordPress** : préfixe `riwa_setting_*` (général), `riwa_pdf_*` (PDF studio), `riwa_notif_*` (notifications)
+- **Langue** : tout en français (commentaires, messages, UI)
+- **Pas de build system** : CSS/JS édités directement
+
+---
+
+## Sections admin (menu latéral)
+
+| Section | Statut | Partial |
 |---|---|---|
-| `riwa_submit_booking` | Public | Submit a new reservation |
-| `riwa_get_booked_dates` | Public | Fetch unavailable dates for the calendar |
-| `riwa_download_pdf` | Public | Generate and download booking PDF |
-| `riwa_reinstall_tcpdf` | Admin | Reinstall the TCPDF library |
-| `riwa_test_client_email` | Admin | Send a test confirmation email |
-| `riwa_test_admin_email` | Admin | Send a test admin notification email |
+| Tableau de bord | Actif | `dashboard.php` |
+| Réservations | Actif | `bookings.php` |
+| Planning | Actif | `planning.php` |
+| Paiements | Actif | `payments.php` |
+| Notifications | Actif | `notifications.php` |
+| Statistiques | Actif | `statistics.php` |
+| Factures / PDF | Actif | `riwa-pdf-settings` (sous-menu WP) |
+| Paramètres | Actif | `settings.php` |
 
-## Key Configuration (production-config.php)
+---
 
-- Guest limits: 1–7 guests, 1–30 night stays
-- Default pricing: €150/night for 2 base guests; €20/night per additional guest
-- Caching: 1-hour transient cache for booked dates
-- Security: WordPress nonces (24h expiry), email/phone validation, 5MB file size limit
-- PDF: High quality, compression enabled
+## Endpoints AJAX
 
-## Frontend Integration
+### Public (frontend)
+| Action | Handler |
+|---|---|
+| `riwa_submit_booking` | `Riwa_Booking_Ajax::submit_booking` |
+| `riwa_get_booked_dates` | `Riwa_Booking_Ajax::get_booked_dates` |
+| `riwa_download_pdf` | `Riwa_Booking_Ajax::download_pdf` |
 
-Embed the booking form on any page using the shortcode:
+### Admin — Réservations
+| Action | Handler |
+|---|---|
+| `riwa_update_status` | `Riwa_Bookings_Table::handle_status_update` |
+| `riwa_delete_booking` | `Riwa_Bookings_Table::handle_delete` |
+
+### Admin — Paiements
+| Action | Handler |
+|---|---|
+| `riwa_payments_add` | `Riwa_Payments::ajax_add_payment` |
+| `riwa_payments_delete` | `Riwa_Payments::ajax_delete_payment` |
+| `riwa_payments_save_deposit` | `Riwa_Payments::ajax_save_deposit_info` |
+| `riwa_payments_dashboard` | `Riwa_Payments::ajax_get_dashboard` |
+| `riwa_payments_get_booking` | `Riwa_Payments::ajax_get_booking_payments` |
+| `riwa_payments_list` | `Riwa_Payments::ajax_get_bookings_list` |
+| `riwa_payments_export_csv` | `Riwa_Payments::ajax_export_csv` |
+
+### Admin — Notifications
+| Action | Handler |
+|---|---|
+| `riwa_notif_get_log` | `Riwa_Notifications::ajax_get_log` |
+| `riwa_notif_log_sent` | `Riwa_Notifications::ajax_log_sent` |
+| `riwa_notif_preview` | `Riwa_Notifications::ajax_preview` |
+
+### Admin — Statistiques
+| Action | Handler |
+|---|---|
+| `riwa_stats_get_data` | `Riwa_Stats::ajax_get_stats_data` |
+
+### Admin — PDF Studio
+| Action | Handler |
+|---|---|
+| `riwa_studio_save_layout` | `Riwa_PDF_Studio::ajax_save_layout` |
+| `riwa_studio_preview` | `Riwa_PDF_Studio::ajax_preview` |
+| `riwa_studio_save_settings` | `Riwa_PDF_Studio::ajax_save_settings` |
+
+### Admin — Emails & Divers
+| Action | Handler |
+|---|---|
+| `riwa_test_client_email` | `Riwa_Emails::test_client_email` |
+| `riwa_test_admin_email` | `Riwa_Emails::test_admin_email` |
+| `riwa_reinstall_tcpdf` | `Riwa_Installer::reinstall_tcpdf` |
+
+---
+
+## Options WordPress importantes
+
 ```
-[riwa_booking title="Réserver votre villa" show_calendar="true"]
+riwa_setting_language         — fr / en
+riwa_setting_currency         — EUR / USD / CHF / MAD
+riwa_setting_timezone         — Europe/Paris …
+riwa_setting_logo_url         — URL logo
+riwa_setting_primary_color    — #couleur
+
+riwa_email_*                  — config email (from_name, from_address, admin_address, etc.)
+
+riwa_notif_whatsapp_enabled   — bool
+riwa_notif_admin_phone        — numéro WA admin
+riwa_notif_tpl_*              — templates messages WhatsApp
+
+riwa_pdf_settings             — JSON config globale PDF (company, logo, couleurs, police)
+riwa_pdf_layout_{type}        — JSON layout par type de doc (confirmation, facture, devis, contrat, rapport)
+riwa_pdf_numbering            — JSON numérotation séquentielle par type
 ```
 
-The calendar uses **Flatpickr** loaded from CDN. PDF generation uses **TCPDF** bundled at `includes/tcpdf/`.
+---
 
-## No Build System
+## Frontend
 
-There is no webpack, npm, or any build tool. CSS and JS files are plain files enqueued directly by WordPress. Edit `assets/css/` and `assets/js/` files directly.
+Shortcode : `[riwa_booking]`
 
-## Development Environment
+Paramètres optionnels :
+- `title` — Titre affiché (défaut : "Réserver votre villa")
+- `show_calendar` — Affiche le calendrier (défaut : "true")
 
-- WordPress debug mode is ON (`WP_DEBUG = true` in `wp-config.php`)
-- PHP errors and the WordPress debug log are active in local development
-- To test the plugin: activate it via the WordPress admin (Extensions > Riwa Booking), place the shortcode on a page, and test bookings manually
-- Test emails and PDF generation via the plugin's admin settings page
+Dépendances front : **Flatpickr** (CDN), **jQuery** (WordPress)
 
-## Language
+---
 
-All code comments, documentation, admin UI strings, and user-facing messages are in **French**.
+## Débogage
+
+- `WP_DEBUG = true` actif en local
+- Onglet **Diagnostic** dans Paramètres : version plugin, PHP, WP, MySQL, état des tables
+- Données démo injectables : onglet **Données démo** dans Paramètres (24 réservations fictives, préfixées `[DEMO]`)

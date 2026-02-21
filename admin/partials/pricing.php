@@ -10,45 +10,47 @@ if (!defined('ABSPATH')) {
         <p>Configurez vos tarifs saisonniers</p>
     </div>
     <div class="riwa-section-content">
-        <div class="riwa-form-container">
-            <form method="post" class="riwa-pricing-form">
-                <input type="hidden" name="action" value="add_pricing">
-                <?php wp_nonce_field('riwa_pricing_nonce', 'pricing_nonce'); ?>
-                <div class="riwa-form-linear">
-                    <div class="riwa-form-row">
-                        <div class="riwa-form-group">
-                            <label for="season_name">Nom de la saison *</label>
-                            <input type="text" id="season_name" name="season_name" required placeholder="Ex: Haute saison été">
-                        </div>
-                        <div class="riwa-form-group">
-                            <label for="price_per_night">Prix par nuit (€) *</label>
-                            <input type="number" id="price_per_night" name="price_per_night" step="0.01" min="0" required placeholder="150.00">
-                        </div>
-                        <div class="riwa-form-group">
-                            <label for="start_date">Date de début *</label>
-                            <input type="text" id="start_date" name="start_date" required placeholder="JJ/MM/AAAA" readonly>
-                        </div>
-                        <div class="riwa-form-group">
-                            <label for="end_date">Date de fin *</label>
-                            <input type="text" id="end_date" name="end_date" required placeholder="JJ/MM/AAAA" readonly>
-                        </div>
-                        <div class="riwa-form-group">
-                            <label for="min_stay">Séjour min. (nuits)</label>
-                            <input type="number" id="min_stay" name="min_stay" min="1" value="1">
-                        </div>
-                        <div class="riwa-form-group riwa-form-submit">
-                            <button type="submit" class="riwa-btn riwa-btn-primary">
-                                <span class="dashicons dashicons-plus-alt"></span>
-                                Ajouter
-                            </button>
+        <div class="riwa-preview-container">
+            <div class="riwa-setting-group">
+                <h3>Ajouter une période tarifaire</h3>
+                <form method="post" class="riwa-pricing-form">
+                    <input type="hidden" name="action" value="add_pricing">
+                    <?php wp_nonce_field('riwa_pricing_nonce', 'pricing_nonce'); ?>
+                    <div class="riwa-form-linear">
+                        <div class="riwa-form-row">
+                            <div class="riwa-form-group">
+                                <label for="season_name">Nom de la saison *</label>
+                                <input type="text" id="season_name" name="season_name" required placeholder="Ex: Haute saison été" class="riwa-input">
+                            </div>
+                            <div class="riwa-form-group">
+                                <label for="price_per_night">Prix par nuit (€) *</label>
+                                <input type="number" id="price_per_night" name="price_per_night" step="0.01" min="0" required placeholder="150.00" class="riwa-input">
+                            </div>
+                            <div class="riwa-form-group">
+                                <label for="start_date">Date de début *</label>
+                                <input type="text" id="start_date" name="start_date" required placeholder="JJ/MM/AAAA" readonly class="riwa-input">
+                            </div>
+                            <div class="riwa-form-group">
+                                <label for="end_date">Date de fin *</label>
+                                <input type="text" id="end_date" name="end_date" required placeholder="JJ/MM/AAAA" readonly class="riwa-input">
+                            </div>
+                            <div class="riwa-form-group">
+                                <label for="min_stay">Séjour min. (nuits)</label>
+                                <input type="number" id="min_stay" name="min_stay" min="1" value="1" class="riwa-input">
+                            </div>
+                            <div class="riwa-form-group riwa-form-submit">
+                                <button type="submit" class="riwa-btn riwa-btn-primary">
+                                    <span class="dashicons dashicons-plus-alt"></span>
+                                    Ajouter
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
 
-        <div class="riwa-table-container">
-            <h3>Périodes tarifaires configurées</h3>
+            <div class="riwa-pricing-table-wrap">
+                <h3>Périodes tarifaires configurées</h3>
             <?php if (empty($pricing_seasons)): ?>
                 <div class="riwa-empty-state">
                     <span class="dashicons dashicons-calendar-alt"></span>
@@ -99,6 +101,7 @@ if (!defined('ABSPATH')) {
                     </tbody>
                 </table>
             <?php endif; ?>
-        </div>
+            </div><!-- /.riwa-pricing-table-wrap -->
+        </div><!-- /.riwa-preview-container -->
     </div>
 </div>

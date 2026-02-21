@@ -426,9 +426,15 @@
 .riwa-section-header h2 { margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 600; color: #1d2327; }
 .riwa-section-header p { margin: 0; color: #646970; font-size: 14px; }
 
-.riwa-section-content { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; padding: 10px; }
+.riwa-section-content {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    overflow: hidden;
+    padding: 0;
+}
 
-.riwa-preview-container { padding: 0 !important; }
+.riwa-preview-container { padding: 1.5rem; }
 
 /* Statistiques */
 .riwa-stats-linear {
@@ -846,31 +852,116 @@
 
 /* Formulaire email / paramètres */
 .riwa-setting-group {
-    margin-bottom: 2.5rem; padding: 2rem;
-    border: 1px solid #e1e5e9; border-radius: 16px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s ease;
+    margin-bottom: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
 }
-.riwa-setting-group:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
-.riwa-setting-group h3 { margin: 0 0 1.5rem 0; font-size: 18px; font-weight: 700; color: #1d2327; padding-bottom: 0.75rem; border-bottom: 2px solid #e1e5e9; }
-.riwa-form-row { display: flex; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-.riwa-form-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 200px; }
-.riwa-form-group label { font-size: 14px; font-weight: 600; color: #1d2327; }
-.riwa-input, .riwa-textarea { padding: 0.75rem; border: 1px solid #dcdcde; border-radius: 8px; font-size: 14px; color: #1d2327; background: white; transition: border-color 0.2s; }
-.riwa-input:focus, .riwa-textarea:focus { border-color: #2271b1; outline: none; box-shadow: 0 0 0 1px #2271b1; }
+.riwa-setting-group h3 {
+    margin: 0 0 1.25rem 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-form-row { display: flex; gap: 1.25rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.riwa-form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
+.riwa-form-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.riwa-input, .riwa-textarea {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.riwa-input:focus, .riwa-textarea:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
+}
 .riwa-textarea { resize: vertical; }
-.riwa-help-text { font-size: 12px; color: #646970; margin: 0.25rem 0 0; }
-.riwa-setting-actions { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e1e5e9; }
+.riwa-help-text { font-size: 11px; color: #94a3b8; margin: 3px 0 0; }
+.riwa-setting-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
 
-/* Formulaire pricing linéaire */
-.riwa-form-container { padding: 1.5rem 2rem; border-bottom: 1px solid #f0f0f1; }
+/* Formulaire pricing (dans settings tab) */
 .riwa-form-linear .riwa-form-row { align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
 .riwa-form-submit { justify-content: flex-end; }
-.riwa-table-container { padding: 1.5rem 2rem; }
-.riwa-table-container h3 { margin: 0 0 1rem 0; font-size: 16px; font-weight: 600; color: #1d2327; }
+.riwa-pricing-table-wrap { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #e2e8f0; }
+.riwa-pricing-table-wrap h3 { margin: 0 0 1rem 0; font-size: 13px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: .06em; }
 .status-badge { padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 11px; font-weight: 600; }
 .status-active { background: #edfaef; color: #008a20; }
 .status-inactive { background: #fcf0f1; color: #d63638; }
+
+/* ── Onglet Diagnostic ───────────────────────────────────────────────────── */
+.riwa-debug-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+}
+.riwa-debug-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 220px;
+}
+.riwa-debug-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    min-width: 160px;
+}
+.riwa-debug-value {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+.riwa-debug-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+.riwa-debug-badge.badge-on  { background: #dcfce7; color: #166534; }
+.riwa-debug-badge.badge-off { background: #f1f5f9; color: #64748b; }
+.riwa-debug-pricing-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.riwa-debug-pricing-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 0.75rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    font-size: 13px;
+    border: 1px solid #e2e8f0;
+}
+.riwa-debug-pricing-row strong { color: #1e293b; min-width: 180px; }
+.riwa-debug-pricing-row span  { color: #64748b; flex: 1; }
+.riwa-debug-pricing-row code  { background: #ede9fe; color: #5b21b6; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
 
 /* Animations */
 @keyframes riwa-fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -1400,25 +1491,38 @@ body.riwa-popup-open { overflow: hidden; }
 /* Onglets des Paramètres */
 .riwa-settings-tabs {
     display: flex;
+    gap: 2px;
     border-bottom: 2px solid #e2e8f0;
     margin-bottom: 1.5rem;
-    gap: 0;
+    padding: 0;
+    background: #fff;
+    flex-wrap: wrap;
 }
 .riwa-settings-tab {
-    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 16px;
     cursor: pointer;
     border: none;
     background: transparent;
-    font-size: 14px;
-    font-weight: 500;
-    color: #646970;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #64748b;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
-    transition: color 0.15s, border-color 0.15s;
+    border-radius: 4px 4px 0 0;
+    transition: color .15s, border-color .15s, background .15s;
+    white-space: nowrap;
 }
-.riwa-settings-tab:hover { color: #2271b1; }
-.riwa-settings-tab.active { color: #2271b1; border-bottom-color: #2271b1; }
-.riwa-settings-tab-content { display: none; }
+.riwa-settings-tab .dashicons { font-size: 13px; width: 13px; height: 13px; }
+.riwa-settings-tab:hover { color: #2271b1; background: #f1f5f9; }
+.riwa-settings-tab.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+    background: #f0f6ff;
+}
+.riwa-settings-tab-content { display: none; padding: 0; }
 .riwa-settings-tab-content.active { display: block; }
 
 /* Retrait du padding de section imbriqué dans Paramètres */

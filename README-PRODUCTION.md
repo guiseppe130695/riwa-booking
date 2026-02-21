@@ -1,192 +1,189 @@
-# Riwa Booking - Guide de Production
+# Riwa Booking — Guide de Production
 
-## 🚀 Version Production 1.1.2
+**Version 2.0.0** — Février 2026
 
-Ce guide décrit l'installation et la configuration du plugin Riwa Booking pour un environnement de production.
+---
 
-## 📋 Prérequis
+## Prérequis serveur
 
-- WordPress 5.0 ou supérieur
-- PHP 7.4 ou supérieur
-- MySQL 5.7 ou supérieur
-- Extensions PHP requises :
-  - `curl`
-  - `zip`
-  - `gd` (pour la génération PDF)
-  - `mbstring`
+| Composant | Version minimale | Recommandé |
+|---|---|---|
+| WordPress | 5.8 | 6.4+ |
+| PHP | 8.0 | 8.2 |
+| MySQL | 5.7 | 8.0 |
+| MariaDB | 10.3 | 10.6 |
 
-## 🔧 Installation
+**Extensions PHP requises :** `curl`, `zip`, `gd`, `mbstring`, `json`
 
-### 1. Upload du plugin
+---
+
+## Installation
+
+### 1. Upload
 ```bash
-# Copier le dossier riwa-booking dans wp-content/plugins/
-cp -r riwa-booking /path/to/wordpress/wp-content/plugins/
+cp -r riwa-booking/ /chemin/vers/wordpress/wp-content/plugins/
 ```
+Ou compresser le dossier et l'uploader via **Extensions > Ajouter > Téléverser un plugin**.
 
 ### 2. Activation
-- Aller dans l'administration WordPress
-- Naviguer vers **Extensions > Extensions installées**
-- Activer **Riwa Booking**
+**Extensions > Extensions installées > Riwa Booking > Activer**
 
-### 3. Configuration initiale
-- Aller dans **Riwa Bookings** dans le menu principal
-- Configurer les paramètres de base :
-  - Informations de l'entreprise
-  - Tarification par saison
-  - Personnalisation PDF
+Au premier démarrage, le plugin :
+- Crée les tables `wp_riwa_bookings`, `wp_riwa_pricing`, `wp_riwa_payments`, `wp_riwa_notification_log`
+- Insère des tarifs par défaut (saison standard)
+- Installe TCPDF si absent
 
-## ⚙️ Configuration
+### 3. Shortcode frontend
+Ajouter `[riwa_booking]` sur la page de réservation.
 
-### Configuration de la base de données
-Le plugin crée automatiquement deux tables :
-- `wp_riwa_bookings` : Réservations
-- `wp_riwa_pricing` : Tarification par saison
+---
 
-### Configuration des emails
-Modifier dans `production-config.php` :
+## Configuration initiale
+
+### Paramètres généraux
+**Riwa Bookings > Paramètres > Général**
+- Langue, devise, fuseau horaire
+- URL du logo (utilisé dans les PDFs et emails)
+- Couleur principale
+
+### Emails
+**Riwa Bookings > Paramètres > Email**
+- Email administrateur (reçoit les nouvelles réservations)
+- Nom et adresse de l'expéditeur
+- Templates email client et admin
+- Test d'envoi depuis l'interface
+
+### Tarification
+**Riwa Bookings > Paramètres > Tarification**
+- Ajouter les saisons (nom, période, prix/nuit, séjour minimum)
+- Les saisons sont prioritaires sur la date (la plus spécifique s'applique)
+
+### Notifications WhatsApp
+**Riwa Bookings > Paramètres > Notifications**
+- Activer les boutons WhatsApp
+- Renseigner le numéro WhatsApp admin (format international : `+212661234567`)
+- Personnaliser les 4 templates (confirmation, rappel, check-in, avis)
+
+### PDF — Doc Studio
+**Riwa Bookings > Factures / PDF**
+- Configurer les infos société (nom, adresse, ICE, RC, email, téléphone)
+- Personnaliser le layout de chaque type de document (drag & drop)
+- Tester la génération PDF
+
+---
+
+## Sécurité en production
+
+### wp-config.php
 ```php
-define('RIWA_BOOKING_EMAIL_FROM_NAME', 'Votre Nom');
-define('RIWA_BOOKING_EMAIL_FROM_ADDRESS', 'noreply@votredomaine.com');
-define('RIWA_BOOKING_ADMIN_EMAIL', 'admin@votredomaine.com');
-```
-
-### Configuration de la sécurité
-- Nonces configurés pour 24h
-- Validation renforcée des emails et téléphones
-- Headers de sécurité automatiques
-- Limites de taille de fichiers : 5MB max
-
-## 📊 Fonctionnalités
-
-### Réservations
-- ✅ Système de réservation en 3 étapes
-- ✅ Calendrier interactif avec disponibilités
-- ✅ Gestion des voyageurs (adultes, enfants, bébés, animaux)
-- ✅ Calcul automatique des prix
-- ✅ Validation en temps réel
-
-### Administration
-- ✅ Tableau de bord avec statistiques
-- ✅ Gestion des réservations (CRUD)
-- ✅ Système de statuts (En attente, Confirmée, Annulée, Terminée)
-- ✅ Tarification par saison
-- ✅ Personnalisation PDF
-
-### PDF
-- ✅ Génération automatique de confirmations
-- ✅ Personnalisation complète (logo, couleurs, polices)
-- ✅ Aperçu en temps réel
-- ✅ Téléchargement sécurisé
-
-## 🔒 Sécurité
-
-### Mesures implémentées
-- ✅ Validation des nonces WordPress
-- ✅ Sanitisation des données
-- ✅ Validation des emails et téléphones
-- ✅ Limites de taille de fichiers
-- ✅ Headers de sécurité
-- ✅ Protection contre les injections SQL
-
-### Recommandations supplémentaires
-```php
-// Dans wp-config.php
 define('WP_DEBUG', false);
 define('WP_DEBUG_LOG', false);
 define('WP_DEBUG_DISPLAY', false);
 ```
 
-## 📈 Performance
+### Mesures intégrées dans le plugin
+- Vérification de nonce WordPress sur toutes les actions admin et AJAX
+- Sanitisation des entrées : `sanitize_text_field()`, `esc_url_raw()`, `sanitize_hex_color()`
+- Protection SQL : requêtes préparées via `$wpdb->prepare()`
+- Vérification `current_user_can('manage_options')` sur toutes les opérations admin
+- Headers de sécurité via WordPress
 
-### Optimisations incluses
-- ✅ Cache des données de tarification
-- ✅ Requêtes SQL optimisées
-- ✅ Scripts minifiés
-- ✅ Images optimisées
-- ✅ Nettoyage automatique des anciennes données
-
-### Monitoring
-- Logs d'erreurs critiques uniquement
-- Métriques de performance disponibles
-- Nettoyage automatique des réservations annulées
-
-## 🛠️ Maintenance
-
-### Nettoyage automatique
-Le plugin supprime automatiquement :
-- Réservations annulées de plus de 6 mois
-- Fichiers temporaires PDF
-- Cache expiré
-
-### Sauvegarde recommandée
-```bash
-# Tables du plugin
-mysqldump -u user -p database wp_riwa_bookings wp_riwa_pricing > riwa_backup.sql
-
-# Fichiers de configuration
-cp production-config.php production-config.php.backup
+### Permissions fichiers recommandées
 ```
-
-## 🐛 Dépannage
-
-### Problèmes courants
-
-#### PDF ne se génère pas
-1. Vérifier les extensions PHP : `curl`, `zip`, `gd`
-2. Vérifier les permissions du dossier `includes/tcpdf/`
-3. Tester la réinstallation TCPDF dans l'admin
-
-#### Emails non envoyés
-1. Vérifier la configuration SMTP WordPress
-2. Tester avec un plugin comme WP Mail SMTP
-3. Vérifier les logs d'erreur
-
-#### Calendrier ne s'affiche pas
-1. Vérifier que jQuery est chargé
-2. Vérifier la console pour les erreurs JavaScript
-3. Désactiver les plugins de cache temporairement
-
-### Logs d'erreur
-En cas de problème, activer temporairement les logs :
-```php
-// Dans wp-config.php
-define('WP_DEBUG', true);
-define('WP_DEBUG_LOG', true);
+wp-content/plugins/riwa-booking/    755
+wp-content/plugins/riwa-booking/includes/tcpdf/    755
+*.php    644
 ```
-
-## 📞 Support
-
-### Informations de version
-- **Version** : 1.1.2
-- **Dernière mise à jour** : Décembre 2024
-- **Compatibilité WordPress** : 5.0+
-- **Compatibilité PHP** : 7.4+
-
-### Contact
-Pour le support technique :
-- Email : support@riwa-villa.com
-- Documentation : [URL de la documentation]
-
-## 🔄 Mises à jour
-
-### Procédure de mise à jour
-1. Sauvegarder les données
-2. Désactiver le plugin
-3. Remplacer les fichiers
-4. Réactiver le plugin
-5. Vérifier la configuration
-
-### Changelog
-- **1.1.2** : Optimisations production, suppression logs, sécurité renforcée
-- **1.1.1** : Amélioration interface admin, gestion des voyageurs
-- **1.1.0** : Système PDF, personnalisation avancée
-- **1.0.0** : Version initiale
-
-## 📝 Licence
-
-Ce plugin est développé spécifiquement pour Riwa Villa.
-Tous droits réservés.
 
 ---
 
-**Note** : Ce plugin est optimisé pour la production avec toutes les fonctionnalités de debug désactivées pour de meilleures performances. 
+## Sauvegarde
+
+### Base de données (minimum)
+```bash
+mysqldump -u user -p database \
+  wp_riwa_bookings \
+  wp_riwa_pricing \
+  wp_riwa_payments \
+  wp_riwa_notification_log \
+  > riwa_backup_$(date +%Y%m%d).sql
+```
+
+### Options WordPress (layouts, config)
+Les options du plugin sont dans la table `wp_options` avec les préfixes :
+- `riwa_setting_*`
+- `riwa_email_*`
+- `riwa_notif_*`
+- `riwa_pdf_*`
+
+```bash
+mysqldump -u user -p database wp_options \
+  --where="option_name LIKE 'riwa_%'" \
+  > riwa_options_backup.sql
+```
+
+---
+
+## Mise à jour
+
+1. Sauvegarder la base de données
+2. Sauvegarder les fichiers du plugin
+3. Désactiver le plugin
+4. Remplacer les fichiers (ne pas supprimer `includes/tcpdf/` si déjà installé)
+5. Réactiver — les migrations DB s'exécutent automatiquement au démarrage
+
+Les migrations sont idempotentes (`SHOW COLUMNS LIKE '...'` avant chaque `ALTER TABLE`).
+
+---
+
+## Performance
+
+### Optimisations incluses
+- Cache transient 1h pour les dates réservées (`riwa_booked_dates`)
+- Requêtes SQL avec `LEFT JOIN` pour éviter les N+1 (badges paiement dans la liste)
+- Pagination côté serveur (20 réservations par page)
+- JS chargé en `footer: true`
+
+### CDN externes chargés
+- Flatpickr (calendrier frontend)
+- Chart.js 4.4.0 (statistiques admin)
+- SortableJS 1.15.0 (PDF Studio admin)
+- Google Fonts — Roboto (admin)
+
+Si l'accès aux CDN est limité sur le serveur, ces librairies peuvent être hébergées localement — modifier les `wp_enqueue_script` dans `admin/class-riwa-admin.php`.
+
+---
+
+## Dépannage
+
+### PDF ne se génère pas
+1. Vérifier la présence de `includes/tcpdf/` — utiliser le bouton "Réinstaller TCPDF" dans le Diagnostic
+2. Vérifier les extensions PHP : `gd`, `zip`
+3. Vérifier les permissions en écriture sur le dossier temporaire PHP
+
+### Emails non envoyés
+1. Vérifier la configuration SMTP de WordPress (plugin WP Mail SMTP recommandé)
+2. Tester depuis **Paramètres > Email > Test d'envoi**
+3. Consulter les logs WordPress si `WP_DEBUG_LOG = true`
+
+### Calendrier front ne s'affiche pas
+1. Vérifier l'accès CDN Flatpickr depuis le serveur
+2. Vérifier la console navigateur pour les erreurs JS
+3. Désactiver temporairement les plugins de cache
+
+### Tables manquantes après activation
+Aller dans **Paramètres > Diagnostic** — vérifier l'état des tables. Si une table est absente, désactiver puis réactiver le plugin pour relancer les migrations.
+
+### Sections admin vides / erreur PHP
+Activer temporairement `WP_DEBUG = true` et `WP_DEBUG_LOG = true`, reproduire l'erreur, consulter `wp-content/debug.log`.
+
+---
+
+## Informations de contact support
+
+- Onglet **Diagnostic** dans Paramètres : affiche les versions PHP/WP/MySQL/plugin et l'état des tables
+- Données démo disponibles pour les tests : **Paramètres > Données démo > Injecter**
+
+---
+
+Développé pour **Riwa Villa** — Tous droits réservés.

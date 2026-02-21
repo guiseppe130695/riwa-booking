@@ -36,12 +36,24 @@ $gen_color     = get_option('riwa_setting_primary_color', '#2271b1');
 
         <!-- Onglets -->
         <div class="riwa-settings-tabs" id="riwa-settings-tabs">
-            <button type="button" class="riwa-settings-tab active" data-tab="general">Général</button>
-            <button type="button" class="riwa-settings-tab" data-tab="pricing">Tarification</button>
-            <button type="button" class="riwa-settings-tab" data-tab="email">Email</button>
-            <button type="button" class="riwa-settings-tab" data-tab="notifications">Notifications</button>
-            <button type="button" class="riwa-settings-tab" data-tab="debug">Diagnostic</button>
-            <button type="button" class="riwa-settings-tab" data-tab="demo">Données démo</button>
+            <button type="button" class="riwa-settings-tab active" data-tab="general">
+                <span class="dashicons dashicons-admin-settings"></span> Général
+            </button>
+            <button type="button" class="riwa-settings-tab" data-tab="pricing">
+                <span class="dashicons dashicons-money-alt"></span> Tarification
+            </button>
+            <button type="button" class="riwa-settings-tab" data-tab="email">
+                <span class="dashicons dashicons-email-alt"></span> Email
+            </button>
+            <button type="button" class="riwa-settings-tab" data-tab="notifications">
+                <span class="dashicons dashicons-bell"></span> Notifications
+            </button>
+            <button type="button" class="riwa-settings-tab" data-tab="debug">
+                <span class="dashicons dashicons-search"></span> Diagnostic
+            </button>
+            <button type="button" class="riwa-settings-tab" data-tab="demo">
+                <span class="dashicons dashicons-database"></span> Données démo
+            </button>
         </div>
 
         <!-- Onglet Général -->
