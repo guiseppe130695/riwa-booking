@@ -1,0 +1,405 @@
+/* ============================================================
+   Riwa Admin — Module Paiements
+   (extrait de riwa-booking-admin.css — lignes 2931–3333)
+   ============================================================ */
+
+/* Onglets */
+.riwa-pay-tabs {
+    display: flex;
+    gap: 2px;
+    padding: .75rem 1.25rem 0;
+    border-bottom: 2px solid #e2e8f0;
+    background: #fff;
+    margin-bottom: 0;
+}
+.riwa-pay-tab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 4px 4px 0 0;
+    transition: color .15s, border-color .15s;
+}
+.riwa-pay-tab .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-pay-tab:hover { color: #2271b1; background: #f1f5f9; }
+.riwa-pay-tab.active { color: #2271b1; border-bottom-color: #2271b1; background: #f0f6ff; }
+.riwa-pay-tab-content { display: none; padding: 1.25rem; }
+.riwa-pay-tab-content.active { display: block; }
+
+/* KPIs */
+.riwa-pay-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+.riwa-pay-kpi {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    min-width: 0;
+    overflow: hidden;
+}
+.riwa-pay-kpi-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.riwa-pay-kpi-icon .dashicons { font-size: 15px; width: 15px; height: 15px; }
+.riwa-pay-kpi-body { min-width: 0; flex: 1; overflow: hidden; }
+.riwa-pay-kpi-label {
+    font-size: 9.5px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.riwa-pay-kpi-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+.riwa-pay-kpi-sub {
+    font-size: 9.5px;
+    color: #94a3b8;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Section titles */
+.riwa-pay-section-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 1rem;
+}
+.riwa-pay-section-title .dashicons { font-size: 16px; width: 16px; height: 16px; }
+
+/* Liste retards */
+.riwa-pay-overdue-wrap { margin-bottom: 2rem; }
+.riwa-pay-overdue-list { display: flex; flex-direction: column; gap: 8px; }
+.riwa-pay-overdue-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+.riwa-pay-overdue-client { flex: 1; font-size: 13px; }
+.riwa-pay-overdue-meta { display: flex; gap: 1.5rem; font-size: 12px; color: #64748b; }
+
+/* Formulaire rapide */
+.riwa-pay-quick-form {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+.riwa-pay-inline-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.riwa-pay-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+.riwa-pay-field { display: flex; flex-direction: column; min-width: 0; }
+.riwa-pay-field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+}
+.riwa-pay-field-lg  { flex: 2 1 200px; }
+.riwa-pay-field-md  { flex: 1.2 1 140px; }
+.riwa-pay-field-sm  { flex: 0.8 1 100px; }
+.riwa-pay-field-action { flex: 0 0 auto; }
+.riwa-pay-field-wide { grid-column: 1 / -1; }
+
+/* Inputs compacts dans le formulaire inline */
+.riwa-pay-inline-form .riwa-input,
+.riwa-pay-quick-form .riwa-input {
+    padding: 6px 10px;
+    font-size: 12.5px;
+    height: 34px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    width: 100%;
+}
+.riwa-pay-submit-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    padding: 0 14px;
+    height: 34px;
+    box-sizing: border-box;
+}
+.riwa-pay-submit-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-pay-form-actions { display: flex; align-items: center; gap: 1rem; }
+.riwa-pay-form-msg { font-size: 12px; }
+.riwa-pay-hint { font-size: 11px; color: #94a3b8; font-weight: 400; }
+
+/* Filtres */
+.riwa-pay-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.riwa-pay-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all .15s;
+}
+.riwa-pay-filter-btn:hover { border-color: #2271b1; color: #2271b1; }
+.riwa-pay-filter-btn.active { background: #2271b1; color: #fff; border-color: #2271b1; }
+.riwa-pay-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* Table */
+.riwa-pay-table-wrap { overflow-x: auto; }
+.riwa-pay-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.riwa-pay-table th {
+    background: #f8fafc;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-pay-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+.riwa-pay-table tr:last-child td { border-bottom: none; }
+.riwa-pay-table tr:hover td { background: #f8fafc; }
+.riwa-pay-row-overdue td { background: #fff5f5 !important; }
+
+/* Badge statut */
+.riwa-pay-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Boutons action */
+.riwa-pay-action-btn {
+    width: 28px; height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition: all .15s;
+    margin-right: 4px;
+}
+.riwa-pay-action-btn:hover { background: #2271b1; color: #fff; border-color: #2271b1; }
+.riwa-pay-action-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+
+/* Pagination */
+.riwa-pay-pagination { display: flex; gap: 4px; justify-content: center; margin-top: 1rem; }
+.riwa-pay-page-btn {
+    width: 30px; height: 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+}
+.riwa-pay-page-btn.active { background: #2271b1; color: #fff; border-color: #2271b1; }
+
+/* Panel détail */
+.riwa-pay-detail-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.3);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+}
+.riwa-pay-detail-overlay.open { opacity: 1; pointer-events: all; }
+.riwa-pay-detail-panel {
+    position: fixed;
+    top: 32px; right: -420px;
+    width: 420px; bottom: 0;
+    background: #fff;
+    z-index: 9999;
+    box-shadow: -4px 0 20px rgba(0,0,0,.12);
+    display: flex;
+    flex-direction: column;
+    transition: right .25s ease;
+}
+.riwa-pay-detail-panel.open { right: 0; }
+.riwa-pay-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-weight: 700;
+    background: #f8fafc;
+}
+.riwa-pay-detail-close { background: none; border: none; cursor: pointer; color: #64748b; padding: 2px; }
+.riwa-pay-detail-body { flex: 1; overflow-y: auto; padding: 1rem; }
+.riwa-pay-detail-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.riwa-pay-detail-stat span { display: block; font-size: 11px; color: #64748b; margin-bottom: 2px; }
+.riwa-pay-detail-stat strong { font-size: 15px; }
+.riwa-pay-detail-deposit {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #4c1d95;
+    margin-bottom: 1rem;
+}
+
+/* Timeline paiements */
+.riwa-pay-timeline { padding: 4px 0; }
+.riwa-pay-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #f1f5f9;
+}
+.riwa-pay-timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0; margin-top: 4px; }
+.riwa-pay-timeline-content { flex: 1; }
+.riwa-pay-timeline-amount { font-size: 14px; font-weight: 700; color: #16a34a; }
+.riwa-pay-timeline-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+.riwa-pay-timeline-note { font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 2px; }
+.riwa-pay-delete-payment { background: none; border: none; cursor: pointer; color: #cbd5e1; padding: 2px; flex-shrink: 0; }
+.riwa-pay-delete-payment:hover { color: #ef4444; }
+.riwa-pay-mini-form { margin-top: 1rem; }
+.riwa-pay-mini-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Modal */
+.riwa-pay-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 9998; }
+.riwa-pay-modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 12px;
+    width: 560px;
+    max-width: 95vw;
+    z-index: 9999;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.riwa-pay-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 15px; font-weight: 700;
+}
+.riwa-pay-modal-close { background: none; border: none; cursor: pointer; color: #64748b; }
+.riwa-pay-modal-body { padding: 1.25rem 1.5rem; }
+.riwa-pay-modal-footer {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 0 0 12px 12px;
+}
+.riwa-pay-deposit-section { margin-top: 1rem; }
+
+/* Export */
+.riwa-pay-export-wrap { display: flex; justify-content: center; padding: 2rem; }
+.riwa-pay-export-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 2.5rem; text-align: center; max-width: 420px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+.riwa-pay-export-icon {
+    width: 64px; height: 64px; background: #f0f9ff; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;
+}
+.riwa-pay-export-icon .dashicons { font-size: 30px; width: 30px; height: 30px; color: #0369a1; }
+.riwa-pay-export-card h3 { font-size: 16px; margin: 0 0 .5rem; }
+.riwa-pay-export-card p { font-size: 13px; color: #64748b; margin: 0 0 1.5rem; }
+.riwa-pay-export-filters { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 1.5rem; font-size: 13px; }
+.riwa-pay-export-btn { display: inline-flex; align-items: center; gap: 6px; }
+
+/* States */
+.riwa-pay-loading, .riwa-pay-empty { text-align: center; padding: 2rem; color: #94a3b8; font-size: 13px; }
+.riwa-pay-empty .dashicons { font-size: 20px; width: 20px; height: 20px; vertical-align: middle; }

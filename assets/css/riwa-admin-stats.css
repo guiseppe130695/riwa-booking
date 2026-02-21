@@ -1,0 +1,230 @@
+/* ============================================================
+   Riwa Admin — Statistiques (Pulse / Analyse / Prévision)
+   (extrait de riwa-booking-admin.css — lignes 2335–2563)
+   ============================================================ */
+
+/* Navigation onglets */
+.riwa-stats-nav {
+    display: flex; gap: 0.25rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+.riwa-stats-tab {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.65rem 1.25rem;
+    background: none; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 500; color: #64748b;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    border-radius: 4px 4px 0 0;
+    transition: color .15s, border-color .15s;
+}
+.riwa-stats-tab:hover { color: #1e293b; }
+.riwa-stats-tab.active { color: #2271b1; border-bottom-color: #2271b1; background: #f0f6ff; }
+.riwa-stats-tab .dashicons { font-size: 15px; width: 15px; height: 15px; }
+
+/* Loader */
+.riwa-stats-loader {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 2rem; color: #94a3b8; font-size: 13px;
+}
+
+/* Contenu onglets */
+.riwa-stats-tab-content { display: none; }
+.riwa-stats-tab-content.active { display: block; }
+
+/* ── Pulse : grille score + météo ───────────────────────────────────────── */
+.riwa-pulse-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+@media (max-width: 900px) { .riwa-pulse-grid { grid-template-columns: 1fr; } }
+
+/* Carte score de santé */
+.riwa-pulse-score-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 1.5rem; display: flex; gap: 1.5rem; align-items: flex-start;
+}
+.riwa-pulse-score-ring {
+    position: relative; width: 110px; height: 110px; flex-shrink: 0;
+}
+.riwa-score-svg { width: 110px; height: 110px; }
+.riwa-score-inner {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.riwa-score-value { font-size: 26px; font-weight: 800; line-height: 1; }
+.riwa-score-label { font-size: 11px; color: #94a3b8; }
+.riwa-pulse-score-info { flex: 1; min-width: 0; }
+.riwa-pulse-grade {
+    display: inline-block;
+    color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 4px;
+}
+.riwa-pulse-grade-label { font-size: 15px; font-weight: 600; color: #1e293b; margin-bottom: 12px; }
+
+/* Breakdown barres */
+.riwa-pulse-breakdown { display: flex; flex-direction: column; gap: 6px; }
+.riwa-pb-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.riwa-pb-label { width: 120px; color: #64748b; flex-shrink: 0; }
+.riwa-pb-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.riwa-pb-fill  { height: 100%; border-radius: 3px; transition: width .6s; }
+.riwa-pb-pts   { width: 36px; text-align: right; color: #94a3b8; font-size: 11px; }
+
+/* Météo financière 7 jours */
+.riwa-pulse-week-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 1.25rem;
+}
+.riwa-pulse-week-header {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 1rem;
+}
+.riwa-pulse-week-header .dashicons { color: #2271b1; }
+.riwa-pulse-week-total { margin-left: auto; font-size: 16px; color: #1e293b; }
+.riwa-pulse-week-bars {
+    display: flex; gap: 4px; align-items: flex-end; height: 80px;
+}
+.riwa-week-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+.riwa-week-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.riwa-week-bar-fill {
+    width: 100%; border-radius: 3px 3px 0 0;
+    background: linear-gradient(to top, #2271b1, #5b9bd5);
+    min-height: 2px; transition: height .5s;
+}
+.riwa-week-label { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+
+/* Alertes */
+.riwa-pulse-alerts {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    overflow: hidden;
+}
+.riwa-pulse-alerts-title {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.1rem;
+    font-size: 12px; font-weight: 600; color: #475569;
+    background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+}
+.riwa-pulse-alerts-title .dashicons { color: #f59e0b; font-size: 15px; width: 15px; height: 15px; }
+.riwa-alert-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1.1rem;
+    border-left: 3px solid transparent;
+    font-size: 13px;
+}
+.riwa-alert-item + .riwa-alert-item { border-top: 1px solid #f1f5f9; }
+.riwa-alert-icon { flex-shrink: 0; font-size: 16px; width: 16px; height: 16px; }
+.riwa-alert-msg { flex: 1; color: #334155; }
+.riwa-alert-cta {
+    font-size: 12px; font-weight: 600; padding: 4px 10px;
+    border-radius: 6px; border: 1px solid; white-space: nowrap;
+    text-decoration: none;
+}
+.riwa-alert--warning { border-left-color: #f59e0b; }
+.riwa-alert--warning .riwa-alert-icon { color: #d97706; }
+.riwa-alert--warning .riwa-alert-cta { color: #d97706; border-color: #fde68a; background: #fffbeb; }
+.riwa-alert--danger  { border-left-color: #ef4444; }
+.riwa-alert--danger  .riwa-alert-icon { color: #dc2626; }
+.riwa-alert--danger  .riwa-alert-cta  { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.riwa-alert--info    { border-left-color: #3b82f6; }
+.riwa-alert--info    .riwa-alert-icon { color: #2563eb; }
+.riwa-alert--info    .riwa-alert-cta  { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+.riwa-pulse-all-good {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 1rem 1.1rem; font-size: 13px; color: #16a34a;
+}
+.riwa-pulse-all-good .dashicons { color: #16a34a; }
+
+/* ── Analyse : KPIs ─────────────────────────────────────────────────────── */
+.riwa-stats-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+.riwa-stats-kpi-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1.1rem 1.1rem; display: flex; align-items: flex-start; gap: 0.75rem;
+}
+.riwa-stats-kpi-card.riwa-kpi--danger { border-left: 3px solid #ef4444; }
+.riwa-kpi-icon { font-size: 20px; width: 20px; height: 20px; color: #2271b1; flex-shrink: 0; }
+.riwa-kpi-value { font-size: 18px; font-weight: 700; color: #1e293b; line-height: 1.2; }
+.riwa-kpi-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.riwa-kpi--danger .riwa-kpi-value { color: #dc2626; }
+
+/* Charts */
+.riwa-stats-chart-section { margin-bottom: 1.5rem; }
+.riwa-stats-chart-title {
+    font-size: 13px; font-weight: 600; color: #475569;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.riwa-stats-chart-title .dashicons { font-size: 15px; width: 15px; height: 15px; color: #2271b1; }
+.riwa-chart-container {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1rem; height: 240px;
+}
+.riwa-chart-container.riwa-chart-small { height: 180px; }
+
+/* Profil voyageurs */
+.riwa-stats-profile-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+.riwa-stats-profile-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1rem;
+}
+/* Durées */
+.riwa-dur-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 0.5rem; }
+.riwa-dur-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.riwa-dur-label { width: 70px; color: #475569; flex-shrink: 0; }
+.riwa-dur-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.riwa-dur-fill  { height: 100%; background: #2271b1; border-radius: 4px; }
+.riwa-dur-pct   { width: 34px; text-align: right; color: #94a3b8; }
+/* Table jours d'arrivée */
+.riwa-arrival-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0.5rem; }
+.riwa-arrival-table tr:not(:last-child) td { border-bottom: 1px solid #f1f5f9; }
+.riwa-arr-day { padding: 6px 0; font-weight: 500; color: #1e293b; width: 60px; }
+.riwa-arr-cnt { padding: 6px 0; color: #64748b; }
+
+/* ── Prévision ──────────────────────────────────────────────────────────── */
+.riwa-forecast-summary {
+    display: grid; grid-template-columns: 1fr 2fr 1fr;
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+@media (max-width: 800px) { .riwa-forecast-summary { grid-template-columns: 1fr; } }
+.riwa-forecast-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 1.1rem;
+}
+.riwa-forecast-card--projected {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border-color: #bfdbfe; text-align: center;
+}
+.riwa-forecast-label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.riwa-forecast-value { font-size: 20px; font-weight: 700; color: #1e293b; }
+.riwa-forecast-big   { font-size: 28px; color: #2271b1; }
+.riwa-forecast-vs    { font-size: 13px; font-weight: 600; margin-top: 4px; }
+
+/* Opportunités */
+.riwa-opp-section { margin-top: 1.5rem; }
+.riwa-opp-card {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding: 1rem 1.1rem;
+    border-radius: 10px; border: 1px solid; margin-bottom: 0.75rem;
+}
+.riwa-opp--green  { background: #f0fdf4; border-color: #86efac; }
+.riwa-opp--blue   { background: #eff6ff; border-color: #bfdbfe; }
+.riwa-opp--orange { background: #fffbeb; border-color: #fde68a; }
+.riwa-opp-icon { font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+.riwa-opp--green  .riwa-opp-icon { color: #16a34a; }
+.riwa-opp--blue   .riwa-opp-icon { color: #2563eb; }
+.riwa-opp--orange .riwa-opp-icon { color: #d97706; }
+.riwa-opp-body { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.riwa-opp-body strong { color: #1e293b; }
+.riwa-opp-body span   { color: #475569; }
+.riwa-gaps-list { margin: 6px 0 0 0; padding-left: 1.2rem; color: #64748b; font-size: 12px; }
+.riwa-gaps-list li { margin-bottom: 2px; }
+.riwa-opp-empty {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 1.5rem; color: #94a3b8; font-size: 13px; font-style: italic;
+}
+.riwa-opp-empty .dashicons { color: #16a34a; }

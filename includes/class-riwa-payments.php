@@ -13,14 +13,7 @@ class Riwa_Payments {
     /* ---------------------------------------------------------------- */
 
     public static function get_methods() {
-        return [
-            'cash'      => 'Espèces',
-            'transfer'  => 'Virement bancaire',
-            'card'      => 'Carte bancaire',
-            'mobile'    => 'Paiement mobile',
-            'platform'  => 'Plateforme (Airbnb/Booking)',
-            'other'     => 'Autre',
-        ];
+        return Riwa_Enums::PAYMENT_METHOD_LABELS;
     }
 
     /* ---------------------------------------------------------------- */
@@ -32,39 +25,24 @@ class Riwa_Payments {
         $paid    = floatval($booking->amount_paid ?? 0);
         $deposit = floatval($booking->deposit_amount ?? 0);
 
-        if ($total <= 0) return 'unpaid';
-        if ($paid >= $total) return 'paid';
-        if ($paid > 0 && $paid >= $deposit && $deposit > 0) return 'deposit_paid';
-        if ($paid > 0) return 'partial';
+        if ($total <= 0) return Riwa_Enums::PAY_UNPAID;
+        if ($paid >= $total) return Riwa_Enums::PAY_PAID;
+        if ($paid > 0 && $paid >= $deposit && $deposit > 0) return Riwa_Enums::PAY_DEPOSIT_PAID;
+        if ($paid > 0) return Riwa_Enums::PAY_PARTIAL;
 
-        // Vérifier retard
         if (!empty($booking->balance_due_date) && strtotime($booking->balance_due_date) < time()) {
-            return 'overdue';
+            return Riwa_Enums::PAY_OVERDUE;
         }
 
-        return 'unpaid';
+        return Riwa_Enums::PAY_UNPAID;
     }
 
     public static function get_status_label($status) {
-        $labels = [
-            'paid'         => 'Payé',
-            'deposit_paid' => 'Acompte reçu',
-            'partial'      => 'Partiel',
-            'overdue'      => 'En retard',
-            'unpaid'       => 'Non payé',
-        ];
-        return $labels[$status] ?? 'Inconnu';
+        return Riwa_Enums::pay_status_label($status);
     }
 
     public static function get_status_color($status) {
-        $colors = [
-            'paid'         => '#22c55e',
-            'deposit_paid' => '#f59e0b',
-            'partial'      => '#3b82f6',
-            'overdue'      => '#ef4444',
-            'unpaid'       => '#94a3b8',
-        ];
-        return $colors[$status] ?? '#94a3b8';
+        return Riwa_Enums::pay_status_color($status);
     }
 
     /* ---------------------------------------------------------------- */
@@ -246,8 +224,17 @@ class Riwa_Payments {
     /* ---------------------------------------------------------------- */
 
     public static function export_csv($month = '') {
+        if (!current_user_can('manage_options')) {
+            wp_die('Accès non autorisé');
+        }
+
         global $wpdb;
         $p = $wpdb->prefix;
+
+        // Valider le format YYYY-MM
+        if ($month && !preg_match('/^\d{4}-\d{2}$/', $month)) {
+            $month = '';
+        }
 
         $where = '';
         if ($month) {
@@ -267,7 +254,8 @@ class Riwa_Payments {
         $methods = self::get_methods();
 
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="paiements-' . ($month ?: date('Y')) . '.csv"');
+        $filename = 'paiements-' . ($month ? preg_replace('/[^0-9-]/', '', $month) : date('Y')) . '.csv';
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Pragma: no-cache');
 
         $out = fopen('php://output', 'w');
@@ -300,8 +288,7 @@ class Riwa_Payments {
 
     /* Ajouter un paiement */
     public static function ajax_add_payment() {
-        check_ajax_referer('riwa_payments_nonce', 'nonce');
-        if (!current_user_can('manage_options')) wp_send_json_error('Accès non autorisé');
+        Riwa_Security::check_admin('riwa_payments_nonce');
 
         $booking_id   = intval($_POST['booking_id'] ?? 0);
         $amount       = floatval($_POST['amount'] ?? 0);
@@ -355,8 +342,7 @@ class Riwa_Payments {
 
     /* Supprimer un paiement */
     public static function ajax_delete_payment() {
-        check_ajax_referer('riwa_payments_nonce', 'nonce');
-        if (!current_user_can('manage_options')) wp_send_json_error('Accès non autorisé');
+        Riwa_Security::check_admin('riwa_payments_nonce');
 
         $payment_id = intval($_POST['payment_id'] ?? 0);
         if (!$payment_id) wp_send_json_error('ID manquant');
@@ -375,12 +361,20 @@ class Riwa_Payments {
 
     /* Sauvegarder les infos acompte d'une réservation */
     public static function ajax_save_deposit_info() {
-        check_ajax_referer('riwa_payments_nonce', 'nonce');
-        if (!current_user_can('manage_options')) wp_send_json_error('Accès non autorisé');
+        Riwa_Security::check_admin('riwa_payments_nonce');
 
         $booking_id      = intval($_POST['booking_id'] ?? 0);
-        $deposit_percent = floatval($_POST['deposit_percent'] ?? 0);
-        $balance_due     = sanitize_text_field($_POST['balance_due_date'] ?? '');
+        $deposit_percent = min(100, max(0, floatval($_POST['deposit_percent'] ?? 0)));
+        $balance_due_raw = sanitize_text_field($_POST['balance_due_date'] ?? '');
+
+        // Valider le format de date Y-m-d
+        $balance_due = '';
+        if ($balance_due_raw) {
+            $d = DateTime::createFromFormat('Y-m-d', $balance_due_raw);
+            if ($d && $d->format('Y-m-d') === $balance_due_raw) {
+                $balance_due = $balance_due_raw;
+            }
+        }
 
         if (!$booking_id) wp_send_json_error('ID manquant');
 
@@ -413,16 +407,14 @@ class Riwa_Payments {
 
     /* Dashboard KPIs */
     public static function ajax_get_dashboard() {
-        check_ajax_referer('riwa_payments_nonce', 'nonce');
-        if (!current_user_can('manage_options')) wp_send_json_error('Accès non autorisé');
+        Riwa_Security::check_admin('riwa_payments_nonce');
 
         wp_send_json_success(self::get_dashboard_kpis());
     }
 
     /* Liste paiements d'une réservation */
     public static function ajax_get_booking_payments() {
-        check_ajax_referer('riwa_payments_nonce', 'nonce');
-        if (!current_user_can('manage_options')) wp_send_json_error('Accès non autorisé');
+        Riwa_Security::check_admin('riwa_payments_nonce');
 
         $booking_id = intval($_POST['booking_id'] ?? 0);
         if (!$booking_id) wp_send_json_error('ID manquant');
@@ -467,10 +459,7 @@ class Riwa_Payments {
 
     /* Export CSV */
     public static function ajax_export_csv() {
-        if (!isset($_GET['nonce']) || !wp_verify_nonce($_GET['nonce'], 'riwa_payments_nonce')) {
-            wp_die('Accès non autorisé');
-        }
-        if (!current_user_can('manage_options')) wp_die('Accès non autorisé');
+        Riwa_Security::check_admin_get_download('riwa_payments_nonce');
 
         $month = sanitize_text_field($_GET['month'] ?? '');
         self::export_csv($month);
@@ -478,8 +467,7 @@ class Riwa_Payments {
 
     /* Liste des réservations avec filtres paiement */
     public static function ajax_get_bookings_list() {
-        check_ajax_referer('riwa_payments_nonce', 'nonce');
-        if (!current_user_can('manage_options')) wp_send_json_error('Accès non autorisé');
+        Riwa_Security::check_admin('riwa_payments_nonce');
 
         $filter   = sanitize_key($_POST['filter'] ?? 'all');
         $page     = intval($_POST['page'] ?? 1);

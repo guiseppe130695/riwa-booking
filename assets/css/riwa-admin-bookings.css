@@ -1,0 +1,413 @@
+/* ============================================================
+   Riwa Admin — Tableau de réservations + Popup détail
+   (extrait de riwa-booking-admin.css — lignes 457–982)
+   ============================================================ */
+
+/* Tableau moderne */
+.riwa-bookings-table { background: white; border-radius: 8px; overflow: hidden; }
+
+.riwa-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f0f1;
+    background: #f8f9fa;
+}
+.riwa-table-count { font-size: 14px; font-weight: 500; color: #646970; }
+.riwa-table-wrapper { overflow-x: auto; }
+
+.riwa-modern-table { width: 100%; border-collapse: collapse; background: white; }
+.riwa-modern-table th {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e1e5e9;
+    white-space: nowrap;
+}
+.riwa-modern-table td { padding: 1rem; border-bottom: 1px solid #f0f0f1; vertical-align: middle; line-height: 1.4; }
+.riwa-booking-row:hover { background: #f8f9fa; }
+
+.riwa-th-id, .riwa-td-id { width: 60px; display: none; }
+.riwa-th-reference, .riwa-td-reference { width: 120px; }
+.riwa-th-client, .riwa-td-client { width: 280px; }
+.riwa-th-price, .riwa-td-price { width: 120px; }
+.riwa-th-status, .riwa-td-status { width: 80px; }
+.riwa-th-date, .riwa-td-date { width: 120px; }
+.riwa-th-actions, .riwa-td-actions { width: 180px; }
+
+.riwa-booking-reference { font-size: 13px; font-weight: 600; color: #2271b1; font-family: 'Courier New', monospace; }
+.riwa-client-name { font-weight: 600; color: #1d2327; font-size: 14px; margin-bottom: 0.25rem; }
+.riwa-client-contact { display: flex; align-items: center; gap: 0.5rem; font-size: 12px; }
+.riwa-client-contact a { color: #2271b1; text-decoration: none; }
+.riwa-client-contact a:hover { text-decoration: underline; }
+.riwa-contact-separator { color: #646970; font-size: 10px; }
+.riwa-price-total { font-size: 14px; font-weight: 600; color: #1d2327; }
+.riwa-price-unknown { font-size: 12px; color: #646970; display: flex; align-items: center; gap: 0.25rem; }
+
+/* Badges de statut */
+.riwa-status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    text-align: center;
+    min-width: 70px;
+}
+.riwa-status-pending, .riwa-status-badge.riwa-status-pending { background: #fcf9e8; color: #996800; }
+.riwa-status-confirmed, .riwa-status-badge.riwa-status-confirmed { background: #edfaef; color: #008a20; }
+.riwa-status-cancelled, .riwa-status-badge.riwa-status-cancelled { background: #fcf0f1; color: #d63638; }
+
+/* Actions compactes */
+.riwa-actions-compact { display: flex; align-items: center; gap: 0.5rem; }
+.riwa-status-select-compact {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 11px;
+    background: white;
+    color: #1d2327;
+    min-width: 80px;
+}
+
+/* État vide */
+.riwa-empty-state { text-align: center; padding: 4rem 2rem; color: #646970; }
+.riwa-empty-state .dashicons { font-size: 48px; margin-bottom: 2.5rem; opacity: 0.5; }
+.riwa-empty-state h3 { margin: 0 0 0.5rem 0; font-weight: 500; font-size: 16px; }
+.riwa-empty-state p { margin: 0; opacity: 0.7; font-size: 14px; }
+
+/* ── Popup redesign ──────────────────────────────── */
+.riwa-popup-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.55); display: none;
+    justify-content: center; align-items: center;
+    z-index: 999999; backdrop-filter: blur(6px);
+}
+
+/* Conteneur deux colonnes */
+.riwa-popup-container {
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+    max-width: 780px; width: 95%; max-height: 92vh;
+    animation: riwa-slideIn 0.25s ease;
+    position: relative;
+}
+
+/* Bouton × — dans le panneau droit */
+.riwa-popup-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none;
+    font-size: 18px; line-height: 1; color: #94a3b8;
+    cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    transition: color 0.15s, background 0.15s; z-index: 10;
+}
+.riwa-popup-close:hover { color: #1d2327; background: #f0f4f8; }
+
+/* ── Sidebar gauche ── */
+.riwa-popup-sidebar {
+    width: 240px; min-width: 240px;
+    background: linear-gradient(160deg, #0f4c75 0%, #1b6ca8 60%, #2196f3 100%);
+    padding: 2rem 1.5rem;
+    display: flex; flex-direction: column; gap: 2rem;
+    color: #fff;
+}
+.riwa-popup-sidebar-header {
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.riwa-popup-sidebar-icon {
+    font-size: 28px !important; width: 28px !important; height: 28px !important;
+    opacity: 0.9;
+}
+.riwa-popup-sidebar-ref {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+}
+.riwa-popup-sidebar-label {
+    font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* Steps sidebar */
+.riwa-popup-sidebar-steps {
+    display: flex; flex-direction: column; gap: 1.5rem;
+}
+.riwa-popup-step {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+}
+.riwa-popup-step-icon {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+}
+.riwa-popup-step.completed .riwa-popup-step-icon {
+    background: rgba(255,255,255,0.9);
+    color: #1b6ca8;
+}
+.riwa-popup-step-icon .dashicons { font-size: 16px; width: 16px; height: 16px; }
+.riwa-popup-step-body { display: flex; flex-direction: column; gap: 0.15rem; }
+.riwa-popup-step-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.65; }
+.riwa-popup-step-value { font-size: 14px; font-weight: 600; }
+.riwa-popup-step-sub { font-size: 12px; opacity: 0.75; word-break: break-all; }
+.riwa-popup-price { font-size: 18px !important; font-weight: 700 !important; }
+
+.riwa-popup-travelers-inline {
+    display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem;
+}
+.riwa-popup-travelers-inline .riwa-traveler-badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 2px 10px;
+    font-size: 11px; font-weight: 500;
+}
+
+/* ── Panneau droit ── */
+.riwa-popup-main {
+    flex: 1; display: flex; flex-direction: column;
+    background: #fff; overflow: hidden;
+}
+.riwa-popup-main-header {
+    padding: 1.5rem 2rem 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #f0f4f8;
+}
+.riwa-popup-main-header h3 { margin: 0; font-size: 17px; font-weight: 700; color: #1d2327; }
+
+/* Badge statut dans le header */
+.riwa-popup-status-badge {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-right: 25px;
+}
+.riwa-popup-status-badge.status-pending   { background: #fff8e6; color: #b45309; }
+.riwa-popup-status-badge.status-confirmed { background: #edfaef; color: #008a20; }
+.riwa-popup-status-badge.status-cancelled { background: #fcf0f1; color: #d63638; }
+
+.riwa-popup-main-content {
+    flex: 1; padding: 1.5rem 2rem; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 1.5rem;
+}
+
+/* Bloc dates */
+.riwa-popup-dates-block {
+    display: flex; align-items: center; gap: 1rem;
+}
+.riwa-popup-date-card {
+    flex: 1;
+    background: #f8fafc; border: 1px solid #e8edf2;
+    border-radius: 10px; padding: 1rem 1.25rem;
+    text-align: center;
+}
+.riwa-popup-date-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: #94a3b8; font-weight: 600; margin-bottom: 0.4rem;
+}
+.riwa-popup-date-value {
+    font-size: 18px; font-weight: 700; color: #1d2327;
+}
+.riwa-popup-date-arrow {
+    color: #94a3b8;
+}
+.riwa-popup-date-arrow .dashicons { font-size: 22px; width: 22px; height: 22px; }
+
+/* Header sous-titre */
+.riwa-popup-main-sub {
+    font-size: 12px; color: #94a3b8; margin-top: 2px;
+}
+
+/* ── Timeline ── */
+.riwa-timeline {
+    display: flex; flex-direction: column;
+}
+.riwa-timeline-item {
+    display: flex; gap: 1rem; position: relative;
+    padding-bottom: 0;
+}
+/* Ligne verticale via le connecteur */
+.riwa-timeline-connector {
+    position: absolute;
+    left: 15px; top: 32px;
+    width: 2px; height: calc(100% + 4px);
+    background: #e2e8f0;
+    z-index: 0;
+}
+.riwa-timeline-item:last-child .riwa-timeline-connector { display: none; }
+
+/* Dot */
+.riwa-timeline-dot {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+    transition: all 0.3s ease;
+}
+.riwa-timeline-dot .dashicons {
+    font-size: 15px; width: 15px; height: 15px; color: #cbd5e1;
+}
+
+/* États */
+.riwa-timeline-item.tl-done .riwa-timeline-dot {
+    background: #1b6ca8; border-color: #1b6ca8;
+}
+.riwa-timeline-item.tl-done .riwa-timeline-dot .dashicons { color: #fff; }
+.riwa-timeline-item.tl-done .riwa-timeline-connector { background: #1b6ca8; }
+
+.riwa-timeline-item.tl-active .riwa-timeline-dot {
+    background: #fff; border-color: #1b6ca8;
+    box-shadow: 0 0 0 4px rgba(27, 108, 168, 0.15);
+}
+.riwa-timeline-item.tl-active .riwa-timeline-dot .dashicons { color: #1b6ca8; }
+
+.riwa-timeline-item.tl-cancelled .riwa-timeline-dot {
+    background: #d63638; border-color: #d63638;
+}
+.riwa-timeline-item.tl-cancelled .riwa-timeline-dot .dashicons { color: #fff; }
+
+/* Corps */
+.riwa-timeline-body {
+    padding-bottom: 1.4rem; flex: 1;
+}
+.riwa-timeline-label {
+    font-size: 13px; font-weight: 600; color: #1d2327; line-height: 1;
+    margin-top: 6px;
+}
+.riwa-timeline-item.tl-pending .riwa-timeline-label,
+.riwa-timeline-item:not(.tl-done):not(.tl-active):not(.tl-cancelled) .riwa-timeline-label {
+    color: #94a3b8;
+}
+.riwa-timeline-desc {
+    font-size: 12px; color: #94a3b8; margin-top: 3px; line-height: 1.4;
+}
+.riwa-timeline-item.tl-done .riwa-timeline-desc,
+.riwa-timeline-item.tl-active .riwa-timeline-desc { color: #64748b; }
+.riwa-timeline-date {
+    display: inline-block; margin-top: 4px;
+    font-size: 11px; font-weight: 600; color: #1b6ca8;
+    background: #eff6ff; border-radius: 4px; padding: 2px 7px;
+}
+.riwa-timeline-item:not(.tl-done):not(.tl-active) .riwa-timeline-date { display: none; }
+
+/* Demandes spéciales */
+.riwa-popup-requests-block {
+    background: #f8fafc; border: 1px solid #e8edf2;
+    border-radius: 10px; padding: 1rem 1.25rem;
+}
+.riwa-popup-requests-label {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 12px; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.5rem;
+}
+.riwa-popup-requests-label .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-popup-requests-text {
+    font-size: 13px; color: #475569; line-height: 1.6;
+}
+
+/* Actions rapides sous la timeline */
+.riwa-popup-actions {
+    display: flex; gap: 0.75rem; flex-wrap: wrap;
+    padding-top: 0.5rem;
+}
+.riwa-popup-actions:empty { display: none; }
+.riwa-popup-action-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.6rem 1.1rem; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    text-decoration: none;
+}
+.riwa-popup-action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.riwa-popup-action-btn .dashicons { font-size: 15px; width: 15px; height: 15px; }
+.riwa-popup-action-btn.confirm  { background: #edfaef; color: #008a20; }
+.riwa-popup-action-btn.cancel   { background: #fcf0f1; color: #d63638; }
+.riwa-popup-action-btn.email    { background: #eff6ff; color: #1b6ca8; }
+.riwa-popup-action-btn.contact  { background: #f0faf4; color: #1a7f4b; }
+.riwa-popup-action-btn.delete   { background: #fff8f8; color: #d63638; border: 1px solid #fca5a5; }
+
+/* Ménage dans la popup planning */
+.riwa-popup-hk-section {
+    width: 100%; padding: 0.75rem 0 0.25rem;
+    border-top: 1px solid #f1f5f9; margin-bottom: 0.5rem;
+}
+.riwa-popup-hk-label {
+    display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 0.5rem;
+}
+.riwa-popup-hk-btns { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.riwa-popup-hk-btn {
+    padding: 0.3rem 0.8rem; border: 1px solid #e2e8f0; border-radius: 999px;
+    background: #fff; font-size: 12px; color: #475569; cursor: pointer;
+    transition: all .12s;
+}
+.riwa-popup-hk-btn:hover    { border-color: #94a3b8; color: #1d2327; }
+.riwa-popup-hk-btn.is-active { background: #2271b1; border-color: #2271b1; color: #fff; }
+
+/* Footer minimaliste */
+.riwa-popup-main-footer {
+    padding: 0.85rem 2rem; border-top: 1px solid #f0f4f8;
+    display: flex; justify-content: flex-start; align-items: center;
+}
+.riwa-popup-footer-info {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 13px; color: #64748b;
+}
+.riwa-popup-footer-info .dashicons { font-size: 14px; width: 14px; height: 14px; color: #94a3b8; }
+
+/* Colonne nuits + voyageurs dans le tableau */
+.riwa-nights-badge {
+    display: inline-block;
+    font-size: 11px;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-top: 2px;
+}
+.riwa-guests-compact { display: flex; align-items: center; gap: 3px; font-weight: 600; font-size: 14px; }
+.riwa-guests-compact .dashicons { font-size: 14px; width: 14px; height: 14px; color: #64748b; }
+.riwa-guests-detail { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+/* Bouton success (confirmer) */
+.riwa-btn-success {
+    background: #edfaef;
+    color: #008a20;
+    border-color: #c6f0c8;
+}
+.riwa-btn-success:hover { background: #c6f0c8; }
+
+/* Popup upsells */
+.riwa-popup-upsells-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.riwa-popup-upsell-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #475569;
+}
+.riwa-popup-upsell-name { color: #334155; }
+.riwa-popup-upsell-price { font-weight: 600; color: #1e293b; }
+
+/* Animations */
+@keyframes riwa-slideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+body.riwa-popup-open { overflow: hidden; }
+
+@media (max-width: 768px) {
+    .riwa-popup-container { flex-direction: column; width: 98%; max-height: 95vh; }
+    .riwa-popup-sidebar { width: 100%; min-width: unset; padding: 1.25rem 1.5rem; }
+    .riwa-popup-sidebar-steps { flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+    .riwa-popup-step { flex: 1; min-width: 120px; }
+    .riwa-popup-main-content { padding: 1rem 1.25rem; }
+    .riwa-popup-info-grid { grid-template-columns: 1fr 1fr; }
+}

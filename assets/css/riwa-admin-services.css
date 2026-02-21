@@ -1,0 +1,380 @@
+/* ============================================================
+   Riwa Admin — Module Upsells / Services + Demo Planning
+   (extrait de riwa-booking-admin.css — lignes 1532–1923)
+   ============================================================ */
+
+/* Formulaire ajout/édition */
+.riwa-upsell-form-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+.riwa-upsell-form-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 1.25rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.riwa-upsell-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+.riwa-upsell-form-col { display: flex; flex-direction: column; gap: 1rem; }
+.riwa-form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.riwa-form-label .required { color: #d63638; }
+.riwa-form-input {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.riwa-form-input:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.12);
+}
+.riwa-form-hint { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.riwa-icon-input { font-size: 18px; width: 80px !important; text-align: center; }
+
+/* Toggle checkbox */
+.riwa-form-row--checkbox { flex-direction: row; align-items: center; gap: 8px; margin-top: 4px; }
+.riwa-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #475569;
+}
+.riwa-toggle-label input[type="checkbox"] { display: none; }
+.riwa-toggle-switch {
+    width: 36px;
+    height: 20px;
+    background: #cbd5e1;
+    border-radius: 20px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+.riwa-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.riwa-toggle-label input:checked ~ .riwa-toggle-switch { background: #2271b1; }
+.riwa-toggle-label input:checked ~ .riwa-toggle-switch::after { transform: translateX(16px); }
+
+/* Actions formulaire */
+.riwa-upsell-form-actions {
+    display: flex;
+    gap: .75rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* En-tête liste */
+.riwa-upsell-list-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.riwa-upsell-list-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+}
+
+/* Grille des cartes upsells */
+.riwa-upsell-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.riwa-upsell-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1rem 1rem 1rem;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0 .75rem;
+    align-items: start;
+    transition: box-shadow .15s, border-color .15s;
+    position: relative;
+}
+.riwa-upsell-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); border-color: #cbd5e1; }
+.riwa-upsell-card.is-inactive { opacity: .6; background: #f8fafc; }
+
+.riwa-upsell-card-icon {
+    grid-row: 1 / 3;
+    font-size: 24px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+.riwa-upsell-card-body { grid-column: 2; grid-row: 1; }
+.riwa-upsell-card-name { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 2px; }
+.riwa-upsell-card-desc { font-size: 12px; color: #64748b; line-height: 1.4; }
+.riwa-upsell-card-price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #1e293b;
+}
+.riwa-upsell-pricing-type {
+    font-size: 11px;
+    color: #94a3b8;
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 20px;
+}
+.riwa-upsell-card-status { grid-column: 3; grid-row: 1; }
+.riwa-upsell-card-actions {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    justify-content: flex-end;
+}
+
+/* Badges actif/inactif */
+.riwa-badge-active {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #008a20;
+    background: #edfaef;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid #c6f0c8;
+}
+.riwa-badge-inactive {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #646970;
+    background: #f0f0f1;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid #dcdcde;
+}
+
+/* Boutons icône */
+.riwa-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .12s, border-color .12s, color .12s;
+    padding: 0;
+}
+.riwa-icon-btn:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
+.riwa-icon-btn--danger:hover { background: #fef2f2; border-color: #fecaca; color: #d63638; }
+.riwa-icon-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+
+/* Bannière info bas de page */
+.riwa-upsell-info-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: 13px;
+    color: #1e40af;
+    margin-top: 1rem;
+}
+.riwa-upsell-info-banner .dashicons { font-size: 16px; flex-shrink: 0; }
+
+/* ── Icônes Dashicons dans les cartes upsells (admin) ── */
+.riwa-upsell-card-icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2271b1;
+}
+
+/* Sélecteur d'icônes dans le formulaire */
+.riwa-icon-select-wrap { display: flex; flex-direction: column; gap: 6px; }
+.riwa-icon-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.riwa-icon-option {
+    width: 36px;
+    height: 36px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    padding: 0;
+}
+.riwa-icon-option:hover { border-color: #93c5fd; background: #eff6ff; }
+.riwa-icon-option.is-selected { border-color: #2271b1; background: #eff6ff; }
+.riwa-icon-option .dashicons { font-size: 16px; width: 16px; height: 16px; color: #475569; }
+.riwa-icon-option.is-selected .dashicons { color: #2271b1; }
+
+/* ── Barre d'outils Services ─────────────────────────────────────────────── */
+.riwa-upsell-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+}
+.riwa-upsell-toolbar-left { display: flex; align-items: center; gap: 0.75rem; }
+.riwa-upsell-toolbar-right { display: flex; align-items: center; gap: 0.5rem; }
+.riwa-upsell-count-label { font-size: 13px; color: #64748b; font-weight: 500; }
+
+/* ── Dropdown formulaire service ─────────────────────────────────────────── */
+.riwa-upsell-dropdown-wrap { position: relative; }
+.riwa-upsell-form-dropdown {
+    position: fixed;
+    z-index: 100060;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+    width: 560px;
+    overflow: hidden;
+}
+.riwa-upsell-form-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1e293b;
+}
+.riwa-upsell-dropdown-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #94a3b8;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color .15s;
+}
+.riwa-upsell-dropdown-close:hover { color: #d63638; }
+.riwa-upsell-form-dropdown-body {
+    padding: 1rem 1.1rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.riwa-upsell-form-dropdown-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.1rem;
+    border-top: 1px solid #f1f5f9;
+    background: #fafafa;
+}
+
+/* Suppression ancienne carte form (remplacée par dropdown) */
+.riwa-upsell-form-card { display: none; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .riwa-upsell-form-grid { grid-template-columns: 1fr; }
+    .riwa-upsell-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+    .riwa-upsell-form-dropdown { width: calc(100vw - 16px); left: 8px !important; }
+}
+
+/* ── Boutons démo (toolbar Planning) ────────────────────────────────────── */
+#riwa-demo-seed-btn {
+    border-color: #d97706;
+    color: #92400e;
+    background: #fef9c3;
+}
+#riwa-demo-seed-btn:hover { background: #fde68a; border-color: #b45309; }
+#riwa-demo-clear-btn {
+    border-color: #e2e8f0;
+    color: #64748b;
+    background: #f8fafc;
+}
+#riwa-demo-clear-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+
+/* ── Bannière mode démo ──────────────────────────────────────────────────── */
+.riwa-demo-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%);
+    border: 1px solid #fde047;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: #713f12;
+}
+.riwa-demo-banner .dashicons {
+    font-size: 20px; width: 20px; height: 20px;
+    color: #d97706; flex-shrink: 0;
+}
+.riwa-demo-banner > div { flex: 1; line-height: 1.4; }
+.riwa-demo-banner strong { color: #92400e; }
+.riwa-demo-banner-cta {
+    white-space: nowrap;
+    background: #d97706;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s;
+}
+.riwa-demo-banner-cta:hover { background: #b45309; color: #fff; }

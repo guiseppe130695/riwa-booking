@@ -21,6 +21,11 @@ define('RIWA_BOOKING_VERSION', '1.1.3');
 define('RIWA_BOOKING_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('RIWA_BOOKING_PLUGIN_PATH', plugin_dir_path(__FILE__));
 
+// Utilitaires transversaux (chargés en premier — dépendances des autres classes)
+require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-enums.php';
+require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-security.php';
+require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-date-utils.php';
+
 // Classes métier
 require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-installer.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-emails.php';
@@ -30,11 +35,14 @@ require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-booking-ajax.php';
 // Classes admin
 require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-admin.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-upsells-table.php';
-require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-planning.php';
+require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-planning.php';       // Core planning
+require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-planning-demo.php';  // Données démo
+require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-planning-ajax.php';  // AJAX planning
 require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-stats.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-notifications.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-notif-settings.php';
-require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-pdf-studio.php';
+require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-pdf-studio-renderer.php'; // Moteur de rendu
+require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-pdf-studio.php';          // Core studio
 require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-payments.php';
 
 /**
@@ -64,14 +72,14 @@ class RiwaBooking {
         add_action('wp_ajax_riwa_bookings_load_more',   array('Riwa_Bookings_Table', 'ajax_load_more'));
 
         // AJAX Planning
-        add_action('wp_ajax_riwa_planning_get_data',           array('Riwa_Planning', 'ajax_get_planning_data'));
-        add_action('wp_ajax_riwa_planning_add_blocked',        array('Riwa_Planning', 'ajax_add_blocked'));
-        add_action('wp_ajax_riwa_planning_delete_blocked',     array('Riwa_Planning', 'ajax_delete_blocked'));
-        add_action('wp_ajax_riwa_planning_save_price_override',array('Riwa_Planning', 'ajax_save_price_override'));
-        add_action('wp_ajax_riwa_planning_update_housekeeping',array('Riwa_Planning', 'ajax_update_housekeeping'));
-        add_action('wp_ajax_riwa_planning_seed_demo',          array('Riwa_Planning', 'ajax_seed_demo'));
-        add_action('wp_ajax_riwa_planning_clear_demo',         array('Riwa_Planning', 'ajax_clear_demo'));
-        add_action('wp_ajax_riwa_planning_demo_status',        array('Riwa_Planning', 'ajax_demo_status'));
+        add_action('wp_ajax_riwa_planning_get_data',           ['Riwa_Planning_Ajax', 'ajax_get_planning_data']);
+        add_action('wp_ajax_riwa_planning_add_blocked',        ['Riwa_Planning_Ajax', 'ajax_add_blocked']);
+        add_action('wp_ajax_riwa_planning_delete_blocked',     ['Riwa_Planning_Ajax', 'ajax_delete_blocked']);
+        add_action('wp_ajax_riwa_planning_save_price_override',['Riwa_Planning_Ajax', 'ajax_save_price_override']);
+        add_action('wp_ajax_riwa_planning_update_housekeeping',['Riwa_Planning_Ajax', 'ajax_update_housekeeping']);
+        add_action('wp_ajax_riwa_planning_seed_demo',          ['Riwa_Planning_Demo', 'ajax_seed_demo']);
+        add_action('wp_ajax_riwa_planning_clear_demo',         ['Riwa_Planning_Demo', 'ajax_clear_demo']);
+        add_action('wp_ajax_riwa_planning_demo_status',        ['Riwa_Planning_Demo', 'ajax_demo_status']);
 
         // AJAX Stats
         add_action('wp_ajax_riwa_stats_get_data', array('Riwa_Stats', 'ajax_get_stats_data'));

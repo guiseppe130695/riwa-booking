@@ -34,7 +34,7 @@ class Riwa_Bookings_Table {
             $booking_id = intval($_POST['booking_id']);
             $new_status = sanitize_text_field($_POST['new_status'] ?? '');
 
-            if (in_array($new_status, array('pending', 'confirmed', 'cancelled'), true)) {
+            if (Riwa_Enums::is_valid_booking_status($new_status)) {
                 global $wpdb;
                 $wpdb->update(
                     $wpdb->prefix . 'riwa_bookings',

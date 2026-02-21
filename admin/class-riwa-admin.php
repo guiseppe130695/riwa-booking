@@ -105,6 +105,13 @@ class Riwa_Admin {
                 'templates' => Riwa_Notif_Settings::get_template_names(),
             ));
             wp_enqueue_style('riwa-booking-admin', RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-booking-admin.css', array(), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-bookings',      RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-bookings.css',      array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-filters',       RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-filters.css',       array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-services',      RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-services.css',      array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-planning',      RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-planning.css',      array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-stats',         RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-stats.css',         array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-notifications', RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-notifications.css', array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
+            wp_enqueue_style('riwa-admin-payments',      RIWA_BOOKING_PLUGIN_URL . 'assets/css/riwa-admin-payments.css',      array('riwa-booking-admin'), RIWA_BOOKING_VERSION);
             wp_enqueue_script('riwa-booking-admin', RIWA_BOOKING_PLUGIN_URL . 'assets/js/riwa-booking-admin.js', array('jquery'), RIWA_BOOKING_VERSION, true);
 
             wp_enqueue_style('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', array(), '4.6.13');

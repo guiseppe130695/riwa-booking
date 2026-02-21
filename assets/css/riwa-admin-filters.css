@@ -1,0 +1,528 @@
+/* ============================================================
+   Riwa Admin — Dashboard, Smart View, Toolbar, Filtres, Scroll infini,
+   Onglets Paramètres
+   (extrait de riwa-booking-admin.css — lignes 983–1531)
+   ============================================================ */
+
+/* Badge "Bientôt disponible" dans la nav */
+.riwa-badge-soon {
+    display: inline-block;
+    background: #f0b429;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-left: auto;
+    line-height: 1.4;
+}
+
+/* Page Coming Soon */
+.riwa-coming-soon-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    text-align: center;
+    min-height: 300px;
+}
+.riwa-coming-soon-icon {
+    font-size: 56px !important;
+    width: 56px !important;
+    height: 56px !important;
+    color: #c3c4c7;
+    margin-bottom: 1.5rem;
+}
+.riwa-coming-soon-page h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 0.5rem;
+}
+.riwa-coming-soon-page p {
+    color: #646970;
+    max-width: 400px;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+}
+
+/* Dashboard — Grille de statistiques */
+.riwa-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.6fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+@media (max-width: 1200px) {
+    .riwa-dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .riwa-dashboard-grid { grid-template-columns: 1fr; }
+}
+
+.riwa-stat-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.riwa-stat-icon {
+    width: 40px;
+    height: 40px;
+    background: #f0f6ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.riwa-stat-icon .dashicons {
+    color: #2271b1;
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+.riwa-stat-body { flex: 1; min-width: 0; }
+.riwa-stat-value { font-size: 26px; font-weight: 700; color: #1d2327; line-height: 1.1; margin-bottom: 0.25rem; }
+.riwa-stat-label { font-size: 12px; color: #646970; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+.riwa-stat-sub { display: flex; flex-direction: column; gap: 0.2rem; }
+.riwa-stat-month { font-size: 12px; color: #646970; }
+.riwa-stat-trend { font-size: 11px; font-weight: 600; }
+.riwa-stat-trend-up { color: #00a32a; }
+.riwa-stat-trend-down { color: #d63638; }
+.riwa-stat-badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.4rem; }
+
+/* Barre de progression */
+.riwa-progress-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+.riwa-progress-fill {
+    height: 100%;
+    background: #2271b1;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Réservations récentes (dashboard) */
+.riwa-dashboard-recent { margin-top: 1.5rem; }
+.riwa-dashboard-recent h3 { font-size: 16px; font-weight: 600; margin-bottom: 1rem; color: #1d2327; }
+
+/* ── Smart View ──────────────────────────────────────────────────────────── */
+.riwa-smart-view {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+}
+.riwa-smart-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.riwa-smart-chip:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); text-decoration: none; }
+.riwa-smart-chip strong { font-weight: 700; }
+.riwa-smart-chip .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-smart-chip--green  { background: #edfaef; color: #008a20; border-color: #c6f0c8; }
+.riwa-smart-chip--orange { background: #fff4e5; color: #c05000; border-color: #fcd6a0; }
+.riwa-smart-chip--blue   { background: #eff6ff; color: #1b6ca8; border-color: #bfdbfe; }
+.riwa-smart-chip--yellow { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.riwa-smart-chip--purple { background: #f5f3ff; color: #5b21b6; border-color: #ddd6fe; }
+.riwa-smart-chip--gray   { background: #f8fafc; color: #64748b; border-color: #e2e8f0; cursor: default; }
+
+/* ── Toolbar style Attio ─────────────────────────────────────────────────── */
+.riwa-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 0;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-toolbar-left  { display: flex; align-items: center; gap: 1rem; }
+.riwa-toolbar-right { display: flex; align-items: center; gap: 0.5rem; }
+
+.riwa-toolbar-count { font-size: 13px; color: #64748b; white-space: nowrap; }
+.riwa-toolbar-count strong { color: #1d2327; }
+
+/* Onglets de vue */
+.riwa-view-tabs { display: flex; gap: 0; background: #f1f5f9; border-radius: 6px; padding: 2px; }
+.riwa-view-tab {
+    padding: 0.3rem 0.75rem;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.12s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1.5;
+    font-family: inherit;
+}
+.riwa-view-tab:hover { color: #1d2327; text-decoration: none; }
+.riwa-view-tab.active { background: #fff; color: #1d2327; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+/* Bouton Reset filtres (toolbar) */
+.riwa-toolbar-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
+    transition: color 0.12s, background 0.12s;
+    white-space: nowrap;
+}
+.riwa-toolbar-reset:hover { color: #d63638; background: #fef2f2; text-decoration: none; }
+.riwa-toolbar-reset .dashicons { font-size: 13px; width: 13px; height: 13px; }
+
+/* Bouton Filtres */
+.riwa-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+}
+.riwa-toolbar-btn:hover { border-color: #94a3b8; color: #1d2327; }
+.riwa-toolbar-btn--active { border-color: #1b6ca8; color: #1b6ca8; background: #eff6ff; }
+.riwa-toolbar-btn .dashicons { font-size: 14px; width: 14px; height: 14px; }
+.riwa-filter-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #1b6ca8;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Tri select inline */
+.riwa-sort-form { display: flex; }
+.riwa-sort-select {
+    padding: 0.375rem 0.625rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #475569;
+    background: #fff;
+    cursor: pointer;
+    height: auto;
+}
+.riwa-sort-select:focus { border-color: #1b6ca8; outline: none; box-shadow: 0 0 0 2px rgba(27,108,168,0.15); }
+
+/* Recherche inline */
+.riwa-search-form { display: flex; }
+.riwa-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.riwa-search-icon {
+    position: absolute;
+    left: 8px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+.riwa-search-input {
+    padding: 0.375rem 2rem 0.375rem 1.875rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1d2327;
+    width: 180px;
+    background: #fff;
+    transition: border-color 0.12s, box-shadow 0.12s, width 0.2s;
+    height: auto;
+}
+.riwa-search-input:focus { border-color: #1b6ca8; box-shadow: 0 0 0 2px rgba(27,108,168,0.15); outline: none; width: 220px; }
+.riwa-search-clear {
+    position: absolute;
+    right: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-decoration: none;
+    line-height: 1;
+}
+.riwa-search-clear:hover { color: #d63638; }
+
+/* ── Dropdown filtres ancré au bouton ────────────────────────────────────── */
+.riwa-filter-dropdown-wrap {
+    position: relative;
+}
+.riwa-filter-dropdown {
+    position: fixed;
+    z-index: 100060;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    width: 340px;
+    overflow: hidden;
+}
+.riwa-filter-dropdown-body {
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.riwa-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+.riwa-filter-group-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+/* Chip radio buttons */
+.riwa-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.riwa-chip-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.7rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+}
+.riwa-chip-label input[type="radio"] { display: none; }
+.riwa-chip-label:hover { border-color: #94a3b8; color: #1d2327; }
+.riwa-chip-label.is-active {
+    background: #1b6ca8;
+    border-color: #1b6ca8;
+    color: #fff;
+}
+
+/* Select dans le dropdown */
+.riwa-filter-select {
+    width: 100%;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1d2327;
+    background: #fff;
+    cursor: pointer;
+}
+.riwa-filter-select:focus { border-color: #1b6ca8; outline: none; }
+
+/* Plage de dates */
+.riwa-filter-date-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.riwa-filter-date {
+    flex: 1;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1d2327;
+}
+.riwa-filter-date:focus { border-color: #1b6ca8; outline: none; }
+.riwa-filter-date-sep { font-size: 11px; color: #94a3b8; }
+
+/* Plage de prix */
+.riwa-filter-price-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.riwa-filter-price-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.riwa-filter-price-prefix {
+    padding: 0 0.45rem;
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 700;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    white-space: nowrap;
+    line-height: 30px;
+}
+.riwa-filter-price-input {
+    flex: 1;
+    border: none;
+    padding: 0.4rem 0.45rem;
+    font-size: 12.5px;
+    color: #1d2327;
+    width: 0;
+    min-width: 0;
+}
+.riwa-filter-price-input:focus { outline: none; }
+.riwa-filter-price-field:focus-within { border-color: #1b6ca8; }
+
+/* Séparateur */
+.riwa-date-sep { font-size: 12px; color: #94a3b8; }
+
+/* ── Tags des filtres actifs ─────────────────────────────────────────────── */
+.riwa-active-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.25rem;
+}
+.riwa-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.65rem;
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    font-size: 12px;
+    color: #1e40af;
+    font-weight: 500;
+}
+.riwa-active-tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    font-size: 9px;
+    color: #64748b;
+    text-decoration: none;
+    background: #dbeafe;
+    transition: all 0.1s;
+}
+.riwa-active-tag-remove:hover { background: #d63638; color: #fff; }
+.riwa-clear-all {
+    font-size: 12px;
+    color: #64748b;
+    text-decoration: none;
+    margin-left: 0.25rem;
+}
+.riwa-clear-all:hover { color: #d63638; text-decoration: underline; }
+
+/* Bouton ghost */
+.riwa-btn-ghost {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+.riwa-btn-ghost:hover { border-color: #94a3b8; color: #1d2327; }
+
+/* Résultats count */
+.riwa-results-count { font-size: 13px; color: #646970; margin: 0 0 0.75rem; }
+
+/* Infinite scroll sentinel */
+.riwa-infinite-sentinel {
+    display: flex; justify-content: center; align-items: center;
+    padding: 1.5rem 0; color: #94a3b8; font-size: 13px;
+}
+.riwa-infinite-sentinel .riwa-infinite-spinner { display: flex; align-items: center; gap: 0.5rem; }
+.riwa-infinite-sentinel:not(.is-loading) .riwa-infinite-spinner { visibility: hidden; }
+.riwa-infinite-sentinel.is-done { display: none; }
+
+/* Onglets des Paramètres */
+.riwa-settings-tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    padding: 0;
+    background: #fff;
+    flex-wrap: wrap;
+}
+.riwa-settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 16px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 4px 4px 0 0;
+    transition: color .15s, border-color .15s, background .15s;
+    white-space: nowrap;
+}
+.riwa-settings-tab .dashicons { font-size: 13px; width: 13px; height: 13px; }
+.riwa-settings-tab:hover { color: #2271b1; background: #f1f5f9; }
+.riwa-settings-tab.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+    background: #f0f6ff;
+}
+.riwa-settings-tab-content { display: none; padding: 0; }
+.riwa-settings-tab-content.active { display: block; }
+
+/* Retrait du padding de section imbriqué dans Paramètres */
+.riwa-settings-tab-content .riwa-section { margin: 0; }
+.riwa-settings-tab-content .riwa-section-header { display: none; }

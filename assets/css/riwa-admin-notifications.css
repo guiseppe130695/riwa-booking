@@ -1,0 +1,359 @@
+/* ============================================================
+   Riwa Admin — Notifications WhatsApp semi-auto
+   (extrait de riwa-booking-admin.css — lignes 2565–2929)
+   ============================================================ */
+
+/* ── Section WA dans le popup de réservation ──────────────────────────────── */
+.riwa-popup-wa-section {
+    margin-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+}
+.riwa-popup-wa-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+}
+.riwa-popup-wa-icon {
+    display: flex;
+    align-items: center;
+}
+.riwa-popup-wa-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Boutons WhatsApp génériques */
+.riwa-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1.5px solid #25D366;
+    background: #fff;
+    color: #128C7E;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+.riwa-wa-btn:hover {
+    background: #25D366;
+    color: #fff;
+}
+.riwa-wa-btn.riwa-wa-btn-sm {
+    padding: 5px 10px;
+    font-size: 11px;
+}
+.riwa-wa-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Log de notifications dans le popup */
+.riwa-popup-notif-log {
+    margin-top: 0.5rem;
+    min-height: 20px;
+}
+.riwa-notif-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.riwa-notif-log-entry {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 3px 6px;
+    background: #f8fafc;
+    border-radius: 4px;
+    color: #64748b;
+}
+.riwa-notif-log-type { font-weight: 500; color: #128C7E; }
+.riwa-notif-log-date { color: #94a3b8; }
+.riwa-notif-log-empty { font-size: 11px; color: #94a3b8; font-style: italic; margin: 0; }
+
+/* ── Modal de prévisualisation WhatsApp ───────────────────────────────────── */
+.riwa-wa-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.riwa-wa-modal {
+    background: #fff;
+    border-radius: 14px;
+    width: min(500px, 94vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.riwa-wa-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #075E54;
+    color: #fff;
+}
+.riwa-wa-modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    color: #fff;
+}
+.riwa-wa-modal-icon { display: flex; align-items: center; }
+.riwa-wa-modal-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.75);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.riwa-wa-modal-close:hover { color: #fff; }
+.riwa-wa-modal-body {
+    padding: 1.25rem;
+    background: #ECE5DD;
+    flex: 1;
+}
+.riwa-wa-bubble-wrap {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 0.75rem;
+}
+.riwa-wa-bubble {
+    background: #fff;
+    border-radius: 0 10px 10px 10px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 90%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    color: #111b21;
+}
+.riwa-wa-modal-phone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #128C7E;
+}
+.riwa-wa-modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.9rem 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+}
+.riwa-btn-wa {
+    background: #25D366;
+    color: #fff;
+    border-color: #25D366;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+.riwa-btn-wa:hover {
+    background: #128C7E;
+    border-color: #128C7E;
+    color: #fff;
+}
+
+/* ── Section Notifications (page dédiée) ─────────────────────────────────── */
+.riwa-notif-today-section,
+.riwa-notif-log-section {
+    margin-bottom: 2rem;
+}
+.riwa-notif-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-badge-count {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+.riwa-notif-empty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    background: #f0fdf4;
+    border-radius: 8px;
+    color: #16a34a;
+    font-size: 13px;
+}
+.riwa-notif-bookings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.riwa-notif-booking-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+}
+.riwa-notif-booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+.riwa-notif-booking-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+}
+.riwa-notif-day-label {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+.riwa-notif-day-label.arriving  { background: #dcfce7; color: #166534; }
+.riwa-notif-day-label.departing { background: #fee2e2; color: #991b1b; }
+.riwa-notif-day-label.staying   { background: #eff6ff; color: #1d4ed8; }
+.riwa-notif-booking-meta {
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+.riwa-notif-booking-meta .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+.riwa-notif-booking-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Historique global */
+.riwa-notif-log-table-wrap { overflow-x: auto; }
+.riwa-notif-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.riwa-notif-log-table th {
+    background: #f8fafc;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+}
+.riwa-notif-log-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+.riwa-notif-log-table tr:last-child td { border-bottom: none; }
+.riwa-notif-log-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* ── Formulaire templates (Paramètres → Notifications) ───────────────────── */
+.riwa-toggle-slider {
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    background: #cbd5e1;
+    border-radius: 99px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.riwa-toggle-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.riwa-toggle-label input[type="checkbox"]:checked ~ .riwa-toggle-slider {
+    background: #25D366;
+}
+.riwa-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.riwa-toggle-label input[type="checkbox"]:checked ~ .riwa-toggle-slider::before {
+    transform: translateX(16px);
+}
+.riwa-field-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    margin: 4px 0 0;
+}
+.riwa-notif-vars-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 0.25rem;
+}
+.riwa-notif-var-chip {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 11.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    cursor: default;
+    user-select: all;
+}
+.riwa-notif-tpl-textarea {
+    width: 100%;
+    font-family: monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical;
+}
