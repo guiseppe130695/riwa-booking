@@ -72,6 +72,41 @@ Ajouter `[riwa_booking]` sur la page de réservation.
 
 ---
 
+## REST API en production
+
+### Activer les Application Passwords
+WordPress 5.6+ les active par défaut. Si désactivés, ajouter dans `wp-config.php` :
+```php
+add_filter('wp_is_application_passwords_available', '__return_true');
+```
+
+### Générer un mot de passe d'application
+1. WP Admin → **Utilisateurs → ton profil**
+2. Section **Mots de passe d'application** → saisir un nom (ex: "Frontend Next.js")
+3. Cliquer **Ajouter** → copier le mot de passe généré (affiché une seule fois)
+4. L'utiliser dans le header : `Authorization: Basic base64(user:app_password)`
+
+### Restreindre CORS en production
+Par défaut, le plugin ajoute `Access-Control-Allow-Origin: *`. Pour le restreindre à ton domaine frontend, modifier le filtre dans `includes/rest/class-riwa-rest-api.php` :
+```php
+header('Access-Control-Allow-Origin: https://ton-frontend.com');
+```
+
+### Test rapide API
+```bash
+# Endpoint public (no auth)
+curl https://ton-site.com/wp-json/riwa/v1/planning/availability
+
+# Endpoint admin (avec auth)
+curl -u "admin:xxxx xxxx xxxx xxxx xxxx xxxx" \
+  https://ton-site.com/wp-json/riwa/v1/bookings
+```
+
+### Désactiver la REST API publique WordPress (optionnel)
+Si tu veux restreindre la WP REST API aux utilisateurs connectés tout en gardant les endpoints Riwa publics, ne pas utiliser `remove_filter('rest_authentication_errors', ...)` — cela bloquerait aussi les endpoints nopriv de Riwa.
+
+---
+
 ## Sécurité en production
 
 ### wp-config.php
@@ -85,8 +120,9 @@ define('WP_DEBUG_DISPLAY', false);
 - Vérification de nonce WordPress sur toutes les actions admin et AJAX
 - Sanitisation des entrées : `sanitize_text_field()`, `esc_url_raw()`, `sanitize_hex_color()`
 - Protection SQL : requêtes préparées via `$wpdb->prepare()`
-- Vérification `current_user_can('manage_options')` sur toutes les opérations admin
+- Vérification `current_user_can('manage_options')` sur toutes les opérations admin (AJAX et REST)
 - Headers de sécurité via WordPress
+- REST API admin : Application Passwords WordPress (authentification HTTP Basic)
 
 ### Permissions fichiers recommandées
 ```

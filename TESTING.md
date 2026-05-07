@@ -293,6 +293,57 @@ Pour ne pas créer manuellement des données, utiliser les **données démo** :
 
 ---
 
+---
+
+### T15 — REST API
+
+**Prérequis :** Générer un Application Password dans WP Admin → Utilisateurs → profil → Mots de passe d'application
+
+#### Endpoints publics (sans authentification)
+
+| # | Requête | Résultat attendu |
+|---|---|---|
+| 1 | `GET /wp-json/riwa/v1/planning/availability` | JSON `{"booked_dates": [...]}` avec liste de dates `Y-m-d` |
+| 2 | `GET /wp-json/riwa/v1/pricing` | JSON liste des saisons tarifaires actives |
+| 3 | `POST /wp-json/riwa/v1/pricing/calculate` body `{"check_in_date":"2026-07-01","check_out_date":"2026-07-08","guests_count":2}` | JSON `{"total":..., "per_night":...}` |
+| 4 | `POST /wp-json/riwa/v1/bookings` avec données valides | HTTP 201, JSON réservation créée |
+| 5 | `POST /wp-json/riwa/v1/bookings` avec dates occupées | HTTP 409, message d'erreur |
+| 6 | `GET /wp-json/riwa/v1/bookings` sans authentification | HTTP 401 Unauthorized |
+
+#### Endpoints admin (avec `Authorization: Basic`)
+
+| # | Requête | Résultat attendu |
+|---|---|---|
+| 7 | `GET /wp-json/riwa/v1/bookings` | HTTP 200, JSON `{"bookings":[...],"total":N}` |
+| 8 | `GET /wp-json/riwa/v1/bookings?status=pending` | Filtré sur les réservations en attente |
+| 9 | `GET /wp-json/riwa/v1/bookings/{id}` | HTTP 200, JSON réservation détaillée |
+| 10 | `PATCH /wp-json/riwa/v1/bookings/{id}` body `{"status":"confirmed"}` | HTTP 200, statut mis à jour |
+| 11 | `DELETE /wp-json/riwa/v1/bookings/{id}` | HTTP 200, `{"deleted":true}` |
+| 12 | `PATCH /wp-json/riwa/v1/bookings/{id}/housekeeping` body `{"housekeeping_status":"ready"}` | HTTP 200 |
+| 13 | `GET /wp-json/riwa/v1/payments/dashboard` | HTTP 200, JSON KPIs financiers |
+| 14 | `GET /wp-json/riwa/v1/bookings/{id}/payments` | HTTP 200, JSON paiements + statut |
+| 15 | `POST /wp-json/riwa/v1/payments` body `{"booking_id":1,"amount":500,"method":"transfer","payment_date":"2026-05-01"}` | HTTP 201 |
+| 16 | `DELETE /wp-json/riwa/v1/payments/{id}` | HTTP 200, `{"deleted":true}` |
+| 17 | `PATCH /wp-json/riwa/v1/bookings/{id}/deposit` body `{"deposit_percent":30}` | HTTP 200, `deposit_amount` calculé |
+| 18 | `GET /wp-json/riwa/v1/planning?date_start=2026-05-01&date_end=2026-05-31` | HTTP 200, JSON bookings + blocked + overrides + stats |
+| 19 | `POST /wp-json/riwa/v1/planning/blocked` body `{"date_start":"2026-06-15","date_end":"2026-06-20","reason":"maintenance"}` | HTTP 201 |
+| 20 | `DELETE /wp-json/riwa/v1/planning/blocked/{id}` | HTTP 200 |
+| 21 | `GET /wp-json/riwa/v1/stats/health` | HTTP 200, JSON score + grade |
+| 22 | `GET /wp-json/riwa/v1/stats/kpis?year=2026` | HTTP 200, JSON kpis + monthly breakdown |
+| 23 | `GET /wp-json/riwa/v1/stats/forecast` | HTTP 200 |
+| 24 | `GET /wp-json/riwa/v1/notifications/log` | HTTP 200, JSON log récent |
+| 25 | `GET /wp-json/riwa/v1/bookings/{id}/notifications` | HTTP 200, log par réservation |
+| 26 | `POST /wp-json/riwa/v1/bookings/{id}/notifications/preview` body `{"type":"confirmation","target":"client"}` | HTTP 200, message WhatsApp rendu |
+
+#### Test CORS (depuis un frontend Next.js/Nuxt)
+
+| # | Action | Résultat attendu |
+|---|---|---|
+| 27 | Requête depuis `localhost:3000` vers l'API | Header `Access-Control-Allow-Origin: *` présent dans la réponse, pas de blocage CORS |
+| 28 | Requête OPTIONS preflight | HTTP 200, headers CORS retournés |
+
+---
+
 ## Cas limites à tester
 
 | Scénario | Comportement attendu |

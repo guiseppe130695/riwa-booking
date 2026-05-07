@@ -167,13 +167,83 @@ Organisés en 6 onglets :
 
 ---
 
+## Structure REST API
+
+```
+includes/rest/
+├── class-riwa-rest-api.php                      — Bootstrapper (CORS, chargement controllers)
+├── class-riwa-rest-bookings-controller.php      — /bookings
+├── class-riwa-rest-planning-controller.php      — /planning
+├── class-riwa-rest-payments-controller.php      — /payments + /bookings/{id}/payments
+├── class-riwa-rest-stats-controller.php         — /stats
+├── class-riwa-rest-notifications-controller.php — /notifications
+└── class-riwa-rest-pricing-controller.php       — /pricing
+```
+
 ## Pas de build system
 
 Aucun webpack, npm ou outil de compilation. Les fichiers CSS et JS sont édités directement dans `assets/` et enqueués par WordPress.
 
 ---
 
+## REST API
+
+Le plugin expose une WP REST API complète sous le namespace `/wp-json/riwa/v1/`.
+
+### Authentification
+- **Endpoints publics** (disponibilités, création de réservation, pricing) : aucune authentification requise
+- **Endpoints admin** : WordPress Application Passwords (natif WP 5.6+)
+
+```
+Authorization: Basic base64(username:app_password)
+```
+
+Générer un mot de passe d'application dans **WordPress Admin → Utilisateurs → ton profil → Mots de passe d'application**.
+
+### Endpoints disponibles
+
+| Méthode | Route | Auth | Description |
+|---------|-------|------|-------------|
+| GET | `/pricing` | Public | Liste des saisons tarifaires |
+| POST | `/pricing/calculate` | Public | Calcul du prix pour des dates |
+| GET | `/planning/availability` | Public | Dates occupées |
+| POST | `/bookings` | Public | Créer une réservation |
+| GET | `/bookings` | Admin | Liste filtrée des réservations |
+| GET | `/bookings/{id}` | Admin | Détail d'une réservation |
+| PATCH | `/bookings/{id}` | Admin | Modifier le statut |
+| DELETE | `/bookings/{id}` | Admin | Supprimer |
+| PATCH | `/bookings/{id}/housekeeping` | Admin | Statut ménage |
+| GET | `/planning` | Admin | Données calendrier |
+| POST | `/planning/blocked` | Admin | Bloquer une période |
+| DELETE | `/planning/blocked/{id}` | Admin | Débloquer |
+| POST | `/planning/overrides` | Admin | Override de prix |
+| GET | `/payments/dashboard` | Admin | KPIs financiers |
+| GET | `/bookings/{id}/payments` | Admin | Paiements d'une réservation |
+| POST | `/payments` | Admin | Ajouter un paiement |
+| DELETE | `/payments/{id}` | Admin | Supprimer un paiement |
+| PATCH | `/bookings/{id}/deposit` | Admin | Infos acompte |
+| GET | `/stats/health` | Admin | Score de santé |
+| GET | `/stats/kpis` | Admin | KPIs annuels |
+| GET | `/stats/forecast` | Admin | Prévisions |
+| GET | `/stats/profile` | Admin | Profil voyageurs |
+| GET | `/stats/alerts` | Admin | Alertes actionnables |
+| GET | `/notifications/log` | Admin | Log récent |
+| GET | `/bookings/{id}/notifications` | Admin | Log d'une réservation |
+| POST | `/bookings/{id}/notifications` | Admin | Logger un envoi |
+| POST | `/bookings/{id}/notifications/preview` | Admin | Aperçu message WhatsApp |
+
+### CORS
+Les headers CORS (`Access-Control-Allow-Origin: *`) sont ajoutés automatiquement sur toutes les routes `/riwa/*` pour permettre les appels depuis un frontend découplé (Next.js, Nuxt, SvelteKit).
+
+---
+
 ## Changelog
+
+### v2.1.0 — Mai 2026
+- REST API complète (27 endpoints, namespace `riwa/v1`)
+- Authentification via Application Passwords WordPress
+- CORS activé pour les frontends découplés
+- Controllers : `Riwa_REST_Bookings_Controller`, `Riwa_REST_Planning_Controller`, `Riwa_REST_Payments_Controller`, `Riwa_REST_Stats_Controller`, `Riwa_REST_Notifications_Controller`, `Riwa_REST_Pricing_Controller`
 
 ### v2.0.0 — Février 2026
 - Module Paiements & Acomptes complet (KPIs, timeline, CSV export)

@@ -32,6 +32,10 @@ require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-emails.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-pricing.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/class-riwa-booking-ajax.php';
 
+// REST API
+require_once RIWA_BOOKING_PLUGIN_PATH . 'includes/rest/class-riwa-rest-api.php';
+add_action('rest_api_init', ['Riwa_REST_API', 'init']);
+
 // Classes admin
 require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-admin.php';
 require_once RIWA_BOOKING_PLUGIN_PATH . 'admin/class-riwa-upsells-table.php';

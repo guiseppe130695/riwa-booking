@@ -27,7 +27,15 @@ riwa-booking/
 │   ├── class-riwa-pdf-generator.php   — Rendu PDF via TCPDF
 │   ├── class-riwa-pdf-admin.php       — UI paramètres PDF (ancien formulaire)
 │   ├── class-riwa-pdf-ajax.php        — Handlers AJAX PDF
-│   └── class-riwa-pdf-studio.php      — Doc Studio : layouts JSON, rendu, aperçu
+│   ├── class-riwa-pdf-studio.php      — Doc Studio : layouts JSON, rendu, aperçu
+│   └── rest/
+│       ├── class-riwa-rest-api.php                      — Bootstrapper REST (CORS, chargement)
+│       ├── class-riwa-rest-bookings-controller.php      — /bookings CRUD + housekeeping
+│       ├── class-riwa-rest-planning-controller.php      — /planning, /availability, /blocked, /overrides
+│       ├── class-riwa-rest-payments-controller.php      — /payments, /bookings/{id}/payments, /deposit
+│       ├── class-riwa-rest-stats-controller.php         — /stats (health, kpis, forecast, profile, alerts)
+│       ├── class-riwa-rest-notifications-controller.php — /notifications, /bookings/{id}/notifications
+│       └── class-riwa-rest-pricing-controller.php       — /pricing, /pricing/calculate
 │
 ├── admin/
 │   ├── class-riwa-admin.php           — Dispatcher : menus, enqueue, sections
@@ -134,6 +142,44 @@ Canaux : `whatsapp` | `email`
 | Statistiques | Actif | `statistics.php` |
 | Factures / PDF | Actif | `riwa-pdf-settings` (sous-menu WP) |
 | Paramètres | Actif | `settings.php` |
+
+---
+
+## REST API — `/wp-json/riwa/v1/`
+
+Namespace : `riwa/v1` — Bootstrapper : `Riwa_REST_API::init()` sur hook `rest_api_init`
+
+### Auth
+- **Admin** : Application Passwords WordPress → `Authorization: Basic base64(user:app_password)` + `current_user_can('manage_options')`
+- **Public** : `'permission_callback' => '__return_true'`
+
+### Endpoints publics
+| Méthode | Route | Handler |
+|---------|-------|---------|
+| GET | `/pricing` | `Riwa_REST_Pricing_Controller::get_items` |
+| POST | `/pricing/calculate` | `Riwa_REST_Pricing_Controller::calculate` |
+| GET | `/planning/availability` | `Riwa_REST_Planning_Controller::get_availability` |
+| POST | `/bookings` | `Riwa_REST_Bookings_Controller::create_item` |
+
+### Endpoints admin
+| Méthode | Route | Handler |
+|---------|-------|---------|
+| GET/POST | `/bookings` | `Riwa_REST_Bookings_Controller` |
+| GET/PATCH/DELETE | `/bookings/{id}` | `Riwa_REST_Bookings_Controller` |
+| PATCH | `/bookings/{id}/housekeeping` | `Riwa_REST_Bookings_Controller::update_housekeeping` |
+| GET | `/planning` | `Riwa_REST_Planning_Controller::get_planning` |
+| POST | `/planning/blocked` | `Riwa_REST_Planning_Controller::add_blocked` |
+| DELETE | `/planning/blocked/{id}` | `Riwa_REST_Planning_Controller::delete_blocked` |
+| POST | `/planning/overrides` | `Riwa_REST_Planning_Controller::save_price_override` |
+| GET | `/payments/dashboard` | `Riwa_REST_Payments_Controller` |
+| POST | `/payments` | `Riwa_REST_Payments_Controller::create_payment` |
+| DELETE | `/payments/{id}` | `Riwa_REST_Payments_Controller::delete_payment` |
+| GET | `/bookings/{id}/payments` | `Riwa_REST_Payments_Controller::get_booking_payments` |
+| PATCH | `/bookings/{id}/deposit` | `Riwa_REST_Payments_Controller::save_deposit` |
+| GET | `/stats/health\|kpis\|forecast\|profile\|alerts` | `Riwa_REST_Stats_Controller` |
+| GET | `/notifications/log` | `Riwa_REST_Notifications_Controller::get_recent_log` |
+| GET/POST | `/bookings/{id}/notifications` | `Riwa_REST_Notifications_Controller` |
+| POST | `/bookings/{id}/notifications/preview` | `Riwa_REST_Notifications_Controller::preview` |
 
 ---
 

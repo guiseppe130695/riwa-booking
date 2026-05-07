@@ -15,7 +15,8 @@ Guide de compréhension approfondie du code. À lire avant une revue technique.
 7. [Sécurité et nonces](#7-sécurité-et-nonces)
 8. [Migrations de base de données](#8-migrations-de-base-de-données)
 9. [Calcul des prix](#9-calcul-des-prix)
-10. [Questions / Réponses attendues en revue](#10-questions--réponses-attendues-en-revue)
+10. [REST API](#10-rest-api)
+11. [Questions / Réponses attendues en revue](#11-questions--réponses-attendues-en-revue)
 
 ---
 
@@ -371,7 +372,63 @@ La condition `NOT (B finit avant A OU B commence après A)` est équivalente à 
 
 ---
 
-## 10. Questions / Réponses attendues en revue
+## 10. REST API
+
+### Architecture
+
+La REST API est organisée en 7 fichiers dans `includes/rest/` :
+
+```
+class-riwa-rest-api.php                      — Bootstrapper
+class-riwa-rest-bookings-controller.php      — /bookings (CRUD + housekeeping)
+class-riwa-rest-planning-controller.php      — /planning (calendrier, blocages, overrides)
+class-riwa-rest-payments-controller.php      — /payments + /bookings/{id}/payments + /deposit
+class-riwa-rest-stats-controller.php         — /stats (health, kpis, forecast, profile, alerts)
+class-riwa-rest-notifications-controller.php — /notifications + /bookings/{id}/notifications
+class-riwa-rest-pricing-controller.php       — /pricing + /pricing/calculate
+```
+
+### Enregistrement
+
+`Riwa_REST_API::init()` est appelé sur le hook `rest_api_init` (enregistré dans `riwa-booking.php`). Il charge les 6 controllers et appelle `register_routes()` sur chacun. C'est la même séquence que pour les hooks AJAX mais déclenchée par WordPress REST.
+
+### Authentification
+
+Les endpoints admin utilisent `permission_callback` renvoyant `current_user_can('manage_options')`. WordPress vérifie automatiquement les Application Passwords transmis via le header `Authorization: Basic` — aucun code supplémentaire n'est requis.
+
+Les endpoints publics ont `'permission_callback' => '__return_true'` — accessibles sans authentification, comme leurs équivalents `wp_ajax_nopriv_*`.
+
+### Duplication de logique évitée
+
+Les controllers n'ont pas de logique DB propre — ils appellent les méthodes statiques existantes :
+
+| Controller | Méthodes appelées |
+|---|---|
+| Bookings | `Riwa_Bookings_Table::get_filtered_bookings()`, `Riwa_Planning::has_overlap()`, `Riwa_Pricing::calculate_total()` |
+| Planning | `Riwa_Planning::get_bookings_for_range()`, `get_blocked_for_range()`, `get_overrides_for_range()`, `get_occupation_stats()` |
+| Payments | `Riwa_Payments::get_dashboard_kpis()`, `get_payments_for_booking()`, `get_payment_status()`, `get_status_label()` |
+| Stats | `Riwa_Stats::get_health_score()`, `get_yearly_stats()`, `get_forecast()`, `get_traveler_profile()`, `get_alerts()` |
+| Notifications | `Riwa_Notifications::get_log()`, `log()`, `get_rendered_template()`, `build_wa_link()` |
+| Pricing | `Riwa_Pricing::get_pricing_data()`, `calculate_total()` |
+
+### CORS
+
+Le filtre `rest_pre_serve_request` dans le bootstrapper injecte les headers CORS uniquement sur les routes `/riwa/*`. Les autres routes WP REST ne sont pas affectées.
+
+### Réponses
+
+| Situation | Classe retournée | HTTP |
+|---|---|---|
+| Succès (lecture) | `WP_REST_Response` | 200 |
+| Succès (création) | `WP_REST_Response` | 201 |
+| Validation échouée | `WP_Error` | 400 |
+| Ressource absente | `WP_Error` | 404 |
+| Conflit (dates) | `WP_Error` | 409 |
+| Erreur DB | `WP_Error` | 500 |
+
+---
+
+## 11. Questions / Réponses attendues en revue
 
 **Q : Pourquoi les classes sont toutes statiques ?**
 R : Pattern adapté au contexte WordPress. Joue le rôle de namespace organisationnel. Pas d'état à maintenir entre les appels — les données viennent de la DB à chaque requête. L'injection de dépendances serait over-engineered pour un plugin mono-tenant sans tests unitaires à isoler.
